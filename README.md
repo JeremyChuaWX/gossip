@@ -1,13 +1,13 @@
-# Gossip
+# Gossip 🤫
 
-## Inspirations
+## Inspirations ✨
 
 - Reddit
 
-## Technology stack
+## Technology stack ⚙️
 
 - React
-- Ruby on rails
+- Ruby on rails API
 - Postgres
 
 ## User requirements
@@ -20,7 +20,7 @@
 
 ### User stories
 
-#### General user
+#### General user 👤
 
 As a general user i can...
 
@@ -37,7 +37,7 @@ As a general user i can...
 - Thumbs up and down posts
 - Thumbs up and down comments
 
-#### Poster
+#### Poster 📝
 
 As a poster i can...
 
@@ -49,9 +49,9 @@ As a poster i can...
 - View a list of the posts I have started
 - View a list of the posts I have commented in
 - Be notified of changes (e.g.: new comments) in the posts I am involved in
-- Delete my own comments
+- Delete my own comments and posts
 
-#### Admin
+#### Admin 🤖
 
 As an admin i can...
 
@@ -76,27 +76,15 @@ A post is where comments will reside, and a main prompt is given to start the di
 
 A tag is a tool for categorisation of posts and increasing discoverability.
 
-## Features to be implemented
+## Features
 
-Basic features:
-
-- Login using username and password
-
-These are the features derived from the user stories:
-
-- View all posts and comments
-- Create new posts and comments
-- Delete one's own comments
-- Add tags to posts
+- account management (login, creation, updating fields)
+- CRUD operations for
+  - comments
+  - posts
+  - tags
 - thumbs up and down posts and comments
-
-## Design decisions
-
-### Unable to delete your own posts
-
-Posts are things that many people contribute on.
-One person being able to delete the contributions of many does not seem right.
-Only admin can delete posts.
+- add and remove tags from posts
 
 ## Data
 
@@ -104,7 +92,7 @@ Only admin can delete posts.
 
 - `user_id`: cuid
 - `username`: string
-- `email`: string (sending notifications)
+- `email`: string? (sending notifications)
 - `password`: hashed string
 - `comments`: comment[]
 - `isAdmin`: boolean
@@ -117,21 +105,21 @@ Only admin can delete posts.
 - `author`: user
 - `time_posted`: datetime
 - `post_score`: integer
-- `comments`: comment[] (sorted by `comment_score`)
+- `comments`: comment[]
 - `tags`: tag[]
 - `title`: string
-- `body`: string
+- `body`: text
 
 ### Comment model
 
 - `comment_id`: cuid
 - `post`: post
-- `parent_comment`: comment
+- `parent_comment`: comment?
 - `author`: user
 - `time_commented`: datetime
 - `comment_score`: integer
-- `body`: string
-- `replies`: comment[] (sorted by `comment_score`)
+- `body`: text
+- `replies`: comment[]
 
 ### Tag model
 
