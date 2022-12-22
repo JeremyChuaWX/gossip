@@ -96,7 +96,7 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 - `password`: hashed string
 - `comments`: comment[]
 - `posts`: post[]
-- `isAdmin`: boolean
+- `role`: role enum
 - `isPublic`: boolean
 - `subscribed`: post[]
 
