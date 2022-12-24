@@ -7,7 +7,9 @@
 ## Technology stack ⚙️
 
 - React
-- Ruby on rails API
+- Go API
+  - Gin
+  - Gorm
 - Postgres
 
 ## User requirements
