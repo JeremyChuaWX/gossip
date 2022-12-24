@@ -132,8 +132,11 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 ## API endpoints
 
 - api/
-  - user/
-    - `[user_id]/`: returns account details of user with id `user_id`
+  - users/
+    - GET `[user_id]`: returns account details of user with id `user_id`
+    - POST: creates a new user
+    - PUT `[user_id]`: updates account details of user with id `user_id`
+    - DELETE `[user_id]`: deletes user with id `user_id`
   - post/
     - `[post_id]/`: returns post data object with id `post_id`
   - comment/
