@@ -8,8 +8,6 @@
 
 - React
 - Go API
-  - Gin
-  - Gorm
 - Postgres
 
 ## User requirements
