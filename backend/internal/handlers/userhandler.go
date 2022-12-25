@@ -19,11 +19,12 @@ type updateUserInput struct {
 }
 
 func (h Handler) GetUser(c *gin.Context) {
+	var err error
 	var user models.User
 	id := c.Param("id")
 
-	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
@@ -31,32 +32,38 @@ func (h Handler) GetUser(c *gin.Context) {
 }
 
 func (h Handler) CreateUser(c *gin.Context) {
+	var err error
 	var input createUserInput
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err = c.ShouldBindJSON(&input); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	user := models.User{Username: input.Username, Email: input.Email, Password: input.Password}
-	h.DB.Create(&user)
+
+	if err = h.DB.Create(&user).Error; err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": user})
 }
 
 func (h Handler) UpdateUser(c *gin.Context) {
+	var err error
 	var user models.User
 	id := c.Param("id")
 
-	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
 	var input updateUserInput
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err = c.ShouldBindJSON(&input); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
@@ -66,15 +73,19 @@ func (h Handler) UpdateUser(c *gin.Context) {
 }
 
 func (h Handler) DeleteUser(c *gin.Context) {
+	var err error
 	var user models.User
 	id := c.Param("id")
 
-	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
-	h.DB.Delete(&user)
+	if err = h.DB.Delete(&user).Error; err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
