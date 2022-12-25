@@ -23,7 +23,7 @@ func (h Handler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}
 
@@ -34,7 +34,7 @@ func (h Handler) CreateUser(c *gin.Context) {
 	var input createUserInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -49,14 +49,14 @@ func (h Handler) UpdateUser(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}
 
 	var input updateUserInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -70,7 +70,7 @@ func (h Handler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}
 
