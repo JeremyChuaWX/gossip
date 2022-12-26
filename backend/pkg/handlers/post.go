@@ -27,7 +27,10 @@ func (h PostHandler) CreatePost(c *gin.Context) {
 	var err error
 	var input createPostInput
 
-	c.BindJSON(&input)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
+		return
+	}
 
 	post := models.Post{
 		UserID: input.UserID,
@@ -36,7 +39,7 @@ func (h PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	if err = h.DB.Create(&post).Error; err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -47,8 +50,8 @@ func (h PostHandler) GetAllPosts(c *gin.Context) {
 	var err error
 	var posts []models.Post
 
-	if err = h.DB.Find(posts).Error; err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+	if err = h.DB.Find(&posts).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Posts not found"})
 		return
 	}
 
@@ -61,7 +64,7 @@ func (h PostHandler) GetPost(c *gin.Context) {
 	id := c.Param("id")
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
@@ -75,13 +78,21 @@ func (h PostHandler) UpdatePost(c *gin.Context) {
 	id := c.Param("id")
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
-	c.BindJSON(&input)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
+		return
+	}
 
-	h.DB.Model(&post).Updates(input)
+	updatePost := models.Post{Title: input.Title, Body: input.Body}
+
+	if err = h.DB.Model(&post).Updates(updatePost).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": post})
 }
@@ -92,12 +103,12 @@ func (h PostHandler) DeletePost(c *gin.Context) {
 	id := c.Param("id")
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
 	if err = h.DB.Delete(&post).Error; err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
