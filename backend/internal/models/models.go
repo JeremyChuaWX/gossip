@@ -12,7 +12,7 @@ type User struct {
 	Base
 	Username   string    `gorm:"unique;not null" json:"username"`
 	Email      string    `json:"email"`
-	Password   string    `gorm:"not null" json:"password"`
+	Password   string    `gorm:"not null" json:"-"`
 	Posts      []Post    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"posts"`
 	Comments   []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"comments"`
 	Subscribed []Post    `gorm:"many2many:subscriptions;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"subscribed"`
