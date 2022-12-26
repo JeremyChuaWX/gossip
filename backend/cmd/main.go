@@ -1,19 +1,20 @@
 package main
 
 import (
-	"gossip/backend/internal/db"
-	"gossip/backend/internal/handlers"
-	"gossip/backend/internal/routes"
+	"gossip/backend/pkg/api"
+	"gossip/backend/pkg/db"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
+
 	DB := db.Init()
-	router := gin.Default()
-	handler := handlers.New(DB)
+	engine := gin.Default()
 
-	routes.InitialiseRoutes(router, handler)
+	api.Init(engine, DB)
 
-	router.Run("localhost:3000")
+	engine.Run("localhost:3000")
 }

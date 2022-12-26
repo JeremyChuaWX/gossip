@@ -1,11 +1,16 @@
 package handlers
 
 import (
-	"gossip/backend/internal/models"
+	"gossip/backend/pkg/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+type UserHandler struct {
+	DB *gorm.DB
+}
 
 type createUserInput struct {
 	Username string `json:"username" binding:"required"`
@@ -15,32 +20,20 @@ type createUserInput struct {
 
 type updateUserInput struct {
 	Email    string `json:"email" binding:"email"`
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password"`
 }
 
-func (h Handler) GetUser(c *gin.Context) {
-	var err error
-	var user models.User
-	id := c.Param("id")
-
-	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithError(http.StatusNotFound, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": user})
-}
-
-func (h Handler) CreateUser(c *gin.Context) {
+func (h UserHandler) CreateUser(c *gin.Context) {
 	var err error
 	var input createUserInput
 
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	c.BindJSON(&input)
 
-	user := models.User{Username: input.Username, Email: input.Email, Password: input.Password}
+	user := models.User{
+		Username: input.Username,
+		Email:    input.Email,
+		Password: input.Password,
+	}
 
 	if err = h.DB.Create(&user).Error; err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -50,7 +43,7 @@ func (h Handler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": user})
 }
 
-func (h Handler) UpdateUser(c *gin.Context) {
+func (h UserHandler) GetUser(c *gin.Context) {
 	var err error
 	var user models.User
 	id := c.Param("id")
@@ -60,19 +53,28 @@ func (h Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var input updateUserInput
+	c.JSON(http.StatusOK, gin.H{"data": user})
+}
 
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+func (h UserHandler) UpdateUser(c *gin.Context) {
+	var err error
+	var input updateUserInput
+	var user models.User
+	id := c.Param("id")
+
+	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
+
+	c.BindJSON(&input)
 
 	h.DB.Model(&user).Updates(input)
 
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
-func (h Handler) DeleteUser(c *gin.Context) {
+func (h UserHandler) DeleteUser(c *gin.Context) {
 	var err error
 	var user models.User
 	id := c.Param("id")

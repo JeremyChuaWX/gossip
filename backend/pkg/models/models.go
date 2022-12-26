@@ -19,6 +19,10 @@ type User struct {
 	IsPublic   bool      `json:"is_public"`
 }
 
+func (u User) test() uint {
+	return u.ID
+}
+
 type Post struct {
 	Base
 	UserID    int       `gorm:"not null" json:"user_id"`

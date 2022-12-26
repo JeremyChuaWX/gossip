@@ -1,32 +1,17 @@
 package db
 
 import (
-	"fmt"
-	"gossip/backend/internal/models"
-	"os"
+	"gossip/backend/pkg/config"
+	"gossip/backend/pkg/models"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func getDsn() string {
-	godotenv.Load()
-
-	return fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("HOST"),
-		os.Getenv("USER"),
-		os.Getenv("PASSWORD"),
-		os.Getenv("DBNAME"),
-		os.Getenv("PORT"),
-	)
-}
-
 func Init() *gorm.DB {
-	dsn := getDsn()
+	dbUrl := config.GetDbUrl()
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
