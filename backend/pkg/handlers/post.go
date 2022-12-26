@@ -19,8 +19,8 @@ type createPostInput struct {
 }
 
 type updatePostInput struct {
-	Title string `json:"title" binding:"required"`
-	Body  string `json:"body" binding:"required"`
+	Title string `json:"title"`
+	Body  string `json:"body"`
 }
 
 func (h PostHandler) CreatePost(c *gin.Context) {
