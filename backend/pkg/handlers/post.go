@@ -50,7 +50,7 @@ func (h PostHandler) GetAllPosts(c *gin.Context) {
 	var err error
 	var posts []models.Post
 
-	if err = h.DB.Find(posts).Error; err != nil {
+	if err = h.DB.Find(&posts).Error; err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
