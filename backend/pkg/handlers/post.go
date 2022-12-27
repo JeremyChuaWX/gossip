@@ -87,7 +87,15 @@ func (h PostHandler) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	updatePost := models.Post{Title: input.Title, Body: input.Body}
+	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	updatePost := models.Post{
+		Title: input.Title,
+		Body:  input.Body,
+	}
 
 	if err = h.DB.Model(&post).Updates(updatePost).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
