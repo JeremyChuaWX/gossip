@@ -10,4 +10,5 @@ func Init(engine *gin.Engine, DB *gorm.DB) {
 
 	initUserRouter(apiGroup, DB)
 	initPostRouter(apiGroup, DB)
+	initCommentRouter(apiGroup, DB)
 }
