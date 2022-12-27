@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"gossip/backend/pkg/auth"
 	"gossip/backend/pkg/models"
 	"net/http"
 
@@ -8,11 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserHandler struct {
-	DB *gorm.DB
-}
-
-type createUserInput struct {
+type signUpInput struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"omitempty,email"`
 	Password string `json:"password" binding:"required"`
@@ -23,19 +20,34 @@ type updateUserInput struct {
 	Password string `json:"password"`
 }
 
-func (h UserHandler) CreateUser(c *gin.Context) {
-	var err error
-	var input createUserInput
+type signInInput struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+type UserHandler struct {
+	DB *gorm.DB
+}
+
+func (h UserHandler) SignUp(c *gin.Context) {
+	var err error
+	var input signUpInput
+
+	if err = c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
+		return
+	}
+
+	hashedPassword, err := auth.HashPassword(input.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	user := models.User{
 		Username: input.Username,
 		Email:    input.Email,
-		Password: input.Password,
+		Password: hashedPassword,
 	}
 
 	if err = h.DB.Create(&user).Error; err != nil {
@@ -46,7 +58,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": user})
 }
 
-func (h UserHandler) GetUser(c *gin.Context) {
+func (h UserHandler) GetUserById(c *gin.Context) {
 	var err error
 	var user models.User
 	id := c.Param("id")
@@ -70,12 +82,21 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&input); err != nil {
+	if err = c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
 		return
 	}
 
-	updateUser := models.User{Email: input.Email, Password: input.Password}
+	hashedPassword, err := auth.HashPassword(input.Password)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	updateUser := models.User{
+		Email:    input.Email,
+		Password: hashedPassword,
+	}
 
 	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -101,4 +122,25 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
+}
+
+func (h UserHandler) SignIn(c *gin.Context) {
+	var err error
+	var input signInInput
+	var user models.User
+
+	if err = c.ShouldBindJSON(&input); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
+		return
+	}
+
+	if err = h.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err = auth.VerifyPassword(user.Password, input.Password); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
+		return
+	}
 }
