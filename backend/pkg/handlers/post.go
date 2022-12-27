@@ -39,7 +39,7 @@ func (h PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	if err = h.DB.Create(&post).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -50,8 +50,8 @@ func (h PostHandler) GetAllPosts(c *gin.Context) {
 	var err error
 	var posts []models.Post
 
-	if err = h.DB.Find(&posts).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Posts not found"})
+	if err = h.DB.Find(posts).Error; err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h PostHandler) GetPostById(c *gin.Context) {
 	id := c.Param("id")
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h PostHandler) UpdatePost(c *gin.Context) {
 	}
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
@@ -106,12 +106,12 @@ func (h PostHandler) DeletePost(c *gin.Context) {
 	id := c.Param("id")
 
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
 
 	if err = h.DB.Delete(&post).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
