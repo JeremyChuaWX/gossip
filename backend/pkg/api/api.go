@@ -6,9 +6,10 @@ import (
 )
 
 func Init(engine *gin.Engine, DB *gorm.DB) {
-	apiGroup := engine.Group("/api")
+	router := engine.Group("/api")
 
-	initUserRouter(apiGroup, DB)
-	initPostRouter(apiGroup, DB)
-	initCommentRouter(apiGroup, DB)
+	initUserRouter(router, DB)
+	initPostRouter(router, DB)
+	initCommentRouter(router, DB)
+	initTagRouter(router, DB)
 }
