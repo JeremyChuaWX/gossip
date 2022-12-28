@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"gossip/backend/pkg/models"
 	"net/http"
 
@@ -9,9 +10,10 @@ import (
 )
 
 type createCommentInput struct {
-	UserID int    `json:"user_id" binding:"required"`
-	PostID int    `json:"post_id" binding:"required"`
-	Body   string `json:"body" binding:"required"`
+	UserID   int    `json:"user_id" binding:"required"`
+	PostID   int    `json:"post_id" binding:"required"`
+	ParentID int    `json:"parent_id"`
+	Body     string `json:"body" binding:"required"`
 }
 
 type updateCommentInput struct {
@@ -31,10 +33,21 @@ func (h CommentHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	cmt := models.Comment{
-		UserID: input.UserID,
-		PostID: input.PostID,
-		Body:   input.Body,
+	var cmt models.Comment
+	if input.ParentID != 0 {
+		cmt = models.Comment{
+			UserID:   input.UserID,
+			PostID:   input.PostID,
+			ParentID: sql.NullInt32{Int32: int32(input.ParentID), Valid: true},
+			Body:     input.Body,
+		}
+	} else {
+		cmt = models.Comment{
+			UserID:   input.UserID,
+			PostID:   input.PostID,
+			ParentID: sql.NullInt32{Valid: false},
+			Body:     input.Body,
+		}
 	}
 
 	if err = h.DB.Create(&cmt).Error; err != nil {
