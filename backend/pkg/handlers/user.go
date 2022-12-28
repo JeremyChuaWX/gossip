@@ -165,7 +165,7 @@ func (h UserHandler) SignIn(c *gin.Context) {
 
 	// update auth middleware
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	c.JSON(http.StatusOK, gin.H{"data": user})
 }
 
 func (h UserHandler) ToggleProfileVisibility(c *gin.Context) {
