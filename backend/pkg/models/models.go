@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Base struct {
 	ID        uint      `gorm:"primaryKey"`
@@ -35,12 +38,12 @@ type Post struct {
 
 type Comment struct {
 	Base
-	UserID       int       `gorm:"not null" json:"user_id"`
-	PostID       int       `gorm:"not null" json:"post_id"`
-	ParentID     *int      `json:"parent_id"`
-	Replies      []Comment `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	CommentScore int       `json:"comment_score"`
-	Body         string    `gorm:"not null" json:"body"`
+	UserID       int           `gorm:"not null" json:"user_id"`
+	PostID       int           `gorm:"not null" json:"post_id"`
+	ParentID     sql.NullInt32 `json:"parent_id"`
+	Replies      []Comment     `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	CommentScore int           `json:"comment_score"`
+	Body         string        `gorm:"not null" json:"body"`
 }
 
 type Tag struct {
