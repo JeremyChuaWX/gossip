@@ -10,8 +10,12 @@ import (
 func initUserRouter(router *gin.RouterGroup, DB *gorm.DB) {
 	userHandler := handlers.UserHandler{DB: DB}
 
+	// CRUD
 	router.POST("/users", userHandler.SignUp)
 	router.GET("/users/:id", userHandler.GetUserById)
 	router.PUT("/users/:id", userHandler.UpdateUser)
 	router.DELETE("/users/:id", userHandler.DeleteUser)
+
+	// auth
+	router.POST("/signIn", userHandler.SignIn)
 }

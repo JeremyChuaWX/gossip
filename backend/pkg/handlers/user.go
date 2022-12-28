@@ -164,6 +164,8 @@ func (h UserHandler) SignIn(c *gin.Context) {
 	// update user session
 
 	// update auth middleware
+
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }
 
 func (h UserHandler) ToggleProfileVisibility(c *gin.Context) {
