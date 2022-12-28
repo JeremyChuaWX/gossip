@@ -17,5 +17,5 @@ func initUserRouter(router *gin.RouterGroup, DB *gorm.DB) {
 	router.DELETE("/users/:id", userHandler.DeleteUser)
 
 	// auth
-	router.POST("/signIn", userHandler.SignIn)
+	router.POST("/users/sign-in", userHandler.SignIn)
 }
