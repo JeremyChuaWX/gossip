@@ -87,10 +87,15 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := auth.HashPassword(input.Password)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	hashedPassword := ""
+
+	// only hash new password if provided
+	if input.Password != "" {
+		hashedPassword, err = auth.HashPassword(input.Password)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	updateUser := models.User{
