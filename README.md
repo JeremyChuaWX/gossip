@@ -90,7 +90,7 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 
 ### User model
 
-- `user_id`: cuid
+- `user_id`: uuid
 - `username`: string
 - `email`: string? (sending notifications)
 - `password`: hashed string
@@ -102,7 +102,7 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 
 ### Post model
 
-- `post_id`: cuid
+- `post_id`: uuid
 - `author`: user
 - `time_posted`: datetime
 - `post_score`: integer
@@ -113,7 +113,7 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 
 ### Comment model
 
-- `comment_id`: cuid
+- `comment_id`: uuid
 - `post`: post
 - `parent_comment`: comment?
 - `author`: user
