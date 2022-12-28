@@ -6,7 +6,7 @@ import (
 )
 
 type Base struct {
-	ID        uint      `gorm:"primaryKey"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -20,10 +20,6 @@ type User struct {
 	Comments   []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"comments"`
 	Subscribed []Post    `gorm:"many2many:subscriptions;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"subscribed"`
 	IsPublic   bool      `json:"is_public"`
-}
-
-func (u User) test() uint {
-	return u.ID
 }
 
 type Post struct {
@@ -41,14 +37,14 @@ type Comment struct {
 	UserID       int           `gorm:"not null" json:"user_id"`
 	PostID       int           `gorm:"not null" json:"post_id"`
 	ParentID     sql.NullInt32 `json:"parent_id"`
-	Replies      []Comment     `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Replies      []Comment     `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"replies"`
 	CommentScore int           `json:"comment_score"`
 	Body         string        `gorm:"not null" json:"body"`
 }
 
 type Tag struct {
 	Base
-	Name  string `gorm:"not null"`
+	Name  string `gorm:"not null" json:"name"`
 	Posts []Post `gorm:"many2many:taggable;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"posts"`
 }
 
