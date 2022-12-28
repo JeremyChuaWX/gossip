@@ -29,11 +29,13 @@ func (h CommentHandler) CreateComment(c *gin.Context) {
 	var err error
 	var input createCommentInput
 
+	// input validation
 	if err = c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
 		return
 	}
 
+	// provide null ParentID if none is provided (default is 0)
 	var cmt models.Comment
 	if input.ParentID != 0 {
 		cmt = models.Comment{
@@ -51,6 +53,7 @@ func (h CommentHandler) CreateComment(c *gin.Context) {
 		}
 	}
 
+	// create comment
 	if err = h.DB.Create(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,6 +67,7 @@ func (h CommentHandler) GetCommentById(c *gin.Context) {
 	var cmt models.Comment
 	id := c.Param("id")
 
+	// get comment by id
 	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
 		return
@@ -78,20 +82,21 @@ func (h CommentHandler) UpdateComment(c *gin.Context) {
 	var cmt models.Comment
 	id := c.Param("id")
 
+	// input validation
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
 		return
 	}
 
+	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
 		return
 	}
 
-	updateCmt := models.Comment{
-		Body: input.Body,
-	}
+	updateCmt := models.Comment{Body: input.Body}
 
+	// update comment
 	if err = h.DB.Model(&cmt).Updates(updateCmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -105,13 +110,17 @@ func (h CommentHandler) DeleteComment(c *gin.Context) {
 	var cmt models.Comment
 	id := c.Param("id")
 
+	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
 		return
 	}
 
+	// delete comment
 	if err = h.DB.Delete(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{"data": true})
 }

@@ -52,7 +52,7 @@ func (h UserHandler) SignUp(c *gin.Context) {
 		Password: hashedPassword,
 	}
 
-	// create user record in DB
+	// create user
 	if err = h.DB.Create(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,7 +66,7 @@ func (h UserHandler) GetUserById(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
-	// get user record from DB (by id)
+	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -81,7 +81,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
-	// get user record from DB (by id)
+	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -109,7 +109,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		Password: hashedPassword,
 	}
 
-	// update user record in DB
+	// update user
 	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -123,13 +123,13 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
-	// get user record from DB (by id)
+	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	// delete user record in DB
+	// delete user
 	if err = h.DB.Delete(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -149,7 +149,7 @@ func (h UserHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	// get user record from DB (by username)
+	// get user by username
 	if err = h.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -164,4 +164,7 @@ func (h UserHandler) SignIn(c *gin.Context) {
 	// update user session
 
 	// update auth middleware
+}
+
+func (h UserHandler) ToggleProfileVisibility(c *gin.Context) {
 }

@@ -28,6 +28,7 @@ func (h PostHandler) CreatePost(c *gin.Context) {
 	var err error
 	var input createPostInput
 
+	// input validation
 	if err = c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
 		return
@@ -39,8 +40,9 @@ func (h PostHandler) CreatePost(c *gin.Context) {
 		Body:   input.Body,
 	}
 
+	// create post
 	if err = h.DB.Create(&post).Error; err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -51,6 +53,7 @@ func (h PostHandler) GetAllPosts(c *gin.Context) {
 	var err error
 	var posts []models.Post
 
+	// get all posts
 	if err = h.DB.Preload(clause.Associations).Find(&posts).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Posts not found"})
 		return
@@ -64,6 +67,7 @@ func (h PostHandler) GetPostById(c *gin.Context) {
 	var post models.Post
 	id := c.Param("id")
 
+	// get post by id
 	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&post).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
@@ -78,11 +82,13 @@ func (h PostHandler) UpdatePost(c *gin.Context) {
 	var post models.Post
 	id := c.Param("id")
 
+	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
+	// input validation
 	if err = c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
 		return
@@ -93,6 +99,7 @@ func (h PostHandler) UpdatePost(c *gin.Context) {
 		Body:  input.Body,
 	}
 
+	// update post
 	if err = h.DB.Model(&post).Updates(updatePost).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -106,11 +113,13 @@ func (h PostHandler) DeletePost(c *gin.Context) {
 	var post models.Post
 	id := c.Param("id")
 
+	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
 
+	// delete post
 	if err = h.DB.Delete(&post).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
