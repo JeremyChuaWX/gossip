@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"gossip/backend/pkg/auth"
 	"gossip/backend/pkg/models"
+	"gossip/backend/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +40,7 @@ func (h UserHandler) SignUp(c *gin.Context) {
 	}
 
 	// hash password
-	hashedPassword, err := auth.HashPassword(input.Password)
+	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -97,7 +97,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 
 	// only hash new password if provided
 	if input.Password != "" {
-		hashedPassword, err = auth.HashPassword(input.Password)
+		hashedPassword, err = utils.HashPassword(input.Password)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -156,7 +156,7 @@ func (h UserHandler) SignIn(c *gin.Context) {
 	}
 
 	// verify password
-	if err = auth.VerifyPassword(user.Password, input.Password); err != nil {
+	if err = utils.VerifyPassword(user.Password, input.Password); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
 		return
 	}
