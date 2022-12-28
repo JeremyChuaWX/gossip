@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type createCommentInput struct {
@@ -63,7 +64,7 @@ func (h CommentHandler) GetCommentById(c *gin.Context) {
 	var cmt models.Comment
 	id := c.Param("id")
 
-	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
+	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&cmt).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
 		return
 	}

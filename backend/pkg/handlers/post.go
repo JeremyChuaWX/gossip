@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type createPostInput struct {
@@ -50,7 +51,7 @@ func (h PostHandler) GetAllPosts(c *gin.Context) {
 	var err error
 	var posts []models.Post
 
-	if err = h.DB.Find(&posts).Error; err != nil {
+	if err = h.DB.Preload(clause.Associations).Find(&posts).Error; err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
@@ -63,7 +64,7 @@ func (h PostHandler) GetPostById(c *gin.Context) {
 	var post models.Post
 	id := c.Param("id")
 
-	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
+	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&post).Error; err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
 		return
 	}
