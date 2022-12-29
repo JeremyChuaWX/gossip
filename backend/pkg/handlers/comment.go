@@ -19,7 +19,8 @@ type createCommentInput struct {
 }
 
 type updateCommentInput struct {
-	Body string `json:"body"`
+	Body         string `json:"body,omitempty"`
+	CommentScore int    `json:"comment_score,omitempty"`
 }
 
 type CommentHandler struct {
@@ -94,7 +95,10 @@ func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
 		return fiber.NewError(http.StatusNotFound, "Comment not found")
 	}
 
-	updateCmt := models.Comment{Body: input.Body}
+	updateCmt := models.Comment{
+		Body:         input.Body,
+		CommentScore: input.CommentScore,
+	}
 
 	// update comment
 	if err = h.DB.Model(&cmt).Updates(updateCmt).Error; err != nil {

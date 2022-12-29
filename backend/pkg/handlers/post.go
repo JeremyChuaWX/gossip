@@ -17,8 +17,9 @@ type createPostInput struct {
 }
 
 type updatePostInput struct {
-	Title string `json:"title,omitempty"`
-	Body  string `json:"body,omitempty"`
+	Title     string `json:"title,omitempty"`
+	Body      string `json:"body,omitempty"`
+	PostScore int    `json:"post_score,omitempty"`
 }
 
 type PostHandler struct {
@@ -98,8 +99,9 @@ func (h PostHandler) UpdatePost(c *fiber.Ctx) error {
 	}
 
 	updatePost := models.Post{
-		Title: input.Title,
-		Body:  input.Body,
+		Title:     input.Title,
+		Body:      input.Body,
+		PostScore: input.PostScore,
 	}
 
 	// update post
