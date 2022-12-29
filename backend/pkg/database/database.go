@@ -1,21 +1,22 @@
-package initialisers
+package database
 
 import (
 	"fmt"
+	"gossip/backend/pkg/config"
 	"gossip/backend/pkg/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func ConnectDB(config *Config) *gorm.DB {
+func connectDB(env *config.Env) *gorm.DB {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		config.DBHost,
-		config.DBUser,
-		config.DBPassword,
-		config.DBName,
-		config.DBPort,
+		env.DBHost,
+		env.DBUser,
+		env.DBPassword,
+		env.DBName,
+		env.DBPort,
 	)
 
 	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -26,7 +27,7 @@ func ConnectDB(config *Config) *gorm.DB {
 	return DB
 }
 
-func MigrateDB(DB *gorm.DB) {
+func migrateDB(DB *gorm.DB) {
 	var err error
 
 	err = DB.SetupJoinTable(&models.User{}, "Subscribed", &models.Subscriptions{})
@@ -50,4 +51,11 @@ func MigrateDB(DB *gorm.DB) {
 		&models.Comment{},
 		&models.Tag{},
 	)
+}
+
+func Initialise(env *config.Env) *gorm.DB {
+	DB := connectDB(env)
+	migrateDB(DB)
+
+	return DB
 }

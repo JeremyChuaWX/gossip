@@ -1,8 +1,8 @@
-package initialisers
+package config
 
 import "github.com/spf13/viper"
 
-type Config struct {
+type Env struct {
 	DBHost     string `mapstructure:"POSTGRES_HOST"`
 	DBUser     string `mapstructure:"POSTGRES_USER"`
 	DBName     string `mapstructure:"POSTGRES_DBNAME"`
@@ -12,7 +12,7 @@ type Config struct {
 	ServerPort string `mapstructure:"PORT"`
 }
 
-func LoadConfig(path string) (config Config, err error) {
+func LoadConfig(path string) (env Env, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
@@ -24,6 +24,6 @@ func LoadConfig(path string) (config Config, err error) {
 		return
 	}
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&env)
 	return
 }
