@@ -11,9 +11,9 @@ import (
 )
 
 type createCommentInput struct {
-	UserID   int    `json:"user_id" binding:"required"`
-	PostID   int    `json:"post_id" binding:"required"`
-	ParentID int    `json:"parent_id"`
+	UserID   string `json:"user_id" binding:"required"`
+	PostID   string `json:"post_id" binding:"required"`
+	ParentID string `json:"parent_id"`
 	Body     string `json:"body" binding:"required"`
 }
 
@@ -35,22 +35,18 @@ func (h CommentHandler) CreateComment(c *gin.Context) {
 		return
 	}
 
-	// provide null ParentID if none is provided (default is 0)
-	var cmt models.Comment
-	if input.ParentID != 0 {
-		cmt = models.Comment{
-			UserID:   input.UserID,
-			PostID:   input.PostID,
-			ParentID: sql.NullInt32{Int32: int32(input.ParentID), Valid: true},
-			Body:     input.Body,
-		}
+	var parentId sql.NullString
+	if input.ParentID != "" {
+		parentId = sql.NullString{String: input.ParentID, Valid: true}
 	} else {
-		cmt = models.Comment{
-			UserID:   input.UserID,
-			PostID:   input.PostID,
-			ParentID: sql.NullInt32{Valid: false},
-			Body:     input.Body,
-		}
+		parentId = sql.NullString{Valid: false}
+	}
+
+	cmt := models.Comment{
+		UserID:   input.UserID,
+		PostID:   input.PostID,
+		ParentID: parentId,
+		Body:     input.Body,
 	}
 
 	// create comment

@@ -10,7 +10,7 @@ import (
 )
 
 type createPostInput struct {
-	UserID int    `json:"user_id" binding:"required"`
+	UserID string `json:"user_id" binding:"required"`
 	Title  string `json:"title" binding:"required"`
 	Body   string `json:"body" binding:"required"`
 }

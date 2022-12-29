@@ -3,12 +3,21 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"github.com/lithammer/shortuuid/v4"
+	"gorm.io/gorm"
 )
 
 type Base struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
+	ID        string    `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (b *Base) BeforeCreate(tx *gorm.DB) (err error) {
+	b.ID = shortuuid.New()
+
+	return
 }
 
 type User struct {
@@ -24,7 +33,7 @@ type User struct {
 
 type Post struct {
 	Base
-	UserID    int       `gorm:"not null" json:"user_id"`
+	UserID    string    `gorm:"not null" json:"user_id"`
 	Comments  []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"comments"`
 	Tags      []Tag     `gorm:"many2many:taggable;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"tags"`
 	PostScore int       `json:"post_score"`
@@ -34,12 +43,12 @@ type Post struct {
 
 type Comment struct {
 	Base
-	UserID       int           `gorm:"not null" json:"user_id"`
-	PostID       int           `gorm:"not null" json:"post_id"`
-	ParentID     sql.NullInt32 `json:"parent_id"`
-	Replies      []Comment     `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"replies"`
-	CommentScore int           `json:"comment_score"`
-	Body         string        `gorm:"not null" json:"body"`
+	UserID       string         `gorm:"not null" json:"user_id"`
+	PostID       string         `gorm:"not null" json:"post_id"`
+	ParentID     sql.NullString `json:"parent_id"`
+	Replies      []Comment      `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"replies"`
+	CommentScore int            `json:"comment_score"`
+	Body         string         `gorm:"not null" json:"body"`
 }
 
 type Tag struct {
@@ -50,12 +59,12 @@ type Tag struct {
 
 type Subscriptions struct {
 	Base
-	UserID int `gorm:"primaryKey"`
-	PostID int `gorm:"primaryKey"`
+	UserID string
+	PostID string
 }
 
 type Taggable struct {
 	Base
-	PostID int `gorm:"primaryKey"`
-	TagID  int `gorm:"primaryKey"`
+	PostID string
+	TagID  string
 }
