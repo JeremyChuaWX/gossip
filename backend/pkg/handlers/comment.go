@@ -14,7 +14,7 @@ import (
 type createCommentInput struct {
 	UserID   string `json:"user_id" validate:"required"`
 	PostID   string `json:"post_id" validate:"required"`
-	ParentID string `json:"parent_id"`
+	ParentID string `json:"parent_id,omitempty"`
 	Body     string `json:"body" validate:"required"`
 }
 

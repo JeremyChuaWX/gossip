@@ -10,11 +10,11 @@ import (
 )
 
 type createTagInput struct {
-	Name string `binding:"required"`
+	Name string `json:"name" validate:"required"`
 }
 
 type updateTagInput struct {
-	Name string
+	Name string `json:"name,omitempty"`
 }
 
 type TagHandler struct {

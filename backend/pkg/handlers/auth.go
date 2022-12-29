@@ -12,7 +12,7 @@ import (
 
 type signUpInput struct {
 	Username string `json:"username" validate:"required"`
-	Email    string `json:"email" validate:"omitempty,email"`
+	Email    string `json:"email,omitempty" validate:"omitempty,email"`
 	Password string `json:"password" validate:"required"`
 }
 

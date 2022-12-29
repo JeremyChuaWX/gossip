@@ -17,8 +17,8 @@ type createPostInput struct {
 }
 
 type updatePostInput struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title string `json:"title,omitempty"`
+	Body  string `json:"body,omitempty"`
 }
 
 type PostHandler struct {

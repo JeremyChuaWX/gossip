@@ -11,8 +11,8 @@ import (
 )
 
 type updateUserInput struct {
-	Email    string `json:"email" validate:"omitempty,email"`
-	Password string `json:"password"`
+	Email    string `json:"email,omitempty" validate:"omitempty,email"`
+	Password string `json:"password,omitempty"`
 }
 
 type UserHandler struct {
