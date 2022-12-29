@@ -15,7 +15,7 @@ func main() {
 
 	env, err := config.LoadConfig(".")
 	if err != nil {
-		panic("Cannot load environment variables")
+		panic("Cannot load env")
 	}
 
 	DB := database.Initialise(&env)
