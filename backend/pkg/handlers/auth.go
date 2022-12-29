@@ -10,22 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type signUpInput struct {
-	Username string `json:"username" validate:"required"`
-	Email    string `json:"email,omitempty" validate:"omitempty,email"`
-	Password string `json:"password" validate:"required"`
-}
-
-type signInInput struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
 type AuthHandler struct {
 	DB *gorm.DB
 }
 
 func (h AuthHandler) SignUp(c *fiber.Ctx) error {
+	type signUpInput struct {
+		Username string `json:"username" validate:"required"`
+		Email    string `json:"email,omitempty" validate:"omitempty,email"`
+		Password string `json:"password" validate:"required"`
+	}
+
 	var err error
 	var input signUpInput
 
@@ -59,6 +54,11 @@ func (h AuthHandler) SignUp(c *fiber.Ctx) error {
 }
 
 func (h AuthHandler) SignIn(c *fiber.Ctx) error {
+	type signInInput struct {
+		Username string `json:"username" validate:"required"`
+		Password string `json:"password" validate:"required"`
+	}
+
 	var err error
 	var input signInInput
 	var user models.User

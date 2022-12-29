@@ -10,11 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type updateUserInput struct {
-	Email    string `json:"email,omitempty" validate:"omitempty,email"`
-	Password string `json:"password,omitempty"`
-}
-
 type UserHandler struct {
 	DB *gorm.DB
 }
@@ -33,6 +28,11 @@ func (h UserHandler) GetUserById(c *fiber.Ctx) error {
 }
 
 func (h UserHandler) UpdateUser(c *fiber.Ctx) error {
+	type updateUserInput struct {
+		Email    string `json:"email,omitempty" validate:"omitempty,email"`
+		Password string `json:"password,omitempty"`
+	}
+
 	var err error
 	var input updateUserInput
 	var user models.User

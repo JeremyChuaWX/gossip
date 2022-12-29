@@ -21,10 +21,10 @@ func main() {
 	DB := database.Initialise(&env)
 
 	app := fiber.New(fiber.Config{
-		ErrorHandler: utils.CustomErrorHandler,
+		ErrorHandler: utils.FiberError,
 	})
 
-	routers.Init(app, DB)
+	routers.Initialise(app, DB)
 
 	log.Fatal(app.Listen(":" + env.ServerPort))
 }

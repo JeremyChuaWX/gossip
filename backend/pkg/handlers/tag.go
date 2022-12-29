@@ -9,19 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type createTagInput struct {
-	Name string `json:"name" validate:"required"`
-}
-
-type updateTagInput struct {
-	Name string `json:"name,omitempty"`
-}
-
 type TagHandler struct {
 	DB *gorm.DB
 }
 
 func (h TagHandler) CreateTag(c *fiber.Ctx) error {
+	type createTagInput struct {
+		Name string `json:"name" validate:"required"`
+	}
+
 	var err error
 	var input createTagInput
 
@@ -70,6 +66,10 @@ func (h TagHandler) GetTagById(c *fiber.Ctx) error {
 }
 
 func (h TagHandler) UpdateTag(c *fiber.Ctx) error {
+	type updateTagInput struct {
+		Name string `json:"name,omitempty"`
+	}
+
 	var err error
 	var tag models.Tag
 	var input updateTagInput

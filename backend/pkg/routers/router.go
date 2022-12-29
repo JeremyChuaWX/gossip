@@ -2,11 +2,12 @@ package routers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"gorm.io/gorm"
 )
 
-func Init(app *fiber.App, DB *gorm.DB) {
-	api := app.Group("/api")
+func Initialise(app *fiber.App, DB *gorm.DB) {
+	api := app.Group("/api", logger.New())
 
 	initAuthRouter(api, DB)
 	initUserRouter(api, DB)

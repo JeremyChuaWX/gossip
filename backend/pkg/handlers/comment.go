@@ -11,23 +11,18 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type createCommentInput struct {
-	UserID   string `json:"user_id" validate:"required"`
-	PostID   string `json:"post_id" validate:"required"`
-	ParentID string `json:"parent_id,omitempty"`
-	Body     string `json:"body" validate:"required"`
-}
-
-type updateCommentInput struct {
-	Body         string `json:"body,omitempty"`
-	CommentScore int    `json:"comment_score,omitempty"`
-}
-
 type CommentHandler struct {
 	DB *gorm.DB
 }
 
 func (h CommentHandler) CreateComment(c *fiber.Ctx) error {
+	type createCommentInput struct {
+		UserID   string `json:"user_id" validate:"required"`
+		PostID   string `json:"post_id" validate:"required"`
+		ParentID string `json:"parent_id,omitempty"`
+		Body     string `json:"body" validate:"required"`
+	}
+
 	var err error
 	var input createCommentInput
 
@@ -76,6 +71,11 @@ func (h CommentHandler) GetCommentById(c *fiber.Ctx) error {
 }
 
 func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
+	type updateCommentInput struct {
+		Body         string `json:"body,omitempty"`
+		CommentScore int    `json:"comment_score,omitempty"`
+	}
+
 	var err error
 	var input updateCommentInput
 	var cmt models.Comment

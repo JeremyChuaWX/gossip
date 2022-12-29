@@ -10,23 +10,17 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type createPostInput struct {
-	UserID string `json:"user_id" binding:"required"`
-	Title  string `json:"title" binding:"required"`
-	Body   string `json:"body" binding:"required"`
-}
-
-type updatePostInput struct {
-	Title     string `json:"title,omitempty"`
-	Body      string `json:"body,omitempty"`
-	PostScore int    `json:"post_score,omitempty"`
-}
-
 type PostHandler struct {
 	DB *gorm.DB
 }
 
 func (h PostHandler) CreatePost(c *fiber.Ctx) error {
+	type createPostInput struct {
+		UserID string `json:"user_id" binding:"required"`
+		Title  string `json:"title" binding:"required"`
+		Body   string `json:"body" binding:"required"`
+	}
+
 	var err error
 	var input createPostInput
 
@@ -79,6 +73,12 @@ func (h PostHandler) GetPostById(c *fiber.Ctx) error {
 }
 
 func (h PostHandler) UpdatePost(c *fiber.Ctx) error {
+	type updatePostInput struct {
+		Title     string `json:"title,omitempty"`
+		Body      string `json:"body,omitempty"`
+		PostScore int    `json:"post_score,omitempty"`
+	}
+
 	var err error
 	var input updatePostInput
 	var post models.Post
