@@ -11,9 +11,9 @@ func initTagRouter(router fiber.Router, DB *gorm.DB) {
 	tagHandler := handlers.TagHandler{DB: DB}
 	tagRouter := router.Group("/tags")
 
-	tagRouter.Post("/tags", tagHandler.CreateTag)
-	tagRouter.Get("/tags", tagHandler.GetAllTags)
-	tagRouter.Get("/tags/:id", tagHandler.GetTagById)
-	tagRouter.Put("/tags/:id", tagHandler.UpdateTag)
-	tagRouter.Delete("/tags/:id", tagHandler.DeleteTag)
+	tagRouter.Post("/", tagHandler.CreateTag)
+	tagRouter.Get("/", tagHandler.GetAllTags)
+	tagRouter.Get("/:id", tagHandler.GetTagById)
+	tagRouter.Put("/:id", tagHandler.UpdateTag)
+	tagRouter.Delete("/:id", tagHandler.DeleteTag)
 }
