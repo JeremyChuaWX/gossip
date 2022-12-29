@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type Config struct {
 	DBHost     string `mapstructure:"POSTGRES_HOST"`
 	DBUser     string `mapstructure:"POSTGRES_USER"`
+	DBName     string `mapstructure:"POSTGRES_DBNAME"`
 	DBPassword string `mapstructure:"POSTGRES_PASSWORD"`
 	DBPort     string `mapstructure:"POSTGRES_PORT"`
 
