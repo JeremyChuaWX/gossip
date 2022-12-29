@@ -3,10 +3,9 @@ package handlers
 import (
 	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/utils"
-	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -25,21 +24,19 @@ type AuthHandler struct {
 	DB *gorm.DB
 }
 
-func (h AuthHandler) SignUp(c *gin.Context) {
+func (h AuthHandler) SignUp(c *fiber.Ctx) error {
 	var err error
 	var input signUpInput
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
 
 	// hash password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	user := models.User{
@@ -50,41 +47,39 @@ func (h AuthHandler) SignUp(c *gin.Context) {
 
 	// create user
 	if err = h.DB.Create(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": user})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": user})
 }
 
-func (h AuthHandler) SignIn(c *gin.Context) {
+func (h AuthHandler) SignIn(c *fiber.Ctx) error {
 	var err error
 	var input signInInput
 	var user models.User
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
 
 	// get user by username
 	if err = h.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
 	// verify password
 	if err = utils.VerifyPassword(user.Password, input.Password); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid username or password"})
-		return
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid username or password")
 	}
 
 	// update user session
 
 	// update auth middleware
 
-	c.JSON(http.StatusOK, gin.H{"data": user})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": user})
 }
 
-func (h AuthHandler) SignOut(c *gin.Context) {}
+func (h AuthHandler) SignOut(c *fiber.Ctx) error {
+	return fiber.NewError(fiber.StatusInternalServerError, "Not ready")
+}

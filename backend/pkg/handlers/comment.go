@@ -5,7 +5,7 @@ import (
 	"gossip/backend/pkg/models"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -25,14 +25,13 @@ type CommentHandler struct {
 	DB *gorm.DB
 }
 
-func (h CommentHandler) CreateComment(c *gin.Context) {
+func (h CommentHandler) CreateComment(c *fiber.Ctx) error {
 	var err error
 	var input createCommentInput
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
 	}
 
 	var parentId sql.NullString
@@ -51,72 +50,65 @@ func (h CommentHandler) CreateComment(c *gin.Context) {
 
 	// create comment
 	if err = h.DB.Create(&cmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": cmt})
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) GetCommentById(c *gin.Context) {
+func (h CommentHandler) GetCommentById(c *fiber.Ctx) error {
 	var err error
 	var cmt models.Comment
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get comment by id
 	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&cmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Comment not found")
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": cmt})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) UpdateComment(c *gin.Context) {
+func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	var err error
 	var input updateCommentInput
 	var cmt models.Comment
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// input validation
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err := c.BodyParser(&input); err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
 	}
 
 	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Comment not found")
 	}
 
 	updateCmt := models.Comment{Body: input.Body}
 
 	// update comment
 	if err = h.DB.Model(&cmt).Updates(updateCmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": cmt})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) DeleteComment(c *gin.Context) {
+func (h CommentHandler) DeleteComment(c *fiber.Ctx) error {
 	var err error
 	var cmt models.Comment
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Comment not found")
 	}
 
 	// delete comment
 	if err = h.DB.Delete(&cmt).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": true})
 }

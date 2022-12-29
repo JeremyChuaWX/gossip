@@ -3,15 +3,15 @@ package routers
 import (
 	"gossip/backend/pkg/handlers"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-func initAuthRouter(router *gin.RouterGroup, DB *gorm.DB) {
+func initAuthRouter(router fiber.Router, DB *gorm.DB) {
 	authHandler := handlers.AuthHandler{DB: DB}
 	authRouter := router.Group("/auth")
 
-	authRouter.POST("/signup", authHandler.SignUp)
-	authRouter.POST("/signin", authHandler.SignIn)
-	authRouter.POST("/signout", authHandler.SignOut)
+	authRouter.Post("/signup", authHandler.SignUp)
+	authRouter.Post("/signin", authHandler.SignIn)
+	authRouter.Post("/signout", authHandler.SignOut)
 }

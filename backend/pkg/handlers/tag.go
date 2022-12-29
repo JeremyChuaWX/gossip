@@ -4,7 +4,7 @@ import (
 	"gossip/backend/pkg/models"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -20,99 +20,90 @@ type TagHandler struct {
 	DB *gorm.DB
 }
 
-func (h TagHandler) CreateTag(c *gin.Context) {
+func (h TagHandler) CreateTag(c *fiber.Ctx) error {
 	var err error
 	var input createTagInput
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
 	}
 
 	tag := models.Tag{Name: input.Name}
 
 	// create tag
 	if err = h.DB.Create(&tag).Error; err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"data": tag})
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) GetAllTags(c *gin.Context) {
+func (h TagHandler) GetAllTags(c *fiber.Ctx) error {
 	var err error
 	var tags []models.Tag
 
 	// create tag
 	if err = h.DB.Find(&tags).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusNotFound, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": tags})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tags})
 }
 
-func (h TagHandler) GetTagById(c *gin.Context) {
+func (h TagHandler) GetTagById(c *fiber.Ctx) error {
 	var err error
 	var tag models.Tag
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Tag not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Tag not found")
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": tag})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) UpdateTag(c *gin.Context) {
+func (h TagHandler) UpdateTag(c *fiber.Ctx) error {
 	var err error
 	var tag models.Tag
 	var input updateTagInput
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Tag not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Tag not found")
 	}
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
 	}
 
 	updateTag := models.Tag{Name: input.Name}
 
 	// update tag
 	if err = h.DB.Model(&tag).Updates(updateTag).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": tag})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) DeleteTag(c *gin.Context) {
+func (h TagHandler) DeleteTag(c *fiber.Ctx) error {
 	var err error
 	var tag models.Tag
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Tag not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "Tag not found")
 	}
 
 	// delete tag
 	if err = h.DB.Delete(&tag).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": true})
 }

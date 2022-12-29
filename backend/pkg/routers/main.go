@@ -1,16 +1,16 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
-func Init(engine *gin.Engine, DB *gorm.DB) {
-	router := engine.Group("/api")
+func Init(app *fiber.App, DB *gorm.DB) {
+	api := app.Group("/api")
 
-	initAuthRouter(router, DB)
-	initUserRouter(router, DB)
-	initPostRouter(router, DB)
-	initCommentRouter(router, DB)
-	initTagRouter(router, DB)
+	initAuthRouter(api, DB)
+	initUserRouter(api, DB)
+	initPostRouter(api, DB)
+	initCommentRouter(api, DB)
+	initTagRouter(api, DB)
 }

@@ -1,13 +1,15 @@
 package main
 
 import (
+	"errors"
 	"gossip/backend/pkg/initialisers"
 	"gossip/backend/pkg/routers"
+	"log"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-var server *gin.Engine
+var app *fiber.App
 
 func init() {
 	config, err := initialisers.LoadConfig(".")
@@ -18,9 +20,24 @@ func init() {
 	DB := initialisers.ConnectDB(&config)
 	initialisers.MigrateDB(DB)
 
-	server = gin.Default()
+	app = fiber.New(fiber.Config{
+		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
 
-	routers.Init(server, DB)
+			var e *fiber.Error
+			if errors.As(err, &e) {
+				code = e.Code
+			}
+
+			if err = c.Status(code).JSON(e); err != nil {
+				return c.Status(fiber.StatusInternalServerError).SendString("Internal server error")
+			}
+
+			return nil
+		},
+	})
+
+	routers.Init(app, DB)
 }
 
 func main() {
@@ -31,7 +48,5 @@ func main() {
 		panic("Cannot load environment variables")
 	}
 
-	if err = server.Run(":" + config.ServerPort); err != nil {
-		panic("Cannot run server on port " + config.ServerPort)
-	}
+	log.Fatal(app.Listen(":" + config.ServerPort))
 }

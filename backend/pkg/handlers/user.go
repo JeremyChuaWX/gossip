@@ -3,14 +3,15 @@ package handlers
 import (
 	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/utils"
+	"gossip/backend/pkg/validate"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type updateUserInput struct {
-	Email    string `json:"email" binding:"omitempty,email"`
+	Email    string `json:"email" validate:"omitempty,email"`
 	Password string `json:"password"`
 }
 
@@ -18,47 +19,43 @@ type UserHandler struct {
 	DB *gorm.DB
 }
 
-func (h UserHandler) GetUserById(c *gin.Context) {
+func (h UserHandler) GetUserById(c *fiber.Ctx) error {
 	var err error
 	var user models.User
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "User not found")
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": user})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": user})
 }
 
-func (h UserHandler) UpdateUser(c *gin.Context) {
+func (h UserHandler) UpdateUser(c *fiber.Ctx) error {
 	var err error
 	var input updateUserInput
 	var user models.User
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "User not found")
+	}
+
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
 	}
 
 	// input validation
-	if err = c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid fields"})
-		return
+	if errors := validate.ValidateStruct(input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
-	hashedPassword := ""
-
 	// only hash new password if provided
-	if input.Password != "" {
-		hashedPassword, err = utils.HashPassword(input.Password)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+	hashedPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
 	updateUser := models.User{
@@ -68,32 +65,30 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 
 	// update user
 	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": user})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": user})
 }
 
-func (h UserHandler) DeleteUser(c *gin.Context) {
+func (h UserHandler) DeleteUser(c *fiber.Ctx) error {
 	var err error
 	var user models.User
-	id := c.Param("id")
+	id := c.Params("id")
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
+		return fiber.NewError(http.StatusNotFound, "User not found")
 	}
 
 	// delete user
 	if err = h.DB.Delete(&user).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	return c.Status(http.StatusOK).JSON(fiber.Map{"data": true})
 }
 
-func (h UserHandler) ToggleProfileVisibility(c *gin.Context) {
+func (h UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
+	return fiber.NewError(fiber.StatusInternalServerError, "Not ready")
 }
