@@ -3,6 +3,7 @@ package handlers
 import (
 	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/utils"
+	"gossip/backend/pkg/validate"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,14 +11,14 @@ import (
 )
 
 type signUpInput struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" validate:"required"`
+	Email    string `json:"email" validate:"omitempty,email"`
+	Password string `json:"password" validate:"required"`
 }
 
 type signInInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type AuthHandler struct {
@@ -28,9 +29,13 @@ func (h AuthHandler) SignUp(c *fiber.Ctx) error {
 	var err error
 	var input signUpInput
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	// hash password
@@ -58,9 +63,13 @@ func (h AuthHandler) SignIn(c *fiber.Ctx) error {
 	var input signInInput
 	var user models.User
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	// get user by username

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"gossip/backend/pkg/models"
+	"gossip/backend/pkg/validate"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -24,9 +25,13 @@ func (h TagHandler) CreateTag(c *fiber.Ctx) error {
 	var err error
 	var input createTagInput
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	tag := models.Tag{Name: input.Name}
@@ -75,9 +80,13 @@ func (h TagHandler) UpdateTag(c *fiber.Ctx) error {
 		return fiber.NewError(http.StatusNotFound, "Tag not found")
 	}
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	updateTag := models.Tag{Name: input.Name}

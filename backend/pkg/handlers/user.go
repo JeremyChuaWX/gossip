@@ -48,7 +48,7 @@ func (h UserHandler) UpdateUser(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(input); errors != nil {
+	if errors := validate.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 

@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"gossip/backend/pkg/models"
+	"gossip/backend/pkg/validate"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,10 +12,10 @@ import (
 )
 
 type createCommentInput struct {
-	UserID   string `json:"user_id" binding:"required"`
-	PostID   string `json:"post_id" binding:"required"`
+	UserID   string `json:"user_id" validate:"required"`
+	PostID   string `json:"post_id" validate:"required"`
 	ParentID string `json:"parent_id"`
-	Body     string `json:"body" binding:"required"`
+	Body     string `json:"body" validate:"required"`
 }
 
 type updateCommentInput struct {
@@ -29,9 +30,13 @@ func (h CommentHandler) CreateComment(c *fiber.Ctx) error {
 	var err error
 	var input createCommentInput
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	var parentId sql.NullString
@@ -75,9 +80,13 @@ func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	var cmt models.Comment
 	id := c.Params("id")
 
-	// input validation
 	if err := c.BodyParser(&input); err != nil {
 		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	// get comment by id

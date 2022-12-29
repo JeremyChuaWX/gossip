@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"gossip/backend/pkg/models"
+	"gossip/backend/pkg/validate"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -28,9 +29,13 @@ func (h PostHandler) CreatePost(c *fiber.Ctx) error {
 	var err error
 	var input createPostInput
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	post := models.Post{
@@ -83,9 +88,13 @@ func (h PostHandler) UpdatePost(c *fiber.Ctx) error {
 		return fiber.NewError(http.StatusNotFound, "Post not found")
 	}
 
-	// input validation
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := validate.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
 	updatePost := models.Post{
