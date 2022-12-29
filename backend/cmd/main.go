@@ -1,20 +1,37 @@
 package main
 
 import (
-	"gossip/backend/pkg/api"
-	"gossip/backend/pkg/db"
+	"gossip/backend/pkg/initialisers"
+	"gossip/backend/pkg/routers"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
+var server *gin.Engine
+
+func init() {
+	config, err := initialisers.LoadConfig(".")
+	if err != nil {
+		panic("Cannot load environment variables")
+	}
+
+	DB := initialisers.ConnectDB(&config)
+	initialisers.MigrateDB(DB)
+
+	server = gin.Default()
+
+	routers.Init(server, DB)
+}
+
 func main() {
-	godotenv.Load()
+	var err error
 
-	DB := db.Init()
-	engine := gin.Default()
+	config, err := initialisers.LoadConfig(".")
+	if err != nil {
+		panic("Cannot load environment variables")
+	}
 
-	api.Init(engine, DB)
-
-	engine.Run("localhost:3000")
+	if err = server.Run(":" + config.ServerPort); err != nil {
+		panic("Cannot run server on port " + config.ServerPort)
+	}
 }
