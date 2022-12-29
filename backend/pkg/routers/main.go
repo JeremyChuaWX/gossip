@@ -8,6 +8,7 @@ import (
 func Init(engine *gin.Engine, DB *gorm.DB) {
 	router := engine.Group("/api")
 
+	initAuthRouter(router, DB)
 	initUserRouter(router, DB)
 	initPostRouter(router, DB)
 	initCommentRouter(router, DB)
