@@ -14,7 +14,7 @@ type PostHandler struct {
 	DB *gorm.DB
 }
 
-func (h PostHandler) CreatePost(c *fiber.Ctx) error {
+func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	type createPostInput struct {
 		UserID string `json:"user_id" binding:"required"`
 		Title  string `json:"title" binding:"required"`
@@ -47,7 +47,7 @@ func (h PostHandler) CreatePost(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": post})
 }
 
-func (h PostHandler) GetAllPosts(c *fiber.Ctx) error {
+func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	var err error
 	var posts []models.Post
 
@@ -59,7 +59,7 @@ func (h PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": posts})
 }
 
-func (h PostHandler) GetPostById(c *fiber.Ctx) error {
+func (h *PostHandler) GetPostById(c *fiber.Ctx) error {
 	var err error
 	var post models.Post
 	id := c.Params("id")
@@ -72,7 +72,7 @@ func (h PostHandler) GetPostById(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": post})
 }
 
-func (h PostHandler) UpdatePost(c *fiber.Ctx) error {
+func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	type updatePostInput struct {
 		Title     string `json:"title,omitempty"`
 		Body      string `json:"body,omitempty"`
@@ -112,7 +112,7 @@ func (h PostHandler) UpdatePost(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": post})
 }
 
-func (h PostHandler) DeletePost(c *fiber.Ctx) error {
+func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	var err error
 	var post models.Post
 	id := c.Params("id")

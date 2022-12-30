@@ -15,7 +15,7 @@ type CommentHandler struct {
 	DB *gorm.DB
 }
 
-func (h CommentHandler) CreateComment(c *fiber.Ctx) error {
+func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 	type createCommentInput struct {
 		UserID   string `json:"user_id" validate:"required"`
 		PostID   string `json:"post_id" validate:"required"`
@@ -57,7 +57,7 @@ func (h CommentHandler) CreateComment(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) GetCommentById(c *fiber.Ctx) error {
+func (h *CommentHandler) GetCommentById(c *fiber.Ctx) error {
 	var err error
 	var cmt models.Comment
 	id := c.Params("id")
@@ -70,7 +70,7 @@ func (h CommentHandler) GetCommentById(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
+func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	type updateCommentInput struct {
 		Body         string `json:"body,omitempty"`
 		CommentScore int    `json:"comment_score,omitempty"`
@@ -108,7 +108,7 @@ func (h CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": cmt})
 }
 
-func (h CommentHandler) DeleteComment(c *fiber.Ctx) error {
+func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
 	var err error
 	var cmt models.Comment
 	id := c.Params("id")

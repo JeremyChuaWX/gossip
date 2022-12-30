@@ -13,7 +13,7 @@ type TagHandler struct {
 	DB *gorm.DB
 }
 
-func (h TagHandler) CreateTag(c *fiber.Ctx) error {
+func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 	type createTagInput struct {
 		Name string `json:"name" validate:"required"`
 	}
@@ -40,7 +40,7 @@ func (h TagHandler) CreateTag(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) GetAllTags(c *fiber.Ctx) error {
+func (h *TagHandler) GetAllTags(c *fiber.Ctx) error {
 	var err error
 	var tags []models.Tag
 
@@ -52,7 +52,7 @@ func (h TagHandler) GetAllTags(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tags})
 }
 
-func (h TagHandler) GetTagById(c *fiber.Ctx) error {
+func (h *TagHandler) GetTagById(c *fiber.Ctx) error {
 	var err error
 	var tag models.Tag
 	id := c.Params("id")
@@ -65,7 +65,7 @@ func (h TagHandler) GetTagById(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) UpdateTag(c *fiber.Ctx) error {
+func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 	type updateTagInput struct {
 		Name string `json:"name,omitempty"`
 	}
@@ -99,7 +99,7 @@ func (h TagHandler) UpdateTag(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
-func (h TagHandler) DeleteTag(c *fiber.Ctx) error {
+func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
 	var err error
 	var tag models.Tag
 	id := c.Params("id")

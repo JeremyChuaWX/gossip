@@ -14,7 +14,7 @@ type UserHandler struct {
 	DB *gorm.DB
 }
 
-func (h UserHandler) GetUserById(c *fiber.Ctx) error {
+func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
@@ -27,7 +27,7 @@ func (h UserHandler) GetUserById(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": user})
 }
 
-func (h UserHandler) UpdateUser(c *fiber.Ctx) error {
+func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	type updateUserInput struct {
 		Email    string `json:"email,omitempty" validate:"omitempty,email"`
 		Password string `json:"password,omitempty"`
@@ -71,7 +71,7 @@ func (h UserHandler) UpdateUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": user})
 }
 
-func (h UserHandler) DeleteUser(c *fiber.Ctx) error {
+func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
@@ -89,6 +89,6 @@ func (h UserHandler) DeleteUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{"data": true})
 }
 
-func (h UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
+func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
 	return fiber.NewError(fiber.StatusInternalServerError, "Not ready")
 }

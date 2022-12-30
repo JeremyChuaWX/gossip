@@ -14,7 +14,7 @@ type AuthHandler struct {
 	DB *gorm.DB
 }
 
-func (h AuthHandler) SignUp(c *fiber.Ctx) error {
+func (h *AuthHandler) SignUp(c *fiber.Ctx) error {
 	type signUpInput struct {
 		Username string `json:"username" validate:"required"`
 		Email    string `json:"email,omitempty" validate:"omitempty,email"`
@@ -53,7 +53,7 @@ func (h AuthHandler) SignUp(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": user})
 }
 
-func (h AuthHandler) SignIn(c *fiber.Ctx) error {
+func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 	type signInInput struct {
 		Username string `json:"username" validate:"required"`
 		Password string `json:"password" validate:"required"`
