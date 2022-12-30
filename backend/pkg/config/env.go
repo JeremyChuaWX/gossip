@@ -12,7 +12,12 @@ type Env struct {
 	ServerPort string `mapstructure:"PORT"`
 }
 
-func LoadConfig(path string) (env Env, err error) {
+func GetEnv() (env Env, err error) {
+	err = viper.Unmarshal(&env)
+	return
+}
+
+func LoadEnv(path string) (env Env, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
@@ -24,6 +29,6 @@ func LoadConfig(path string) (env Env, err error) {
 		return
 	}
 
-	err = viper.Unmarshal(&env)
+	env, err = GetEnv()
 	return
 }
