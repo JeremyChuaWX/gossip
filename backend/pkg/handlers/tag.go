@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"gossip/backend/pkg/models"
-	"gossip/backend/pkg/validate"
+	"gossip/backend/pkg/utils"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,7 +26,7 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(&input); errors != nil {
+	if errors := utils.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
@@ -85,7 +85,7 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(&input); errors != nil {
+	if errors := utils.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 

@@ -3,7 +3,6 @@ package handlers
 import (
 	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/utils"
-	"gossip/backend/pkg/validate"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -48,7 +47,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(&input); errors != nil {
+	if errors := utils.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 

@@ -29,7 +29,7 @@ func (h *AuthHandler) SignUp(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(&input); errors != nil {
+	if errors := utils.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
@@ -68,7 +68,7 @@ func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 	}
 
 	// input validation
-	if errors := validate.ValidateStruct(&input); errors != nil {
+	if errors := utils.ValidateStruct(&input); errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
