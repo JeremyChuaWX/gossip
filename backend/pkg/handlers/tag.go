@@ -3,7 +3,6 @@ package handlers
 import (
 	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/utils"
-	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -22,7 +21,7 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 	var input createTagInput
 
 	if err = c.BodyParser(&input); err != nil {
-		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
 
 	// input validation
@@ -34,10 +33,10 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 
 	// create tag
 	if err = h.DB.Create(&tag).Error; err != nil {
-		return fiber.NewError(http.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(http.StatusCreated).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": tag})
 }
 
 func (h *TagHandler) GetAllTags(c *fiber.Ctx) error {
@@ -46,10 +45,10 @@ func (h *TagHandler) GetAllTags(c *fiber.Ctx) error {
 
 	// create tag
 	if err = h.DB.Find(&tags).Error; err != nil {
-		return fiber.NewError(http.StatusNotFound, err.Error())
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tags})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tags})
 }
 
 func (h *TagHandler) GetTagById(c *fiber.Ctx) error {
@@ -59,10 +58,10 @@ func (h *TagHandler) GetTagById(c *fiber.Ctx) error {
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		return fiber.NewError(http.StatusNotFound, "Tag not found")
+		return fiber.NewError(fiber.StatusNotFound, "Tag not found")
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
 func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
@@ -77,11 +76,11 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		return fiber.NewError(http.StatusNotFound, "Tag not found")
+		return fiber.NewError(fiber.StatusNotFound, "Tag not found")
 	}
 
 	if err = c.BodyParser(&input); err != nil {
-		return fiber.NewError(http.StatusBadRequest, "Invalid fields")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
 
 	// input validation
@@ -93,10 +92,10 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 
 	// update tag
 	if err = h.DB.Model(&tag).Updates(updateTag).Error; err != nil {
-		return fiber.NewError(http.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tag})
 }
 
 func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
@@ -106,13 +105,13 @@ func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
 
 	// get tag by id
 	if err = h.DB.Where("id = ?", id).First(&tag).Error; err != nil {
-		return fiber.NewError(http.StatusNotFound, "Tag not found")
+		return fiber.NewError(fiber.StatusNotFound, "Tag not found")
 	}
 
 	// delete tag
 	if err = h.DB.Delete(&tag).Error; err != nil {
-		return fiber.NewError(http.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
 }

@@ -30,7 +30,7 @@ func main() {
 
 	env, err := config.LoadEnv(".")
 	if err != nil {
-		panic("Cannot load env")
+		log.Fatal(err)
 	}
 
 	DB := database.Initialise(&env)
