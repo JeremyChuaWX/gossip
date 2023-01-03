@@ -63,7 +63,7 @@ func Jwtware() fiber.Handler {
 			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 		}
 
-		c.Set("user_id", sub)
+		c.Locals("user-id", sub)
 		return c.Next()
 	}
 }

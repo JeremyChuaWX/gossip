@@ -72,6 +72,7 @@ func ValidateToken(token string, publicKey string) (string, error) {
 	// cast claims struct
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok || !parsedToken.Valid || !claims.VerifyExpiresAt(time.Now().Unix(), true) {
+		fmt.Println("expiry check:", claims.VerifyExpiresAt(time.Now().Unix(), true))
 		return "", fmt.Errorf("Invalid token")
 	}
 
