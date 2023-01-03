@@ -59,12 +59,12 @@ type Tag struct {
 
 type Subscription struct {
 	Base
-	UserID string
-	PostID string
+	UserID string `gorm:"not null" json:"user_id"`
+	PostID string `gorm:"not null" json:"post_id"`
 }
 
 type Taggable struct {
 	Base
-	PostID string
-	TagID  string
+	PostID string `gorm:"not null" json:"post_id"`
+	TagID  string `gorm:"not null" json:"tag_id"`
 }
