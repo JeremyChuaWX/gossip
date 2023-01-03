@@ -20,6 +20,7 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 	var err error
 	var input createTagInput
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -114,4 +115,48 @@ func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+}
+
+func (h *TagHandler) TagPost(c *fiber.Ctx) error {
+	type tagPostInput struct {
+		TagID  string `json:"tag_id" validate:"required"`
+		PostID string `json:"post_id" validate:"required"`
+	}
+
+	var err error
+	var input tagPostInput
+	var post models.Post
+	currId := utils.GetJwt(c)
+
+	// bind input struct
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := utils.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
+	// get post by id
+	if err = h.DB.Where("id = ?", input.PostID).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Post not found")
+	}
+
+	// check authorised
+	if currId != post.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
+	}
+
+	taggable := models.Taggable{
+		TagID:  input.TagID,
+		PostID: input.PostID,
+	}
+
+	// tag post
+	if err = h.DB.Create(&taggable).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": taggable})
 }

@@ -16,7 +16,7 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
-	currId := c.Get("user_id")
+	currId := utils.GetJwt(c)
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
@@ -28,7 +28,11 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": user})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "",
+		Data:  user,
+	})
 }
 
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
@@ -41,7 +45,7 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	var input updateUserInput
 	var user models.User
 	id := c.Params("id")
-	currId := c.Get("user_id")
+	currId := utils.GetJwt(c)
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
@@ -85,7 +89,7 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
-	currId := c.Get("user_id")
+	currId := utils.GetJwt(c)
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {

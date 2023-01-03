@@ -16,7 +16,6 @@ type CommentHandler struct {
 
 func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 	type createCommentInput struct {
-		UserID   string `json:"user_id" validate:"required"`
 		PostID   string `json:"post_id" validate:"required"`
 		ParentID string `json:"parent_id,omitempty"`
 		Body     string `json:"body" validate:"required"`
@@ -24,7 +23,9 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 
 	var err error
 	var input createCommentInput
+	currId := utils.GetJwt(c)
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -42,7 +43,7 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 	}
 
 	cmt := models.Comment{
-		UserID:   input.UserID,
+		UserID:   currId,
 		PostID:   input.PostID,
 		ParentID: parentId,
 		Body:     input.Body,

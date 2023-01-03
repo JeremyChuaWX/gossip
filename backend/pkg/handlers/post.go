@@ -15,14 +15,15 @@ type PostHandler struct {
 
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	type createPostInput struct {
-		UserID string `json:"user_id" binding:"required"`
-		Title  string `json:"title" binding:"required"`
-		Body   string `json:"body" binding:"required"`
+		Title string `json:"title" binding:"required"`
+		Body  string `json:"body" binding:"required"`
 	}
 
 	var err error
 	var input createPostInput
+	currId := utils.GetJwt(c)
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -33,7 +34,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	}
 
 	post := models.Post{
-		UserID: input.UserID,
+		UserID: currId,
 		Title:  input.Title,
 		Body:   input.Body,
 	}
@@ -82,12 +83,19 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	var input updatePostInput
 	var post models.Post
 	id := c.Params("id")
+	currId := utils.GetJwt(c)
 
 	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Post not found")
 	}
 
+	// check authorised
+	if currId != post.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
+	}
+
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -115,10 +123,16 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	var err error
 	var post models.Post
 	id := c.Params("id")
+	currId := utils.GetJwt(c)
 
 	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Post not found")
+	}
+
+	// check authorised
+	if currId != post.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	// delete post
