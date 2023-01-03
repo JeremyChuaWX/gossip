@@ -69,6 +69,7 @@ func (h *TaggableHandler) DeleteTaggable(c *fiber.Ctx) error {
 	var err error
 	var input deleteTaggableInput
 	var post models.Post
+	var taggable models.Taggable
 	currId := utils.GetJwt(c)
 
 	// bind input struct
@@ -91,9 +92,9 @@ func (h *TaggableHandler) DeleteTaggable(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
-	taggable := models.Taggable{
-		TagID:  input.TagID,
-		PostID: input.PostID,
+	// get taggable by ids
+	if err = h.DB.Where("post_id = ? AND tag_id = ?", input.PostID, input.TagID).First(&taggable).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Taggable not found")
 	}
 
 	// delete taggable
