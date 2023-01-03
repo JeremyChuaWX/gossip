@@ -46,6 +46,8 @@ func Jwtware() fiber.Handler {
 
 		for _, extractor := range getJwtExtractors() {
 			auth, err = extractor(c)
+
+			// break when jwt found
 			if auth != "" && err == nil {
 				break
 			}
