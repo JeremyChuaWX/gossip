@@ -12,21 +12,21 @@ import (
 type jwtExtractor func(*fiber.Ctx) (string, error)
 
 func jwtFromCookie(c *fiber.Ctx) (string, error) {
-	cookie := c.Cookies("access_token")
+	rawToken := c.Cookies("access_token")
 
-	if cookie == "" {
+	if rawToken == "" {
 		return "", errors.New("Missing or malformed JWT")
 	}
 
-	return cookie, nil
+	return rawToken, nil
 }
 
 func jwtFromHeader(c *fiber.Ctx) (string, error) {
 	bearerToken := c.Get("Authorization")
-	l := len("Bearer")
 
-	if len(bearerToken) > l+1 && strings.EqualFold(bearerToken[:l], "Bearer") {
-		return strings.TrimSpace(bearerToken[l:]), nil
+	rawToken := strings.Split(bearerToken, " ")
+	if len(rawToken) == 2 {
+		return rawToken[1], nil
 	}
 
 	return "", errors.New("Missing or malformed JWT")
@@ -41,14 +41,14 @@ func getJwtExtractors() []jwtExtractor {
 
 func Jwtware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var auth string
+		var rawToken string
 		var err error
 
 		for _, extractor := range getJwtExtractors() {
-			auth, err = extractor(c)
+			rawToken, err = extractor(c)
 
 			// break when jwt found
-			if auth != "" && err == nil {
+			if rawToken != "" && err == nil {
 				break
 			}
 		}
@@ -58,7 +58,7 @@ func Jwtware() fiber.Handler {
 			return fiber.NewError(fiber.StatusInternalServerError, "Cannot get environment variables")
 		}
 
-		sub, err := utils.ValidateToken(auth, env.AccessTokenPublicKey)
+		sub, err := utils.ValidateToken(rawToken, env.AccessTokenPublicKey)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 		}
