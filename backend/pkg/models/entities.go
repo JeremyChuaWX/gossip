@@ -57,7 +57,7 @@ type Tag struct {
 	Posts []Post `gorm:"many2many:taggable;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"posts"`
 }
 
-type Subscriptions struct {
+type Subscription struct {
 	Base
 	UserID string
 	PostID string

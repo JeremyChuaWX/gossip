@@ -30,7 +30,7 @@ func connectDB(env *config.Env) *gorm.DB {
 func migrateDB(DB *gorm.DB) {
 	var err error
 
-	err = DB.SetupJoinTable(&models.User{}, "Subscribed", &models.Subscriptions{})
+	err = DB.SetupJoinTable(&models.User{}, "Subscribed", &models.Subscription{})
 	if err != nil {
 		panic("failed to setup subscriptions table [user model]")
 	}
