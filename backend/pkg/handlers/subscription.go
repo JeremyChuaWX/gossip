@@ -33,7 +33,7 @@ func (h *SubscriptionHandler) CreateSubscription(c *fiber.Ctx) error {
 	}
 
 	// get post by id
-	if err = h.DB.Where("id = ?", post.ID).First(&post).Error; err != nil {
+	if err = h.DB.Where("id = ?", input.PostID).First(&post).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Post not found")
 	}
 
