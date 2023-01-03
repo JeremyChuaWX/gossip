@@ -14,7 +14,7 @@ func initUserRouter(router fiber.Router, DB *gorm.DB) {
 
 	userRouter.Use(middlewares.Jwtware())
 
-	userRouter.Get("/:id", userHandler.GetUserById)
-	userRouter.Put("/:id", userHandler.UpdateUser)
-	userRouter.Delete("/:id", userHandler.DeleteUser)
+	userRouter.Get("/get-user/:id", userHandler.GetUserById)
+	userRouter.Put("/update-user/:id", userHandler.UpdateUser)
+	userRouter.Delete("/delete-user/:id", userHandler.DeleteUser)
 }

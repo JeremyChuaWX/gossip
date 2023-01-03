@@ -12,9 +12,9 @@ func initPostRouter(router fiber.Router, DB *gorm.DB) {
 	postHandler := handlers.PostHandler{DB: DB}
 	postRouter := router.Group("/posts")
 
-	postRouter.Post("/", middlewares.Jwtware(), postHandler.CreatePost)
-	postRouter.Get("/", postHandler.GetAllPosts)
-	postRouter.Get("/:id", postHandler.GetPostById)
-	postRouter.Put("/:id", middlewares.Jwtware(), postHandler.UpdatePost)
-	postRouter.Delete("/:id", middlewares.Jwtware(), postHandler.DeletePost)
+	postRouter.Post("/create-post", middlewares.Jwtware(), postHandler.CreatePost)
+	postRouter.Get("/get-posts", postHandler.GetAllPosts)
+	postRouter.Get("/get-post/:id", postHandler.GetPostById)
+	postRouter.Put("/update-post/:id", middlewares.Jwtware(), postHandler.UpdatePost)
+	postRouter.Delete("/delete-post/:id", middlewares.Jwtware(), postHandler.DeletePost)
 }
