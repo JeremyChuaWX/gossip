@@ -15,4 +15,5 @@ func Initialise(app *fiber.App, DB *gorm.DB) {
 	initCommentRouter(api, DB)
 	initTagRouter(api, DB)
 	initTaggableRouter(api, DB)
+	initSubscriptionRouter(api, DB)
 }

@@ -20,7 +20,7 @@ func (h *SubscriptionHandler) CreateSubscription(c *fiber.Ctx) error {
 	var err error
 	var input createSubscriptionInput
 	var post models.Post
-	// currId := utils.GetJwt(c)
+	currId := utils.GetJwt(c)
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -38,8 +38,8 @@ func (h *SubscriptionHandler) CreateSubscription(c *fiber.Ctx) error {
 	}
 
 	subscription := models.Subscription{
-		UserID: post.ID,
-		PostID: input.PostID,
+		UserID: currId,
+		PostID: post.ID,
 	}
 
 	// create subscription
@@ -61,8 +61,8 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 
 	var err error
 	var input deleteSubscriptionInput
-	var post models.Post
-	// currId := utils.GetJwt(c)
+	var subscription models.Subscription
+	currId := utils.GetJwt(c)
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -74,14 +74,9 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
-	// get post by id
-	if err = h.DB.Where("id = ?", post.ID).First(&post).Error; err != nil {
-		return fiber.NewError(fiber.StatusNotFound, "Post not found")
-	}
-
-	subscription := models.Subscription{
-		UserID: post.ID,
-		PostID: input.PostID,
+	// get subscription by ids
+	if err = h.DB.Where("user_id = ? AND post_id = ?", currId, input.PostID).First(&subscription).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Taggable not found")
 	}
 
 	// delete subscription
