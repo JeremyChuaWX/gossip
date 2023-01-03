@@ -89,13 +89,13 @@ func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 	}
 
 	// generate access token
-	accessToken, err := utils.CreateToken(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
+	accessToken, err := utils.CreateJwt(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	// generate refresh token
-	refreshToken, err := utils.CreateToken(env.RefreshTokenDuration, user.ID, env.RefreshTokenPrivateKey)
+	refreshToken, err := utils.CreateJwt(env.RefreshTokenDuration, user.ID, env.RefreshTokenPrivateKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
@@ -149,7 +149,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Cannot get environment variables")
 	}
 
-	sub, err := utils.ValidateToken(cookie, env.RefreshTokenPublicKey)
+	sub, err := utils.ValidateJwt(cookie, env.RefreshTokenPublicKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusForbidden, err.Error())
 	}
@@ -159,7 +159,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
-	accessToken, err := utils.CreateToken(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
+	accessToken, err := utils.CreateJwt(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusForbidden, err.Error())
 	}

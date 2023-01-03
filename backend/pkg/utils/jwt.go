@@ -3,12 +3,16 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (string, error) {
+type jwtExtractor func(*fiber.Ctx) (string, error)
+
+func CreateJwt(ttl time.Duration, payload interface{}, privateKey string) (string, error) {
 	var err error
 
 	// decode base64 privateKey
@@ -40,7 +44,7 @@ func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (str
 	return signed, nil
 }
 
-func ValidateToken(token string, publicKey string) (string, error) {
+func ValidateJwt(token string, publicKey string) (string, error) {
 	var err error
 
 	// decode base64 privateKey
@@ -77,4 +81,46 @@ func ValidateToken(token string, publicKey string) (string, error) {
 	}
 
 	return claims["sub"].(string), nil
+}
+
+func jwtFromCookie(c *fiber.Ctx) (string, error) {
+	rawToken := c.Cookies("access_token")
+
+	if rawToken == "" {
+		return "", fmt.Errorf("Missing or malformed JWT")
+	}
+
+	return rawToken, nil
+}
+
+func jwtFromHeader(c *fiber.Ctx) (string, error) {
+	bearerToken := c.Get("Authorization")
+
+	rawToken := strings.Split(bearerToken, " ")
+	if len(rawToken) == 2 {
+		return rawToken[1], nil
+	}
+
+	return "", fmt.Errorf("Missing or malformed JWT")
+}
+
+func GetJwtExtractors() []jwtExtractor {
+	return []jwtExtractor{
+		jwtFromCookie,
+		jwtFromHeader,
+	}
+}
+
+func SetJwt(c *fiber.Ctx, sub string) error {
+	if sub == "" {
+		return fmt.Errorf("Empty subject")
+	}
+
+	c.Locals("user-id", sub)
+
+	return nil
+}
+
+func GetJwt(c *fiber.Ctx) string {
+	return c.Locals("user-id").(string)
 }
