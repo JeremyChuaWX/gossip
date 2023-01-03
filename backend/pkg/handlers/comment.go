@@ -35,6 +35,7 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
+	// set parent id
 	var parentId sql.NullString
 	if input.ParentID != "" {
 		parentId = sql.NullString{String: input.ParentID, Valid: true}
@@ -89,6 +90,7 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	var cmt models.Comment
 	id := c.Params("id")
 
+	// bind input struct
 	if err := c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}

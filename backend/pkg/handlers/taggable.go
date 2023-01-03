@@ -97,7 +97,7 @@ func (h *TaggableHandler) DeleteTaggable(c *fiber.Ctx) error {
 	}
 
 	// delete taggable
-	if err = h.DB.Create(&taggable).Error; err != nil {
+	if err = h.DB.Delete(&taggable).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 

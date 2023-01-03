@@ -24,6 +24,7 @@ func (h *AuthHandler) SignUp(c *fiber.Ctx) error {
 	var err error
 	var input signUpInput
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -67,6 +68,7 @@ func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 	var input signInInput
 	var user models.User
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
@@ -157,6 +159,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Cannot get environment variables")
 	}
 
+	// validate and extract id from jwt
 	sub, err := utils.ValidateJwt(cookie, env.RefreshTokenPublicKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusForbidden, err.Error())
@@ -167,11 +170,13 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
+	// generate access token
 	accessToken, err := utils.CreateJwt(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
 	if err != nil {
 		return fiber.NewError(fiber.StatusForbidden, err.Error())
 	}
 
+	// set cookies
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token",
 		Value:    accessToken,

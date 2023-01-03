@@ -92,6 +92,7 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "Tag not found")
 	}
 
+	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
 	}
