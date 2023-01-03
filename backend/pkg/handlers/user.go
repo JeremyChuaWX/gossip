@@ -30,7 +30,7 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
 		Error: false,
-		Msg:   "",
+		Msg:   "User found",
 		Data:  user,
 	})
 }
@@ -82,7 +82,11 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": user})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User updated",
+		Data:  user,
+	})
 }
 
 func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
@@ -106,7 +110,11 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User deleted",
+		Data:  user,
+	})
 }
 
 func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {

@@ -44,7 +44,11 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": post})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post created",
+		Data:  post,
+	})
 }
 
 func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
@@ -56,7 +60,11 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "Posts not found")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": posts})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Posts found",
+		Data:  posts,
+	})
 }
 
 func (h *PostHandler) GetPostById(c *fiber.Ctx) error {
@@ -69,7 +77,11 @@ func (h *PostHandler) GetPostById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "Post not found")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": post})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post found",
+		Data:  post,
+	})
 }
 
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
@@ -116,7 +128,11 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": post})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post updated",
+		Data:  post,
+	})
 }
 
 func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
@@ -140,5 +156,9 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post deleted",
+		Data:  post,
+	})
 }

@@ -50,7 +50,11 @@ func (h *AuthHandler) SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": user})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User created",
+		Data:  user,
+	})
 }
 
 func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
@@ -131,7 +135,11 @@ func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 		HTTPOnly: false,
 	})
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": user})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User signed in",
+		Data:  user,
+	})
 }
 
 func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
@@ -218,5 +226,8 @@ func (h *AuthHandler) SignOut(c *fiber.Ctx) error {
 		HTTPOnly: false,
 	})
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User signed out",
+	})
 }

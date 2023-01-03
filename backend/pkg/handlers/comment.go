@@ -54,7 +54,11 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": cmt})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Comment created",
+		Data:  cmt,
+	})
 }
 
 func (h *CommentHandler) GetCommentById(c *fiber.Ctx) error {
@@ -67,7 +71,11 @@ func (h *CommentHandler) GetCommentById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "Comment not found")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": cmt})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Comment found",
+		Data:  cmt,
+	})
 }
 
 func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
@@ -105,7 +113,11 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": cmt})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Comment updated",
+		Data:  cmt,
+	})
 }
 
 func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
@@ -123,5 +135,9 @@ func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Comment deleted",
+		Data:  cmt,
+	})
 }

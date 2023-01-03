@@ -37,7 +37,11 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Tag created",
+		Data:  tag,
+	})
 }
 
 func (h *TagHandler) GetAllTags(c *fiber.Ctx) error {
@@ -49,7 +53,11 @@ func (h *TagHandler) GetAllTags(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tags})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Tags found",
+		Data:  tags,
+	})
 }
 
 func (h *TagHandler) GetTagById(c *fiber.Ctx) error {
@@ -62,7 +70,11 @@ func (h *TagHandler) GetTagById(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotFound, "Tag not found")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Tag found",
+		Data:  tag,
+	})
 }
 
 func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
@@ -96,7 +108,11 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": tag})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Tag updated",
+		Data:  tag,
+	})
 }
 
 func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
@@ -114,7 +130,11 @@ func (h *TagHandler) DeleteTag(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": true})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Tag deleted",
+		Data:  tag,
+	})
 }
 
 func (h *TagHandler) TagPost(c *fiber.Ctx) error {
@@ -158,5 +178,9 @@ func (h *TagHandler) TagPost(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"data": taggable})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post tagged",
+		Data:  taggable,
+	})
 }
