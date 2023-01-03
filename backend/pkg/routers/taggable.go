@@ -15,4 +15,5 @@ func initTaggableRouter(router fiber.Router, DB *gorm.DB) {
 	taggableRouter.Use(middlewares.Jwtware())
 
 	taggableRouter.Post("/create-taggable", taggableHandler.CreateTaggable)
+	taggableRouter.Delete("/delete-taggable", taggableHandler.DeleteTaggable)
 }
