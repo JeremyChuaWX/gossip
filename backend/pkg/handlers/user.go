@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserHandler struct {
@@ -19,7 +20,7 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	currId := utils.GetJwt(c)
 
 	// get user by id
-	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+	if err = h.DB.Preload(clause.Associations).Where("id = ?", id).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
