@@ -12,10 +12,10 @@ func (e errorResponse) Error() string {
 	return e.Field + ":\"" + e.Tag + "=" + e.Value
 }
 
-var validate = validator.New()
-
 func ValidateStruct(in any) []*errorResponse {
 	var errors []*errorResponse
+	validate := validator.New()
+
 	err := validate.Struct(in)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
