@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gossip/backend/pkg/config"
 	"gossip/backend/pkg/database"
+	"gossip/backend/pkg/models"
 	"gossip/backend/pkg/routers"
 	"log"
 
@@ -18,7 +19,10 @@ func fiberError(c *fiber.Ctx, err error) error {
 		code = e.Code
 	}
 
-	if err = c.Status(code).JSON(e); err != nil {
+	if err = c.Status(code).JSON(models.ServerResponse{
+		Error: true,
+		Msg:   e.Message,
+	}); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal server error")
 	}
 
