@@ -120,5 +120,33 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
-	return fiber.NewError(fiber.StatusInternalServerError, "Not ready")
+	var err error
+	var user models.User
+	id := c.Params("id")
+	currId := utils.GetJwt(c)
+
+	// get user by id
+	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "User not found")
+	}
+
+	// check authorised
+	if currId != user.ID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
+	}
+
+	updateUser := models.User{
+		IsPublic: !user.IsPublic,
+	}
+
+	// update user
+	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User profile visibility toggled",
+		Data:  user,
+	})
 }
