@@ -75,9 +75,15 @@ func ValidateJwt(token string, publicKey string) (string, error) {
 
 	// cast claims struct
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok || !parsedToken.Valid || !claims.VerifyExpiresAt(time.Now().Unix(), true) {
-		fmt.Println("expiry check:", claims.VerifyExpiresAt(time.Now().Unix(), true))
+
+	// throw if invalid
+	if !ok || !parsedToken.Valid {
 		return "", fmt.Errorf("Invalid token")
+	}
+
+	// throw if expired
+	if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
+		return "", fmt.Errorf("Expired token")
 	}
 
 	return claims["sub"].(string), nil
@@ -111,7 +117,7 @@ func GetJwtExtractors() []jwtExtractor {
 	}
 }
 
-func SetJwt(c *fiber.Ctx, sub string) error {
+func SetUserId(c *fiber.Ctx, sub string) error {
 	if sub == "" {
 		return fmt.Errorf("Empty subject")
 	}
@@ -121,6 +127,6 @@ func SetJwt(c *fiber.Ctx, sub string) error {
 	return nil
 }
 
-func GetJwt(c *fiber.Ctx) string {
+func GetUserId(c *fiber.Ctx) string {
 	return c.Locals("user-id").(string)
 }

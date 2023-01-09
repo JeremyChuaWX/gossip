@@ -28,7 +28,7 @@ func Jwtware() fiber.Handler {
 
 		sub, err := utils.ValidateJwt(rawToken, env.AccessTokenPublicKey)
 		if err != nil {
-			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		if err = utils.SetUserId(c, sub); err != nil {

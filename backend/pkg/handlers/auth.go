@@ -162,7 +162,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 	// validate and extract id from jwt
 	sub, err := utils.ValidateJwt(cookie, env.RefreshTokenPublicKey)
 	if err != nil {
-		return fiber.NewError(fiber.StatusForbidden, err.Error())
+		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 	}
 
 	// get user by username
@@ -173,7 +173,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 	// generate access token
 	accessToken, err := utils.CreateJwt(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
 	if err != nil {
-		return fiber.NewError(fiber.StatusForbidden, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	// set cookies
