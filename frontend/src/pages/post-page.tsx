@@ -1,3 +1,39 @@
-export default function PostPage() {
-  return <div>post page</div>;
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { LoaderFunctionArgs, useParams } from "react-router-dom";
+import { getPost as getPostApi } from "../api/posts";
+
+function getPostQuery(id: string) {
+  return {
+    queryKey: ["get-post", id],
+    queryFn: () => getPostApi({ id }),
+  };
 }
+
+function postPageLoader(queryClient: QueryClient) {
+  return async ({ params: { id } }: LoaderFunctionArgs) => {
+    if (!id) throw Error("Invalid id");
+
+    return queryClient.fetchQuery(getPostQuery(id));
+  };
+}
+
+function PostPage() {
+  const { id } = useParams();
+
+  if (!id) throw Error("Invalid url params");
+
+  const { data: getPostRes } = useQuery(getPostQuery(id));
+  const post = getPostRes?.data;
+
+  if (!post) throw Error("No such post");
+
+  return (
+    <div>
+      <h2>{post.title}</h2>
+      <p>{post.body}</p>
+    </div>
+  );
+}
+
+export default PostPage;
+export { postPageLoader };

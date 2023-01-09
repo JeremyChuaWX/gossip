@@ -11,8 +11,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // pages
-import HomePage from "./pages/home-page";
-import PostPage from "./pages/post-page";
+import HomePage, { homePageLoader } from "./pages/home-page";
+import PostPage, { postPageLoader } from "./pages/post-page";
 import ErrorPage from "./pages/error-page";
 import UserPage, { userPageLoader } from "./pages/user-page";
 import SignInPage from "./pages/signin-page";
@@ -34,7 +34,11 @@ const queryClient = new QueryClient({
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<BaseLayout />} errorElement={<ErrorPage />}>
-      <Route index element={<HomePage />} />
+      <Route
+        index
+        element={<HomePage />}
+        loader={homePageLoader(queryClient)}
+      />
 
       <Route path="auth">
         <Route path="signin" element={<SignInPage />} />
@@ -42,7 +46,11 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="post/:id">
-        <Route index element={<PostPage />} />
+        <Route
+          index
+          element={<PostPage />}
+          loader={postPageLoader(queryClient)}
+        />
         <Route path="comment/:id" />
       </Route>
 
