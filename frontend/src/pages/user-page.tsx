@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { getUser as getUserApi } from "../api/users";
+import UpdateUserForm from "../components/update-user-form";
 
 function getUserQuery(id: string) {
   return {
@@ -27,7 +28,12 @@ function UserPage() {
   const { data: getUserRes } = useQuery(getUserQuery(id));
   const user = getUserRes?.data;
 
-  return <div>hello {user?.username}</div>;
+  return (
+    <div>
+      <h1>hello {user?.username}</h1>
+      <UpdateUserForm id={id} />
+    </div>
+  );
 }
 
 export default UserPage;
