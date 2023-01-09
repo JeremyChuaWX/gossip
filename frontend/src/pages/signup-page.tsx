@@ -10,6 +10,13 @@ function SignUpPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { mutate: signUp } = useMutation({
+    mutationFn: (input: SignUpInput) => signUpApi(input),
+    onSuccess: () => {
+      navigate(from);
+    },
+  });
+
   const from = (location.state?.from.pathname as string) || "/";
 
   const {
@@ -18,13 +25,6 @@ function SignUpPage() {
     handleSubmit,
     formState: { isSubmitSuccessful },
   } = useForm<SignUpInput>();
-
-  const { mutate: signUp } = useMutation({
-    mutationFn: (input: SignUpInput) => signUpApi(input),
-    onSuccess: () => {
-      navigate(from);
-    },
-  });
 
   useEffect(() => {
     if (isSubmitSuccessful) {

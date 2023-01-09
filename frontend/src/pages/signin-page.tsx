@@ -12,19 +12,19 @@ function SignInPage() {
 
   const from = (location.state?.from.pathname as string) || "/";
 
-  const {
-    reset,
-    register,
-    handleSubmit,
-    formState: { isSubmitSuccessful },
-  } = useForm<SignInInput>();
-
   const { mutate: signIn } = useMutation({
     mutationFn: (input: SignInInput) => signInApi(input),
     onSuccess: () => {
       navigate(from);
     },
   });
+
+  const {
+    reset,
+    register,
+    handleSubmit,
+    formState: { isSubmitSuccessful },
+  } = useForm<SignInInput>();
 
   useEffect(() => {
     if (isSubmitSuccessful) {
