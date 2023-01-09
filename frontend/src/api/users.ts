@@ -27,7 +27,7 @@ interface UpdateUserInput {
 
 async function updateUser(input: UpdateUserInput) {
   const res = (
-    await axiosConfig.post<ServerResponse<User>>(
+    await axiosConfig.put<ServerResponse<User>>(
       `users/update-user/${input.id}`,
       input
     )
@@ -46,7 +46,7 @@ interface DeleteUserInput {
 
 async function deleteUser(input: DeleteUserInput) {
   const res = (
-    await axiosConfig.post<ServerResponse<User>>(
+    await axiosConfig.delete<ServerResponse<User>>(
       `users/delete-user/${input.id}`
     )
   ).data;
