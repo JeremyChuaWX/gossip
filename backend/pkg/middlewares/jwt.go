@@ -31,8 +31,8 @@ func Jwtware() fiber.Handler {
 			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 		}
 
-		if err = utils.SetJwt(c, sub); err != nil {
-			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
+		if err = utils.SetUserId(c, sub); err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "Error setting user id")
 		}
 
 		return c.Next()
