@@ -1,13 +1,10 @@
-import axios from "axios";
 import { Post } from "../models/entities";
 import { ServerResponse } from "../models/server";
+import { axiosConfig } from "../utils/axios";
 
 async function getPosts() {
-  const res = (
-    await axios.get<ServerResponse<Post[]>>(
-      "http://localhost:3001/api/posts/get-posts"
-    )
-  ).data;
+  const res = (await axiosConfig.get<ServerResponse<Post[]>>("posts/get-posts"))
+    .data;
 
   if (res.error) {
     throw Error("Error fetching posts");
@@ -22,9 +19,7 @@ interface GetPostInput {
 
 async function getPost(input: GetPostInput) {
   const res = (
-    await axios.get<ServerResponse<Post>>(
-      `http://localhost:3001/api/posts/get-post/${input.id}`
-    )
+    await axiosConfig.get<ServerResponse<Post>>(`posts/get-post/${input.id}`)
   ).data;
 
   if (res.error) {
