@@ -1,26 +1,43 @@
 import { useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
+import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { SignUpInput } from "../api/auth";
-import { signUp } from "../api/auth";
+import { signUp as signUpApi } from "../api/auth";
 
-function SignInPage() {
-  const { register, handleSubmit } = useForm<SignUpInput>();
+function SignUpPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { mutateAsync: signUpMutate } = useMutation({
-    mutationFn: (input: SignUpInput) => {
-      return signUp(input);
+  const from = (location.state?.from.pathname as string) || "/";
+
+  const {
+    reset,
+    register,
+    handleSubmit,
+    formState: { isSubmitSuccessful },
+  } = useForm<SignUpInput>();
+
+  const { mutate: signUp } = useMutation({
+    mutationFn: (input: SignUpInput) => signUpApi(input),
+    onSuccess: () => {
+      navigate(from);
     },
   });
 
-  const onSubmit = handleSubmit(async (input) => {
-    await signUpMutate(input);
-    navigate("/");
-  });
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+    }
+  }, [isSubmitSuccessful]);
+
+  const submitHandler: SubmitHandler<SignUpInput> = (input) => {
+    signUp(input);
+  };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit(submitHandler)}>
       <label>
         username:
         <input {...register("username")} />
@@ -38,4 +55,4 @@ function SignInPage() {
   );
 }
 
-export default SignInPage;
+export default SignUpPage;

@@ -14,15 +14,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import HomePage from "./pages/home-page";
 import PostPage from "./pages/post-page";
 import ErrorPage from "./pages/error-page";
-import UserPage from "./pages/user-page";
+import UserPage, { userPageLoader } from "./pages/user-page";
 import SignInPage from "./pages/signin-page";
 import SignUpPage from "./pages/signup-page";
 
 // layouts
 import BaseLayout from "./layouts/base-layout";
-
-// loaders
-import { getUserLoader } from "./utils/react-router/user";
 
 const TWO_MINS = 1000 * 60 * 2;
 
@@ -52,7 +49,7 @@ const router = createBrowserRouter(
       <Route
         path="user/:id"
         element={<UserPage />}
-        loader={getUserLoader(queryClient)}
+        loader={userPageLoader(queryClient)}
       />
 
       <Route path="*" element={<ErrorPage />} />
