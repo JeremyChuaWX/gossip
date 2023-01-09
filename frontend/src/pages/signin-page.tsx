@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import type { SignInInput } from "../api/auth";
 import { signIn } from "../api/auth";
 
-export default function SignInPage() {
+function SignInPage() {
   const { register, handleSubmit } = useForm<SignInInput>();
   const navigate = useNavigate();
 
@@ -33,3 +33,5 @@ export default function SignInPage() {
     </form>
   );
 }
+
+export default SignInPage;
