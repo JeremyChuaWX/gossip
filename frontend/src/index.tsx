@@ -24,7 +24,15 @@ import BaseLayout from "./layouts/base-layout";
 // loaders
 import { getUserLoader } from "./utils/react-router/user";
 
-const queryClient = new QueryClient();
+const TWO_MINS = 1000 * 60 * 2;
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: TWO_MINS,
+    },
+  },
+});
 
 const router = createBrowserRouter(
   createRoutesFromElements(

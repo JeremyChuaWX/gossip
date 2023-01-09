@@ -1,6 +1,6 @@
-import axios from "axios";
 import { User } from "../models/entities";
 import { ServerResponse } from "../models/server";
+import { axiosConfig } from "../utils/axios";
 
 interface SignInInput {
   username: string;
@@ -9,11 +9,7 @@ interface SignInInput {
 
 async function signIn(input: SignInInput) {
   const res = (
-    await axios.post<ServerResponse<User>>(
-      `http://localhost:3001/api/auth/signin`,
-      input,
-      { withCredentials: true }
-    )
+    await axiosConfig.post<ServerResponse<User>>(`auth/signin`, input)
   ).data;
 
   if (res.error) {
@@ -31,11 +27,7 @@ interface SignUpInput {
 
 async function signUp(input: SignUpInput) {
   const res = (
-    await axios.post<ServerResponse<User>>(
-      `http://localhost:3001/api/auth/signup`,
-      input,
-      { withCredentials: true }
-    )
+    await axiosConfig.post<ServerResponse<User>>(`auth/signup`, input)
   ).data;
 
   if (res.error) {
@@ -46,12 +38,8 @@ async function signUp(input: SignUpInput) {
 }
 
 async function signOut() {
-  const res = (
-    await axios.post<ServerResponse<any>>(
-      `http://localhost:3001/api/auth/signout`,
-      { withCredentials: true }
-    )
-  ).data;
+  const res = (await axiosConfig.post<ServerResponse<any>>(`auth/signout`))
+    .data;
 
   if (res.error) {
     throw Error(`Error posting credentials`);

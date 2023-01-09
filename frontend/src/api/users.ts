@@ -1,6 +1,6 @@
-import axios from "axios";
 import { User } from "../models/entities";
 import { ServerResponse } from "../models/server";
+import { axiosConfig } from "../utils/axios";
 
 interface GetUserInput {
   id: string;
@@ -8,10 +8,7 @@ interface GetUserInput {
 
 async function getUser(input: GetUserInput) {
   const res = (
-    await axios.get<ServerResponse<User>>(
-      `http://localhost:3001/api/users/get-user/${input.id}`,
-      { withCredentials: true }
-    )
+    await axiosConfig.get<ServerResponse<User>>(`users/get-user/${input.id}`)
   ).data;
 
   if (res.error) {
@@ -30,10 +27,9 @@ interface UpdateUserInput {
 
 async function updateUser(input: UpdateUserInput) {
   const res = (
-    await axios.post<ServerResponse<User>>(
-      `http://localhost:3001/api/users/update-user/${input.id}`,
-      input,
-      { withCredentials: true }
+    await axiosConfig.post<ServerResponse<User>>(
+      `users/update-user/${input.id}`,
+      input
     )
   ).data;
 
@@ -50,9 +46,8 @@ interface DeleteUserInput {
 
 async function deleteUser(input: DeleteUserInput) {
   const res = (
-    await axios.post<ServerResponse<User>>(
-      `http://localhost:3001/api/users/delete-user/${input.id}`,
-      { withCredentials: true }
+    await axiosConfig.post<ServerResponse<User>>(
+      `users/delete-user/${input.id}`
     )
   ).data;
 
