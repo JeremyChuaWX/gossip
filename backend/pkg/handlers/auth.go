@@ -149,7 +149,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 	var user models.User
 
 	cookie := c.Cookies("refresh_token")
-	if err != nil {
+	if cookie == "" {
 		return fiber.NewError(fiber.StatusForbidden, "Could not refresh access token")
 	}
 
@@ -197,7 +197,10 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		HTTPOnly: false,
 	})
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": accessToken})
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Access token refreshed",
+	})
 }
 
 func (h *AuthHandler) SignOut(c *fiber.Ctx) error {

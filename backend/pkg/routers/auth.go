@@ -13,5 +13,6 @@ func initAuthRouter(router fiber.Router, DB *gorm.DB) {
 
 	authRouter.Post("/signup", authHandler.SignUp)
 	authRouter.Post("/signin", authHandler.SignIn)
-	authRouter.Post("/signout", authHandler.SignOut)
+	authRouter.Get("/signout", authHandler.SignOut)
+	authRouter.Get("/refresh", authHandler.RefreshAccessToken)
 }
