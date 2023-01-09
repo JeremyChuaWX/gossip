@@ -25,8 +25,7 @@ function UserPage() {
 
   if (!id) throw Error("Invalid url params");
 
-  const { data: getUserRes } = useQuery(getUserQuery(id));
-  const user = getUserRes?.data;
+  const { data: user } = useQuery(getUserQuery(id));
 
   return (
     <div>

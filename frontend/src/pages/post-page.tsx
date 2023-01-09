@@ -22,8 +22,7 @@ function PostPage() {
 
   if (!id) throw Error("Invalid url params");
 
-  const { data: getPostRes } = useQuery(getPostQuery(id));
-  const post = getPostRes?.data;
+  const { data: post } = useQuery(getPostQuery(id));
 
   if (!post) throw Error("No such post");
 

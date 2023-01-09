@@ -14,7 +14,7 @@ async function getUser(input: GetUserInput) {
   if (res.error) {
     throw Error(`Error fetching user ${input.id}`);
   } else {
-    return res;
+    return res.data;
   }
 }
 
@@ -36,7 +36,7 @@ async function updateUser(input: UpdateUserInput) {
   if (res.error) {
     throw Error("Error updating user");
   } else {
-    return res;
+    return res.data;
   }
 }
 
@@ -54,7 +54,7 @@ async function deleteUser(input: DeleteUserInput) {
   if (res.error) {
     throw Error("Error updating user");
   } else {
-    return res;
+    return res.data;
   }
 }
 

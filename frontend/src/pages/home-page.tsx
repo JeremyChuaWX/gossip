@@ -15,8 +15,7 @@ function homePageLoader(queryClient: QueryClient) {
 }
 
 function HomePage() {
-  const { data: getPostsRes } = useQuery(getPostsQuery());
-  const posts = getPostsRes?.data;
+  const { data: posts } = useQuery(getPostsQuery());
 
   if (!posts) return <div>no posts</div>;
 

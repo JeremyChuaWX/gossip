@@ -9,13 +9,13 @@ interface SignInInput {
 
 async function signIn(input: SignInInput) {
   const res = (
-    await axiosConfig.post<ServerResponse<User>>(`auth/signin`, input)
+    await axiosConfig.post<ServerResponse<User>>("auth/signin", input)
   ).data;
 
   if (res.error) {
-    throw Error(`Error posting credentials`);
+    throw Error("Error signing in");
   } else {
-    return res;
+    return res.data;
   }
 }
 
@@ -27,24 +27,23 @@ interface SignUpInput {
 
 async function signUp(input: SignUpInput) {
   const res = (
-    await axiosConfig.post<ServerResponse<User>>(`auth/signup`, input)
+    await axiosConfig.post<ServerResponse<User>>("auth/signup", input)
   ).data;
 
   if (res.error) {
-    throw Error(`Error posting credentials`);
+    throw Error("Error signing up");
   } else {
-    return res;
+    return res.data;
   }
 }
 
 async function signOut() {
-  const res = (await axiosConfig.post<ServerResponse<any>>(`auth/signout`))
-    .data;
+  const res = (await axiosConfig.get<ServerResponse<any>>("auth/signout")).data;
 
   if (res.error) {
-    throw Error(`Error posting credentials`);
+    throw Error("Error signing out");
   } else {
-    return res;
+    return res.data;
   }
 }
 

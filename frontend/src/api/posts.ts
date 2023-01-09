@@ -9,7 +9,7 @@ async function getPosts() {
   if (res.error) {
     throw Error("Error fetching posts");
   } else {
-    return res;
+    return res.data;
   }
 }
 
@@ -25,7 +25,7 @@ async function getPost(input: GetPostInput) {
   if (res.error) {
     throw Error(`Error fetching post ${input.id}`);
   } else {
-    return res;
+    return res.data;
   }
 }
 
