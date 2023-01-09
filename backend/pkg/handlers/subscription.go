@@ -20,7 +20,12 @@ func (h *SubscriptionHandler) CreateSubscription(c *fiber.Ctx) error {
 	var err error
 	var input createSubscriptionInput
 	var post models.Post
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -62,7 +67,12 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 	var err error
 	var input deleteSubscriptionInput
 	var subscription models.Subscription
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -77,6 +87,11 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 	// get subscription by ids
 	if err = h.DB.Where("user_id = ? AND post_id = ?", currId, input.PostID).First(&subscription).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Taggable not found")
+	}
+
+	// check authorised
+	if currId != subscription.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	// delete subscription

@@ -17,7 +17,12 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get user by id
 	if err = h.DB.Preload(clause.Associations).Where("id = ?", id).First(&user).Error; err != nil {
@@ -46,7 +51,12 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	var input updateUserInput
 	var user models.User
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
@@ -95,7 +105,12 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
@@ -123,7 +138,12 @@ func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
 	var err error
 	var user models.User
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {

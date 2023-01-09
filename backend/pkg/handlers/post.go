@@ -21,7 +21,12 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 
 	var err error
 	var input createPostInput
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -95,7 +100,12 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	var input updatePostInput
 	var post models.Post
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
@@ -139,7 +149,12 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	var err error
 	var post models.Post
 	id := c.Params("id")
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// get post by id
 	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {

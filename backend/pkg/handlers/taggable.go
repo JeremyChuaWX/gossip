@@ -21,7 +21,12 @@ func (h *TaggableHandler) CreateTaggable(c *fiber.Ctx) error {
 	var err error
 	var input createTaggableInput
 	var post models.Post
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -70,7 +75,12 @@ func (h *TaggableHandler) DeleteTaggable(c *fiber.Ctx) error {
 	var input deleteTaggableInput
 	var post models.Post
 	var taggable models.Taggable
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {

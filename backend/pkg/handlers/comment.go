@@ -23,7 +23,12 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 
 	var err error
 	var input createCommentInput
-	currId := utils.GetJwt(c)
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
 
 	// bind input struct
 	if err = c.BodyParser(&input); err != nil {
@@ -90,6 +95,12 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	var cmt models.Comment
 	id := c.Params("id")
 
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
+
 	// bind input struct
 	if err := c.BodyParser(&input); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
@@ -103,6 +114,11 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Comment not found")
+	}
+
+	// check authorised
+	if currId != cmt.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	updateCmt := models.Comment{
@@ -127,9 +143,20 @@ func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
 	var cmt models.Comment
 	id := c.Params("id")
 
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
+
 	// get comment by id
 	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Comment not found")
+	}
+
+	// check authorised
+	if currId != cmt.UserID {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	// delete comment
