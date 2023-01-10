@@ -26,7 +26,7 @@ axiosConfig.interceptors.response.use(
     const originalReq = error.config;
     const errMsg = error.response.data.message as string;
 
-    if (errMsg.includes("") && !originalReq._retry) {
+    if (errMsg.includes("Expired token") && !originalReq._retry) {
       originalReq._retry = true;
       await refreshToken();
       return axiosConfig(originalReq);
