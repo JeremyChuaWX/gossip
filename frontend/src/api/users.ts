@@ -29,19 +29,15 @@ async function getMe() {
   }
 }
 
-interface UpdateUserInput {
-  id: string;
+interface UpdateMeInput {
   username?: string;
   email?: string;
   password?: string;
 }
 
-async function updateUser(input: UpdateUserInput) {
+async function updateMe(input: UpdateMeInput) {
   const res = (
-    await axiosConfig.put<ServerResponse<User>>(
-      `users/update-user/${input.id}`,
-      input
-    )
+    await axiosConfig.put<ServerResponse<User>>("users/update-me", input)
   ).data;
 
   if (res.error) {
@@ -51,23 +47,17 @@ async function updateUser(input: UpdateUserInput) {
   }
 }
 
-interface DeleteUserInput {
-  id: string;
-}
-
-async function deleteUser(input: DeleteUserInput) {
+async function deleteMe() {
   const res = (
-    await axiosConfig.delete<ServerResponse<User>>(
-      `users/delete-user/${input.id}`
-    )
+    await axiosConfig.delete<ServerResponse<User>>("users/delete-me")
   ).data;
 
   if (res.error) {
-    throw Error("Error updating user");
+    throw Error("Error deleting user");
   } else {
     return res.data;
   }
 }
 
-export type { GetUserInput, UpdateUserInput, DeleteUserInput };
-export { getUser, getMe, updateUser, deleteUser };
+export type { GetUserInput, UpdateMeInput };
+export { getUser, getMe, updateMe, deleteMe };
