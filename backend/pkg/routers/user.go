@@ -16,7 +16,7 @@ func initUserRouter(router fiber.Router, DB *gorm.DB) {
 
 	userRouter.Get("/get-user/:id", userHandler.GetUserById)
 	userRouter.Get("/get-me", userHandler.GetMe)
-	userRouter.Put("/update-user/:id", userHandler.UpdateUser)
-	userRouter.Delete("/delete-user/:id", userHandler.DeleteUser)
-	userRouter.Put("/toggle-visibility/:id", userHandler.ToggleProfileVisibility)
+	userRouter.Put("/update-me", userHandler.UpdateMe)
+	userRouter.Delete("/delete-me", userHandler.DeleteMe)
+	userRouter.Put("/toggle-visibility", userHandler.ToggleProfileVisibility)
 }

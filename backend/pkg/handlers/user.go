@@ -63,7 +63,7 @@ func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 	})
 }
 
-func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
+func (h *UserHandler) UpdateMe(c *fiber.Ctx) error {
 	type updateUserInput struct {
 		Email    string `json:"email,omitempty" validate:"omitempty,email"`
 		Password string `json:"password,omitempty"`
@@ -72,7 +72,6 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	var err error
 	var input updateUserInput
 	var user models.User
-	id := c.Params("id")
 
 	// get user id
 	currId := utils.GetUserId(c)
@@ -81,13 +80,8 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	}
 
 	// get user by id
-	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+	if err = h.DB.Where("id = ?", currId).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
-	}
-
-	// check authorised
-	if currId != user.ID {
-		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	// bind input struct
@@ -123,10 +117,9 @@ func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	})
 }
 
-func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
+func (h *UserHandler) DeleteMe(c *fiber.Ctx) error {
 	var err error
 	var user models.User
-	id := c.Params("id")
 
 	// get user id
 	currId := utils.GetUserId(c)
@@ -135,13 +128,8 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 	}
 
 	// get user by id
-	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+	if err = h.DB.Where("id = ?", currId).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
-	}
-
-	// check authorised
-	if currId != user.ID {
-		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	// delete user
@@ -159,7 +147,6 @@ func (h *UserHandler) DeleteUser(c *fiber.Ctx) error {
 func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
 	var err error
 	var user models.User
-	id := c.Params("id")
 
 	// get user id
 	currId := utils.GetUserId(c)
@@ -168,20 +155,15 @@ func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
 	}
 
 	// get user by id
-	if err = h.DB.Where("id = ?", id).First(&user).Error; err != nil {
+	if err = h.DB.Where("id = ?", currId).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
-	}
-
-	// check authorised
-	if currId != user.ID {
-		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorised")
 	}
 
 	updateUser := models.User{
 		IsPublic: !user.IsPublic,
 	}
 
-	// update user
+	// toggle visibility
 	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
