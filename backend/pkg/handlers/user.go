@@ -25,7 +25,7 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	}
 
 	// get user by id
-	if err = h.DB.Preload(clause.Associations).Where("id = ?", id).First(&user).Error; err != nil {
+	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
@@ -52,7 +52,7 @@ func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 	}
 
 	// get user by id
-	if err = h.DB.Preload(clause.Associations).Where("id = ?", currId).First(&user).Error; err != nil {
+	if err = h.DB.Where("id = ?", currId).Preload(clause.Associations).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
