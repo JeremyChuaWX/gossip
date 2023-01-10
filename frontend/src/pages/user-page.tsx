@@ -27,9 +27,11 @@ function UserPage() {
 
   const { data: user } = useQuery(getUserQuery(id));
 
+  if (!user) throw Error("No user found");
+
   return (
     <div>
-      <h1>hello {user?.username}</h1>
+      <h1>hello {user.username}</h1>
       <UpdateUserForm id={id} />
     </div>
   );
