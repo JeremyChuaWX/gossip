@@ -5,16 +5,19 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { SignInInput } from "../api/auth";
 import { signIn as signInApi } from "../api/auth";
+import useAuthStore from "../stores/authStore";
 
 function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const from = (location.state?.from.pathname as string) || "/";
 
   const { mutate: signIn } = useMutation({
     mutationFn: (input: SignInInput) => signInApi(input),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setUser(data);
       navigate(from);
     },
   });
