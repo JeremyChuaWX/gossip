@@ -2,12 +2,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import type { UpdateUserInput } from "../api/users";
-import { updateUser as updateUserApi } from "../api/users";
+import type { UpdateMeInput } from "../api/users";
+import { updateMe as updateMeApi } from "../api/users";
 
-function UpdateUserForm({ id }: { id: string }) {
+function UpdateUserForm() {
   const { mutate: updateUser } = useMutation({
-    mutationFn: (input: UpdateUserInput) => updateUserApi(input),
+    mutationFn: (input: UpdateMeInput) => updateMeApi(input),
   });
 
   const {
@@ -15,7 +15,7 @@ function UpdateUserForm({ id }: { id: string }) {
     register,
     handleSubmit,
     formState: { isSubmitSuccessful },
-  } = useForm<UpdateUserInput>();
+  } = useForm<UpdateMeInput>();
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -23,8 +23,8 @@ function UpdateUserForm({ id }: { id: string }) {
     }
   }, [isSubmitSuccessful]);
 
-  const submitHandler: SubmitHandler<UpdateUserInput> = (input) => {
-    updateUser({ id, email: input.email, password: input.password });
+  const submitHandler: SubmitHandler<UpdateMeInput> = (input) => {
+    updateUser({ email: input.email, password: input.password });
   };
 
   return (
