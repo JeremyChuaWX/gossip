@@ -65,6 +65,7 @@ func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 
 func (h *UserHandler) UpdateMe(c *fiber.Ctx) error {
 	type updateUserInput struct {
+		Username string `json:"username,omitempty"`
 		Email    string `json:"email,omitempty" validate:"omitempty,email"`
 		Password string `json:"password,omitempty"`
 	}
@@ -101,6 +102,7 @@ func (h *UserHandler) UpdateMe(c *fiber.Ctx) error {
 	}
 
 	updateUser := models.User{
+		Username: input.Username,
 		Email:    input.Email,
 		Password: hashedPassword,
 	}
@@ -164,7 +166,7 @@ func (h *UserHandler) ToggleProfileVisibility(c *fiber.Ctx) error {
 	}
 
 	// toggle visibility
-	if err = h.DB.Model(&user).Updates(updateUser).Error; err != nil {
+	if err = h.DB.Model(&user).Select("IsPublic").Updates(updateUser).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
