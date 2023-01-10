@@ -47,6 +47,11 @@ func CreateJwt(ttl time.Duration, payload interface{}, privateKey string) (strin
 func ValidateJwt(token string, publicKey string) (string, error) {
 	var err error
 
+	// throw if empty token
+	if token == "" {
+		return "", fmt.Errorf("Missing token")
+	}
+
 	// decode base64 privateKey
 	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
 	if err != nil {
