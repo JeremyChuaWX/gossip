@@ -23,8 +23,11 @@ function ProfilePage() {
 
   return (
     <div>
-      <h1>Hello {user.username}</h1>
-      <UpdateUserForm id={user.id} />
+      <div className="p-4">
+        <h1 className="text-3xl">Hello {user.username}</h1>
+        <p>email: {user.email}</p>
+      </div>
+      <UpdateUserForm />
     </div>
   );
 }
