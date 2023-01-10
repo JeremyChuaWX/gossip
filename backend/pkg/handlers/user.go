@@ -41,6 +41,28 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	})
 }
 
+func (h *UserHandler) GetMe(c *fiber.Ctx) error {
+	var err error
+	var user models.User
+
+	// get user id
+	currId := utils.GetUserId(c)
+	if currId == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
+	}
+
+	// get user by id
+	if err = h.DB.Preload(clause.Associations).Where("id = ?", currId).First(&user).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "User not found")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "User found",
+		Data:  user,
+	})
+}
+
 func (h *UserHandler) UpdateUser(c *fiber.Ctx) error {
 	type updateUserInput struct {
 		Email    string `json:"email,omitempty" validate:"omitempty,email"`
