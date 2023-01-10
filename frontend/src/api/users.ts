@@ -18,6 +18,17 @@ async function getUser(input: GetUserInput) {
   }
 }
 
+async function getMe() {
+  const res = (await axiosConfig.get<ServerResponse<User>>("users/get-me"))
+    .data;
+
+  if (res.error) {
+    throw Error("Error fetching user");
+  } else {
+    return res.data;
+  }
+}
+
 interface UpdateUserInput {
   id: string;
   username?: string;
@@ -59,4 +70,4 @@ async function deleteUser(input: DeleteUserInput) {
 }
 
 export type { GetUserInput, UpdateUserInput, DeleteUserInput };
-export { getUser, updateUser, deleteUser };
+export { getUser, getMe, updateUser, deleteUser };
