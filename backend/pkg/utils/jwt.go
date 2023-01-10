@@ -49,7 +49,7 @@ func ValidateJwt(token string, publicKey string) (string, error) {
 
 	// throw if empty token
 	if token == "" {
-		return "", fmt.Errorf("Missing token")
+		return "", fmt.Errorf("Invalid token")
 	}
 
 	// decode base64 privateKey
@@ -82,13 +82,8 @@ func ValidateJwt(token string, publicKey string) (string, error) {
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 
 	// throw if invalid
-	if !ok || !parsedToken.Valid {
+	if !ok || !parsedToken.Valid || !claims.VerifyExpiresAt(time.Now().Unix(), true) {
 		return "", fmt.Errorf("Invalid token")
-	}
-
-	// throw if expired
-	if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
-		return "", fmt.Errorf("Expired token")
 	}
 
 	return claims["sub"].(string), nil
