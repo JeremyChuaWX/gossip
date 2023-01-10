@@ -165,8 +165,8 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 	}
 
-	// get user by username
-	if err = h.DB.Where("username = ?", sub).First(&user).Error; err != nil {
+	// get user by id
+	if err = h.DB.Where("id = ?", sub).First(&user).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "User not found")
 	}
 
