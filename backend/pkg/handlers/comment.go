@@ -37,7 +37,11 @@ func (h *CommentHandler) CreateComment(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// set parent id
@@ -108,7 +112,11 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// get comment by id

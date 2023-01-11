@@ -49,7 +49,7 @@ func ValidateJwt(token string, publicKey string) (string, error) {
 
 	// throw if empty token
 	if token == "" {
-		return "", fmt.Errorf("Invalid token")
+		return "", fmt.Errorf("Missing token")
 	}
 
 	// decode base64 privateKey

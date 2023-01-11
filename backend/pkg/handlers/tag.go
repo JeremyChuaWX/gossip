@@ -27,7 +27,11 @@ func (h *TagHandler) CreateTag(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	tag := models.Tag{Name: input.Name}
@@ -99,7 +103,11 @@ func (h *TagHandler) UpdateTag(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	updateTag := models.Tag{Name: input.Name}

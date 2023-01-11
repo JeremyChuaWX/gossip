@@ -31,7 +31,11 @@ func (h *AuthHandler) SignUp(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// hash password
@@ -75,7 +79,11 @@ func (h *AuthHandler) SignIn(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// get user by username
@@ -150,7 +158,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 
 	cookie := c.Cookies("refresh_token")
 	if cookie == "" {
-		return fiber.NewError(fiber.StatusForbidden, "Could not refresh access token")
+		return fiber.NewError(fiber.StatusBadRequest, "Missing refresh token")
 	}
 
 	// load env
@@ -162,7 +170,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 	// validate and extract id from jwt
 	sub, err := utils.ValidateJwt(cookie, env.RefreshTokenPublicKey)
 	if err != nil {
-		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	// get user by id
@@ -173,7 +181,7 @@ func (h *AuthHandler) RefreshAccessToken(c *fiber.Ctx) error {
 	// generate access token
 	accessToken, err := utils.CreateJwt(env.AccessTokenDuration, user.ID, env.AccessTokenPrivateKey)
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, "Error refreshing access token")
 	}
 
 	// set cookies

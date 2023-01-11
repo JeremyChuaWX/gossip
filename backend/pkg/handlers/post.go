@@ -35,7 +35,11 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	post := models.Post{
@@ -124,7 +128,11 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	updatePost := models.Post{

@@ -34,7 +34,11 @@ func (h *SubscriptionHandler) CreateSubscription(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// get post by id
@@ -81,7 +85,11 @@ func (h *SubscriptionHandler) DeleteSubscription(c *fiber.Ctx) error {
 
 	// input validation
 	if errors := utils.ValidateStruct(&input); errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
 	}
 
 	// get subscription by ids
