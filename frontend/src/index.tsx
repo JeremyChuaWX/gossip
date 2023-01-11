@@ -20,7 +20,7 @@ import SignInPage from "./pages/signin-page";
 import SignUpPage from "./pages/signup-page";
 
 // layouts
-import BaseLayout, { baseLayoutLoader } from "./layouts/base-layout";
+import BaseLayout from "./layouts/base-layout";
 
 const TWO_MINS = 1000 * 60 * 2;
 
@@ -34,12 +34,7 @@ const queryClient = new QueryClient({
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route
-      path="/"
-      element={<BaseLayout />}
-      errorElement={<ErrorPage />}
-      loader={baseLayoutLoader(queryClient)}
-    >
+    <Route path="/" element={<BaseLayout />} errorElement={<ErrorPage />}>
       <Route
         index
         element={<HomePage />}

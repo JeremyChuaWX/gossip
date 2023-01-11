@@ -2,22 +2,8 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import { getMe as getMeApi } from "../api/users";
 import { signOut as signOutApi } from "../api/auth";
-import type { QueryClient } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-
-function getMeQuery() {
-  return {
-    queryKey: ["get-me"],
-    queryFn: () => getMeApi(),
-  };
-}
-
-function baseLayoutLoader(queryClient: QueryClient) {
-  return async () => {
-    return queryClient.fetchQuery(getMeQuery());
-  };
-}
 
 function BaseLayout() {
   const queryClient = useQueryClient();
@@ -31,7 +17,10 @@ function BaseLayout() {
     },
   });
 
-  const { data: user } = useQuery(getMeQuery());
+  const { data: user } = useQuery({
+    queryKey: ["get-me"],
+    queryFn: () => getMeApi(),
+  });
 
   return (
     <>
@@ -62,4 +51,3 @@ function BaseLayout() {
 }
 
 export default BaseLayout;
-export { baseLayoutLoader };
