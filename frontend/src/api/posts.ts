@@ -6,11 +6,7 @@ async function getPosts() {
   const res = (await axiosConfig.get<ServerResponse<Post[]>>("posts/get-posts"))
     .data;
 
-  if (res.error) {
-    throw Error("Error fetching posts");
-  } else {
-    return res.data;
-  }
+  return res.data;
 }
 
 interface GetPostInput {
@@ -22,11 +18,7 @@ async function getPost(input: GetPostInput) {
     await axiosConfig.get<ServerResponse<Post>>(`posts/get-post/${input.id}`)
   ).data;
 
-  if (res.error) {
-    throw Error(`Error fetching post ${input.id}`);
-  } else {
-    return res.data;
-  }
+  return res.data;
 }
 
 export type { GetPostInput };

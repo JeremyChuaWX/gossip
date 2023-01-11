@@ -12,11 +12,7 @@ async function signIn(input: SignInInput) {
     await axiosConfig.post<ServerResponse<User>>("auth/signin", input)
   ).data;
 
-  if (res.error) {
-    throw Error("Error signing in");
-  } else {
-    return res.data;
-  }
+  return res.data;
 }
 
 interface SignUpInput {
@@ -30,21 +26,13 @@ async function signUp(input: SignUpInput) {
     await axiosConfig.post<ServerResponse<User>>("auth/signup", input)
   ).data;
 
-  if (res.error) {
-    throw Error("Error signing up");
-  } else {
-    return res.data;
-  }
+  return res.data;
 }
 
 async function signOut() {
   const res = (await axiosConfig.get<ServerResponse<any>>("auth/signout")).data;
 
-  if (res.error) {
-    throw Error("Error signing out");
-  } else {
-    return res.data;
-  }
+  return res.data;
 }
 
 export type { SignInInput, SignUpInput };
