@@ -1,13 +1,6 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { LoaderFunctionArgs, useParams } from "react-router-dom";
-import { getPost as getPostApi } from "../api/posts";
-
-function getPostQuery(id: string) {
-  return {
-    queryKey: ["get-post", id],
-    queryFn: () => getPostApi({ id }),
-  };
-}
+import { getPostQuery } from "../react-queries/posts";
 
 function postPageLoader(queryClient: QueryClient) {
   return async ({ params: { id } }: LoaderFunctionArgs) => {

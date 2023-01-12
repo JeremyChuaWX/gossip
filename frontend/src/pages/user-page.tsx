@@ -2,14 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { getUser as getUserApi } from "../api/users";
-
-function getUserQuery(id: string) {
-  return {
-    queryKey: ["get-user", id],
-    queryFn: () => getUserApi({ id }),
-  };
-}
+import { getUserQuery } from "../react-queries/users";
 
 function userPageLoader(queryClient: QueryClient) {
   return async ({ params: { id } }: LoaderFunctionArgs) => {

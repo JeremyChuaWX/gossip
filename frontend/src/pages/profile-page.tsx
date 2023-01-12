@@ -1,14 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { getMe as getMeApi } from "../api/users";
 import UpdateUserForm from "../components/update-user-form";
-
-function getMeQuery() {
-  return {
-    queryKey: ["get-me"],
-    queryFn: () => getMeApi(),
-  };
-}
+import { getMeQuery } from "../react-queries/users";
 
 function profilePageLoader(queryClient: QueryClient) {
   return async () => {
