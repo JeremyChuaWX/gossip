@@ -1,4 +1,4 @@
-import { getMe, getUser } from "../api/users";
+import { getMe, getUser } from "./functions";
 
 function getMeQuery() {
   return {

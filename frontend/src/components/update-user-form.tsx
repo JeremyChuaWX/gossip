@@ -1,19 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import type { UpdateMeInput } from "../api/users";
-import { updateMe as updateMeApi } from "../api/users";
+import type { UpdateMeInput } from "../api/users/functions";
+import { useUpdateMeMutation } from "../api/users/mutations";
 
 function UpdateUserForm() {
-  const queryClient = useQueryClient();
-
-  const { mutate: updateUser } = useMutation({
-    mutationFn: (input: UpdateMeInput) => updateMeApi(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["get-me"] });
-    },
-  });
+  const { mutate: updateMe } = useUpdateMeMutation();
 
   const {
     reset,
@@ -29,7 +21,7 @@ function UpdateUserForm() {
   }, [isSubmitSuccessful]);
 
   const submitHandler: SubmitHandler<UpdateMeInput> = (input) => {
-    updateUser({
+    updateMe({
       username: input.username,
       email: input.email,
       password: input.password,

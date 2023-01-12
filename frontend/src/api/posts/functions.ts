@@ -1,6 +1,6 @@
-import { Post } from "../models/entities";
-import { ServerResponse } from "../models/server";
-import { axiosConfig } from "../utils/axios";
+import type { Post } from "../../models/entities";
+import type { ServerResponse } from "../../models/server";
+import { axiosConfig } from "../../utils/axios";
 
 async function getPosts() {
   const res = (await axiosConfig.get<ServerResponse<Post[]>>("posts/get-posts"))

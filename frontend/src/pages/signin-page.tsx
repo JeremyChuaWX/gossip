@@ -1,25 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { SignInInput } from "../api/auth";
-import { signIn as signInApi } from "../api/auth";
+import type { SignInInput } from "../api/auth/functions";
+import { useSignInMutation } from "../api/auth/mutations";
 
 function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
+  const { mutate: signIn } = useSignInMutation();
 
   const from = (location.state?.from.pathname as string) || "/";
-
-  const { mutate: signIn } = useMutation({
-    mutationFn: (input: SignInInput) => signInApi(input),
-    onSuccess: (data) => {
-      queryClient.setQueryData(["get-me"], data);
-      navigate(from);
-    },
-  });
 
   const {
     reset,
@@ -35,7 +26,11 @@ function SignInPage() {
   }, [isSubmitSuccessful]);
 
   const submitHandler: SubmitHandler<SignInInput> = (input) => {
-    signIn(input);
+    signIn(input, {
+      onSuccess: () => {
+        navigate(from);
+      },
+    });
   };
 
   return (

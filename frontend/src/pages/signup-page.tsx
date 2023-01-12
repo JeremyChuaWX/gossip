@@ -1,21 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { SignUpInput } from "../api/auth";
-import { signUp as signUpApi } from "../api/auth";
+import type { SignUpInput } from "../api/auth/functions";
+import { useSignUpMutation } from "../api/auth/mutations";
 
 function SignUpPage() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const { mutate: signUp } = useMutation({
-    mutationFn: (input: SignUpInput) => signUpApi(input),
-    onSuccess: () => {
-      navigate(from);
-    },
-  });
+  const { mutate: signUp } = useSignUpMutation();
 
   const from = (location.state?.from.pathname as string) || "/";
 
@@ -33,7 +26,11 @@ function SignUpPage() {
   }, [isSubmitSuccessful]);
 
   const submitHandler: SubmitHandler<SignUpInput> = (input) => {
-    signUp(input);
+    signUp(input, {
+      onSuccess: () => {
+        navigate(from);
+      },
+    });
   };
 
   return (

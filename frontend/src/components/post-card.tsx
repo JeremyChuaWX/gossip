@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Post } from "../models/entities";
+import type { Post } from "../models/entities";
 
 function PostCard({ post }: { post: Post }) {
   return (

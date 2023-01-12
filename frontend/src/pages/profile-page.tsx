@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import UpdateUserForm from "../components/update-user-form";
-import { getMeQuery } from "../react-queries/users";
+import { getMeQuery } from "../api/users/queries";
 
 function profilePageLoader(queryClient: QueryClient) {
   return async () => {

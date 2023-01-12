@@ -1,6 +1,6 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import PostCard from "../components/post-card";
-import { getPostsQuery } from "../react-queries/posts";
+import { getPostsQuery } from "../api/posts/queries";
 
 function homePageLoader(queryClient: QueryClient) {
   return async () => {

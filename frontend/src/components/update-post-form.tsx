@@ -1,20 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import type { UpdatePostInput } from "../api/posts";
-import { updatePost as updatePostApi } from "../api/posts";
+import type { UpdatePostInput } from "../api/posts/functions";
+import { useUpdatePostMutation } from "../api/posts/mutations";
 
 function UpdatePostForm({ id }: { id: string }) {
-  const queryClient = useQueryClient();
-
-  const { mutate: updatePost } = useMutation({
-    mutationFn: (input: UpdatePostInput) => updatePostApi(input),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["get-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["get-post", variables.id] });
-    },
-  });
+  const { mutate: updatePost } = useUpdatePostMutation();
 
   const {
     reset,

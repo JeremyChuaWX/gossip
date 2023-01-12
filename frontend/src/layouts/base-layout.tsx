@@ -1,23 +1,22 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
-import { signOut as signOutApi } from "../api/auth";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { getMeQuery } from "../react-queries/users";
+import { getMeQuery } from "../api/users/queries";
+import { useSignOutMutation } from "../api/auth/mutations";
 
 function BaseLayout() {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { mutate: signOut } = useMutation({
-    mutationFn: () => signOutApi(),
-    onSettled: () => {
-      queryClient.removeQueries({ queryKey: ["get-me"] });
-      navigate("/");
-    },
-  });
-
+  const { mutate: signOut } = useSignOutMutation();
   const { data: user } = useQuery(getMeQuery());
+
+  const signOutOnClick = () => {
+    signOut(undefined, {
+      onSuccess: () => {
+        navigate("/");
+      },
+    });
+  };
 
   return (
     <>
@@ -28,7 +27,7 @@ function BaseLayout() {
         <nav className="flex gap-4">
           {user ? (
             <>
-              <button onClick={() => signOut()}>Sign Out</button>
+              <button onClick={() => signOutOnClick()}>Sign Out</button>
               <NavLink to="/profile">{user.username}</NavLink>
             </>
           ) : (

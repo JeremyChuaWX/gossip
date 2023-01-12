@@ -1,7 +1,7 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { LoaderFunctionArgs, useParams } from "react-router-dom";
 import UpdatePostForm from "../components/update-post-form";
-import { getPostQuery } from "../react-queries/posts";
+import { getPostQuery } from "../api/posts/queries";
 
 function postPageLoader(queryClient: QueryClient) {
   return async ({ params: { id } }: LoaderFunctionArgs) => {
