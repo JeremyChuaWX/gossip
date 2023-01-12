@@ -1,5 +1,6 @@
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { LoaderFunctionArgs, useParams } from "react-router-dom";
+import UpdatePostForm from "../components/update-post-form";
 import { getPostQuery } from "../react-queries/posts";
 
 function postPageLoader(queryClient: QueryClient) {
@@ -23,6 +24,7 @@ function PostPage() {
     <div>
       <h2>{post.title}</h2>
       <p>{post.body}</p>
+      <UpdatePostForm id={id} />
     </div>
   );
 }

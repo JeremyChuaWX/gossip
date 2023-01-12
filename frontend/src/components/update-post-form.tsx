@@ -11,6 +11,7 @@ function UpdatePostForm({ id }: { id: string }) {
   const { mutate: updatePost } = useMutation({
     mutationFn: (input: UpdatePostInput) => updatePostApi(input),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["get-posts"] });
       queryClient.invalidateQueries({ queryKey: ["get-post", variables.id] });
     },
   });
@@ -43,12 +44,15 @@ function UpdatePostForm({ id }: { id: string }) {
     >
       <h1 className="text-lg">Update Details</h1>
       <label>
-        username
+        title
         <input {...register("title")} className="w-full border border-black" />
       </label>
       <label>
-        email
-        <input {...register("body")} className="w-full border border-black" />
+        body
+        <textarea
+          {...register("body")}
+          className="w-full border border-black"
+        />
       </label>
       <input type="submit" className="border border-black p-1 rounded-lg" />
     </form>
