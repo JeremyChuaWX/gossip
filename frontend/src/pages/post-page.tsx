@@ -23,9 +23,15 @@ function PostPage() {
 
   return (
     <div>
-      <h2>{post.title}</h2>
-      <p>{post.body}</p>
-      {user?.id === post.user_id && <UpdatePostForm id={id} />}
+      <div className="border border-black">
+        <h2>title: {post.title}</h2>
+        <h3>author: {post.user.username}</h3>
+        <p>body: {post.body}</p>
+        {user?.id === post.user_id && <UpdatePostForm id={id} />}
+      </div>
+      {post.comments.map((cmt) => (
+        <p>{cmt.body}</p>
+      ))}
     </div>
   );
 }

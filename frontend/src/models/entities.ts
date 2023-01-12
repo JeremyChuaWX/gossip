@@ -11,6 +11,7 @@ export interface User {
 export interface Post {
   id: string;
   user_id: string;
+  user: User;
   comments: Comment[];
   tags: Tag[];
   post_score: number;
@@ -21,6 +22,7 @@ export interface Post {
 export interface Comment {
   id: string;
   user_id: string;
+  user: User;
   post_id: string;
   parent_id: string | null;
   replies: Comment[];
