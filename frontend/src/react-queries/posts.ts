@@ -1,4 +1,4 @@
-import { getPost } from "../api/posts";
+import { getPost, getPosts } from "../api/posts";
 
 function getPostQuery(id: string) {
   return {
@@ -7,4 +7,11 @@ function getPostQuery(id: string) {
   };
 }
 
-export { getPostQuery };
+function getPostsQuery() {
+  return {
+    queryKey: ["get-posts"],
+    queryFn: () => getPosts(),
+  };
+}
+
+export { getPostQuery, getPostsQuery };

@@ -1,9 +1,9 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
-import { getMe as getMeApi } from "../api/users";
 import { signOut as signOutApi } from "../api/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { getMeQuery } from "../react-queries/users";
 
 function BaseLayout() {
   const queryClient = useQueryClient();
@@ -17,10 +17,7 @@ function BaseLayout() {
     },
   });
 
-  const { data: user } = useQuery({
-    queryKey: ["get-me"],
-    queryFn: () => getMeApi(),
-  });
+  const { data: user } = useQuery(getMeQuery());
 
   return (
     <>
