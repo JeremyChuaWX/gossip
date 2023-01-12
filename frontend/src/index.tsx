@@ -29,6 +29,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: TWO_MINS,
+      retry: process.env.NODE_ENV === "production",
+      refetchOnWindowFocus: process.env.NODE_ENV === "production",
     },
   },
 });

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ServerResponse } from "../models/server";
 
-const BASE_URL = "http://localhost:3001/api/";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const axiosConfig = axios.create({
   baseURL: BASE_URL,
