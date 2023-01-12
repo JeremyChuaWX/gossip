@@ -34,6 +34,7 @@ type User struct {
 type Post struct {
 	Base
 	UserID    string    `gorm:"not null" json:"user_id"`
+	User      User      `json:"user"`
 	Comments  []Comment `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"comments"`
 	Tags      []Tag     `gorm:"many2many:taggable;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"tags"`
 	PostScore int       `json:"post_score"`
@@ -44,6 +45,7 @@ type Post struct {
 type Comment struct {
 	Base
 	UserID       string         `gorm:"not null" json:"user_id"`
+	User         User           `json:"user"`
 	PostID       string         `gorm:"not null" json:"post_id"`
 	ParentID     sql.NullString `json:"parent_id"`
 	Replies      []Comment      `gorm:"foreignKey:ParentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"replies"`
