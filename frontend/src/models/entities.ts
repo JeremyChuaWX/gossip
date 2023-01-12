@@ -10,6 +10,7 @@ export interface User {
 
 export interface Post {
   id: string;
+  user_id: string;
   comments: Comment[];
   tags: Tag[];
   post_score: number;
