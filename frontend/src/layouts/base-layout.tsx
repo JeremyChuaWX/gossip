@@ -11,7 +11,7 @@ function BaseLayout() {
 
   const { mutate: signOut } = useMutation({
     mutationFn: () => signOutApi(),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["get-me"] });
       navigate("/");
     },
