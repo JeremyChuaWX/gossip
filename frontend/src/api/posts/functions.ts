@@ -21,6 +21,22 @@ async function getPost(input: GetPostInput) {
   return res.data;
 }
 
+interface CreatePostInput {
+  title: string;
+  body: string;
+}
+
+async function createPost(input: CreatePostInput) {
+  const res = (
+    await axiosConfig.put<ServerResponse<Post>>("posts/create-post/", {
+      title: input.title,
+      body: input.body,
+    })
+  ).data;
+
+  return res.data;
+}
+
 interface UpdatePostInput {
   id: string;
   title?: string;
@@ -57,5 +73,5 @@ async function deletePost(input: DeletePostInput) {
   return res.data;
 }
 
-export type { GetPostInput, UpdatePostInput, DeletePostInput };
-export { getPost, getPosts, updatePost, deletePost };
+export type { GetPostInput, CreatePostInput, UpdatePostInput, DeletePostInput };
+export { getPost, getPosts, createPost, updatePost, deletePost };
