@@ -64,9 +64,7 @@ As an admin i can...
 
 ### Comment
 
-A comment is the basic form of interaction on the forum.
-It has a title and a body.
-A comment can be replied to by other comments.
+A comment is the basic form of interaction on the forum and can be replied to by other comments.
 
 ### Post
 
