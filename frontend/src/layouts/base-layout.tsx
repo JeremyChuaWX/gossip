@@ -20,9 +20,9 @@ function BaseLayout() {
 
   return (
     <>
-      <header className="flex items-center justify-between p-4 relative">
+      <header className="flex relative justify-between items-center p-4">
         <NavLink to="/">
-          <h1 className="font-bold text-2xl">Gossip</h1>
+          <h1 className="text-2xl font-bold">Gossip</h1>
         </NavLink>
         <nav className="flex gap-4">
           {user ? (

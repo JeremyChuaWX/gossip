@@ -36,22 +36,22 @@ function SignInPage() {
   return (
     <form
       onSubmit={handleSubmit(submitHandler)}
-      className="flex flex-col w-1/2 mx-auto gap-4 border border-black rounded-lg items-center p-4"
+      className="flex flex-col gap-4 items-center p-4 mx-auto w-1/2 rounded-lg border border-black"
     >
       <h1 className="text-lg">Sign In</h1>
       <label>
         username:
-        <input {...register("username")} className="border border-black ml-2" />
+        <input {...register("username")} className="ml-2 border border-black" />
       </label>
       <label>
         password:
         <input
           {...register("password")}
           type="password"
-          className="border border-black ml-2"
+          className="ml-2 border border-black"
         />
       </label>
-      <input type="submit" className="border border-black p-1" />
+      <input type="submit" className="p-1 border border-black" />
     </form>
   );
 }
