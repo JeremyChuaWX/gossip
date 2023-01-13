@@ -1,4 +1,5 @@
-import { QueryClient, useQuery } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import PostCard from "../components/post-card";
 import { getPostsQuery } from "../api/posts/queries";
 
@@ -15,7 +16,6 @@ function HomePage() {
 
   return (
     <div>
-      <h1>home page</h1>
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
