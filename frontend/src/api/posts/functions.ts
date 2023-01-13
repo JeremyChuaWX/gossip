@@ -57,6 +57,22 @@ async function updatePost(input: UpdatePostInput) {
   return res.data;
 }
 
+interface UpdatePostScoreInput {
+  id: string;
+  post_score: number;
+}
+
+async function updatePostScore(input: UpdatePostScoreInput) {
+  const res = (
+    await axiosConfig.put<ServerResponse<Post>>(
+      `posts/update-postscore/${input.id}`,
+      { post_score: input.post_score }
+    )
+  ).data;
+
+  return res.data;
+}
+
 interface DeletePostInput {
   id: string;
 }
@@ -71,5 +87,19 @@ async function deletePost(input: DeletePostInput) {
   return res.data;
 }
 
-export type { GetPostInput, CreatePostInput, UpdatePostInput, DeletePostInput };
-export { getPost, getPosts, createPost, updatePost, deletePost };
+export type {
+  GetPostInput,
+  CreatePostInput,
+  UpdatePostInput,
+  UpdatePostScoreInput,
+  DeletePostInput,
+};
+
+export {
+  getPost,
+  getPosts,
+  createPost,
+  updatePost,
+  updatePostScore,
+  deletePost,
+};

@@ -1,12 +1,29 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UpdateCommentInput, DeleteCommentInput } from "./functions";
-import { updateComment, deleteComment } from "./functions";
+import type {
+  UpdateCommentInput,
+  DeleteCommentInput,
+  UpdateCommentScoreInput,
+} from "./functions";
+import { updateComment, updateCommentScore, deleteComment } from "./functions";
 
 function useUpdateCommentMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: UpdateCommentInput) => updateComment(input),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["get-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["get-post", data.post_id] });
+      queryClient.setQueryData(["get-comment", variables.id], data);
+    },
+  });
+}
+
+function useUpdateCommentScoreMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateCommentScoreInput) => updateCommentScore(input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["get-posts"] });
       queryClient.invalidateQueries({ queryKey: ["get-post", data.post_id] });
@@ -28,4 +45,8 @@ function useDeleteCommentMutation() {
   });
 }
 
-export { useUpdateCommentMutation, useDeleteCommentMutation };
+export {
+  useUpdateCommentMutation,
+  useUpdateCommentScoreMutation,
+  useDeleteCommentMutation,
+};

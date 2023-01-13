@@ -1,13 +1,28 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { DeletePostInput, UpdatePostInput } from "./functions";
-import { deletePost } from "./functions";
-import { updatePost } from "./functions";
+import type {
+  DeletePostInput,
+  UpdatePostInput,
+  UpdatePostScoreInput,
+} from "./functions";
+import { updatePost, updatePostScore, deletePost } from "./functions";
 
 function useUpdatePostMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: UpdatePostInput) => updatePost(input),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["get-posts"] });
+      queryClient.setQueryData(["get-post", variables.id], data);
+    },
+  });
+}
+
+function useUpdatePostScoreMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdatePostScoreInput) => updatePostScore(input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["get-posts"] });
       queryClient.setQueryData(["get-post", variables.id], data);
@@ -27,4 +42,8 @@ function useDeletePostMutation() {
   });
 }
 
-export { useUpdatePostMutation, useDeletePostMutation };
+export {
+  useUpdatePostMutation,
+  useUpdatePostScoreMutation,
+  useDeletePostMutation,
+};

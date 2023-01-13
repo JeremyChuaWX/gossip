@@ -50,6 +50,22 @@ async function updateComment(input: UpdateCommentInput) {
   return res.data;
 }
 
+interface UpdateCommentScoreInput {
+  id: string;
+  comment_score: number;
+}
+
+async function updateCommentScore(input: UpdateCommentScoreInput) {
+  const res = (
+    await axiosConfig.put<ServerResponse<Comment>>(
+      `comments/update-commentscore/${input.id}`,
+      { comment_score: input.comment_score }
+    )
+  ).data;
+
+  return res.data;
+}
+
 interface DeleteCommentInput {
   id: string;
 }
@@ -68,6 +84,14 @@ export type {
   GetCommentInput,
   CreateCommentInput,
   UpdateCommentInput,
+  UpdateCommentScoreInput,
   DeleteCommentInput,
 };
-export { getComment, createComment, updateComment, deleteComment };
+
+export {
+  getComment,
+  createComment,
+  updateComment,
+  updateCommentScore,
+  deleteComment,
+};
