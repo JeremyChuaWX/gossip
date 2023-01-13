@@ -63,16 +63,16 @@
   - posts/
     - /create-post (POST): Create new post with provided information
     - /get-posts (GET): Get all posts
-    - /get-post/:id (GET): Get post by id
-    - /update-post/:id (PUT): Update post by id with provided information
-    - /update-postscore/:id (PUT): Update post scores by id with provided information
-    - /delete-post/:id (DELETE): Delete post by id
+    - /get-post/\[id\] (GET): Get post by id
+    - /update-post/\[id\] (PUT): Update post by id with provided information
+    - /update-postscore/\[id\] (PUT): Update post scores by id with provided information
+    - /delete-post/\[id\] (DELETE): Delete post by id
   - comments/
     - /create-comment (POST): Create new comment with provided information
-    - /get-comment/:id (GET): Get comment by id
-    - /update-comment/:id (PUT): Update comment by id with provided information
-    - /update-commentscore/:id (PUT): Update comment scores by id with provided information
-    - /delete-comment/:id (DELETE): Delete comment by id
+    - /get-comment/\[id\] (GET): Get comment by id
+    - /update-comment/\[id\] (PUT): Update comment by id with provided information
+    - /update-commentscore/\[id\] (PUT): Update comment scores by id with provided information
+    - /delete-comment/\[id\] (DELETE): Delete comment by id
   - tags/
   - subscriptions/
   - taggable/
