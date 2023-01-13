@@ -4,6 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getMeQuery } from "../api/users/queries";
 import { useSignOutMutation } from "../api/auth/mutations";
 
+function NavButton({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="duration-75 ease-out hover:scale-110 group">
+      {children}
+      <span className="block max-w-0 h-0.5 bg-black transition-all duration-75 group-hover:max-w-full" />
+    </div>
+  );
+}
+
 function BaseLayout() {
   const navigate = useNavigate();
 
@@ -19,30 +28,40 @@ function BaseLayout() {
   };
 
   return (
-    <>
-      <header className="flex relative justify-between items-center p-4">
-        <NavLink to="/">
-          <h1 className="text-2xl font-bold">Gossip</h1>
-        </NavLink>
+    <div className="w-full h-full">
+      <header className="flex justify-between items-center p-4">
+        <NavButton>
+          <NavLink className="text-2xl font-bold" to="/">
+            Gossip
+          </NavLink>
+        </NavButton>
         <nav className="flex gap-4">
           {user ? (
             <>
-              <button onClick={() => signOutOnClick()}>Sign Out</button>
-              <NavLink to="/profile">{user.username}</NavLink>
+              <NavButton>
+                <button onClick={() => signOutOnClick()}>Sign Out</button>
+              </NavButton>
+              <NavButton>
+                <NavLink to="/profile">{user.username}</NavLink>
+              </NavButton>
             </>
           ) : (
             <>
-              <NavLink to="/auth/signin">Sign In</NavLink>
-              <NavLink to="/auth/signup">Sign Up</NavLink>
+              <NavButton>
+                <NavLink to="/auth/signin">Sign In</NavLink>
+              </NavButton>
+              <NavButton>
+                <NavLink to="/auth/signup">Sign Up</NavLink>
+              </NavButton>
             </>
           )}
         </nav>
       </header>
 
-      <main>
+      <main className="px-4 pt-4 w-full h-full">
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }
 
