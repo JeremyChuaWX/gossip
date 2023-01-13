@@ -15,5 +15,6 @@ func initCommentRouter(router fiber.Router, DB *gorm.DB) {
 	cmtRouter.Post("/create-comment", middlewares.Jwtware(), cmtHandler.CreateComment)
 	cmtRouter.Get("/get-comment/:id", cmtHandler.GetCommentById)
 	cmtRouter.Put("/update-comment/:id", middlewares.Jwtware(), cmtHandler.UpdateComment)
+	cmtRouter.Put("/update-commentscore/:id", middlewares.Jwtware(), cmtHandler.UpdateCommentScore)
 	cmtRouter.Delete("/delete-comment/:id", middlewares.Jwtware(), cmtHandler.DeleteComment)
 }

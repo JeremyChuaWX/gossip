@@ -16,5 +16,6 @@ func initPostRouter(router fiber.Router, DB *gorm.DB) {
 	postRouter.Get("/get-posts", postHandler.GetAllPosts)
 	postRouter.Get("/get-post/:id", postHandler.GetPostById)
 	postRouter.Put("/update-post/:id", middlewares.Jwtware(), postHandler.UpdatePost)
+	postRouter.Put("/update-postscore/:id", middlewares.Jwtware(), postHandler.UpdatePostScore)
 	postRouter.Delete("/delete-post/:id", middlewares.Jwtware(), postHandler.DeletePost)
 }

@@ -144,6 +144,51 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	})
 }
 
+func (h *CommentHandler) UpdateCommentScore(c *fiber.Ctx) error {
+	type updateCommentInput struct {
+		CommentScore int `json:"comment_score"`
+	}
+
+	var err error
+	var input updateCommentInput
+	var cmt models.Comment
+	id := c.Params("id")
+
+	// bind input struct
+	if err := c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := utils.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
+	}
+
+	// get comment by id
+	if err = h.DB.Where("id = ?", id).First(&cmt).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Comment not found")
+	}
+
+	updateCmt := models.Comment{
+		CommentScore: input.CommentScore,
+	}
+
+	// update comment
+	if err = h.DB.Model(&cmt).Select("comment_score").Updates(updateCmt).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Comment updated",
+		Data:  cmt,
+	})
+}
+
 func (h *CommentHandler) DeleteComment(c *fiber.Ctx) error {
 	var err error
 	var cmt models.Comment

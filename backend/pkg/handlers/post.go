@@ -95,8 +95,8 @@ func (h *PostHandler) GetPostById(c *fiber.Ctx) error {
 
 func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	type updatePostInput struct {
-		Title     string `json:"title,omitempty"`
-		Body      string `json:"body,omitempty"`
+		Title string `json:"title,omitempty"`
+		Body  string `json:"body,omitempty"`
 	}
 
 	var err error
@@ -135,8 +135,8 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	}
 
 	updatePost := models.Post{
-		Title:     input.Title,
-		Body:      input.Body,
+		Title: input.Title,
+		Body:  input.Body,
 	}
 
 	// update post
@@ -147,6 +147,49 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
 		Error: false,
 		Msg:   "Post updated",
+		Data:  post,
+	})
+}
+
+func (h *PostHandler) UpdatePostScore(c *fiber.Ctx) error {
+	type updatePostScoreInput struct {
+		PostScore int `json:"post_score"`
+	}
+
+	var err error
+	var input updatePostScoreInput
+	var post models.Post
+	id := c.Params("id")
+
+	// get post by id
+	if err = h.DB.Where("id = ?", id).First(&post).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Post not found")
+	}
+
+	// bind input struct
+	if err = c.BodyParser(&input); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid fields")
+	}
+
+	// input validation
+	if errors := utils.ValidateStruct(&input); errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ServerResponse{
+			Error: true,
+			Msg:   "Invalid input",
+			Data:  errors,
+		})
+	}
+
+	updatePost := models.Post{PostScore: input.PostScore}
+
+	// update post score
+	if err = h.DB.Model(&post).Select("post_score").Updates(updatePost).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(models.ServerResponse{
+		Error: false,
+		Msg:   "Post score updated",
 		Data:  post,
 	})
 }
