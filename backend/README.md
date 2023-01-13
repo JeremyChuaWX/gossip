@@ -2,8 +2,8 @@
 
 ## Technologies
 
-- gofiber
-- gorm
+- Gofiber
+- Gorm
 
 ## Data
 
