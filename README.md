@@ -41,7 +41,7 @@ As a general user i can...
 
 As a poster i can...
 
-- _in addition to general user stories..._
+- _In addition to general user stories..._
 - Start a forum post
 - Tag my post to fit into a category
 - Reply to comments on my post
@@ -55,7 +55,7 @@ As a poster i can...
 
 As an admin i can...
 
-- _in addition to poster stories..._
+- _In addition to poster stories..._
 - Delete any comment or post
 - Add and delete tags available to forum users
 - Add and delete irrelevant tags in posts
@@ -78,74 +78,15 @@ A tag is a tool for categorisation of posts and increasing discoverability.
 
 ## Features
 
-- account management (login, creation, updating fields)
+- Account management (login, creation, updating fields)
 - CRUD operations for
-  - comments
-  - posts
-  - tags
-- thumbs up and down posts and comments
-- add and remove tags from posts
+  - Comments
+  - Posts
+  - Tags
+- Thumbs up and down posts and comments
+- Add and remove tags from posts
 
-## Data
+## Documentation
 
-### User model
-
-- `user_id`: uuid
-- `username`: string
-- `email`: string? (sending notifications)
-- `password`: hashed string
-- `comments`: comment[]
-- `posts`: post[]
-- `role`: role enum
-- `isPublic`: boolean
-- `subscribed`: post[]
-
-### Post model
-
-- `post_id`: uuid
-- `author`: user
-- `time_posted`: datetime
-- `post_score`: integer
-- `comments`: comment[]
-- `tags`: tag[]
-- `title`: string
-- `body`: text
-
-### Comment model
-
-- `comment_id`: uuid
-- `post`: post
-- `parent_comment`: comment?
-- `author`: user
-- `time_commented`: datetime
-- `comment_score`: integer
-- `body`: text
-- `replies`: comment[]
-
-### Tag model
-
-- `tag_id`: uuid
-- `name`: string
-
-## API endpoints
-
-- api/
-  - users/
-    - GET `[user_id]`: returns account details of user with id `user_id`
-    - POST: creates a new user
-    - PUT `[user_id]`: updates account details of user with id `user_id`
-    - DELETE `[user_id]`: deletes user with id `user_id`
-  - post/
-    - `[post_id]/`: returns post data object with id `post_id`
-  - comment/
-    - `[comment_id]/`: returns comment data object with id `comment_id`
-
-## Testing strategy
-
-### Frontend
-
-- Jest
-
-### Backend
-
-- Postman
+- [Frontend](./frontend/README.md)
+- [Backend](./backend/README.md)
