@@ -37,17 +37,13 @@ async function createComment(input: CreateCommentInput) {
 interface UpdateCommentInput {
   id: string;
   body?: string;
-  comment_score?: number;
 }
 
 async function updateComment(input: UpdateCommentInput) {
   const res = (
     await axiosConfig.put<ServerResponse<Comment>>(
       `comments/update-comment/${input.id}`,
-      {
-        body: input.body,
-        comment_score: input.comment_score,
-      }
+      { body: input.body }
     )
   ).data;
 

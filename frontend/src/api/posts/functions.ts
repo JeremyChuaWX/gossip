@@ -41,7 +41,6 @@ interface UpdatePostInput {
   id: string;
   title?: string;
   body?: string;
-  post_score?: number;
 }
 
 async function updatePost(input: UpdatePostInput) {
@@ -51,7 +50,6 @@ async function updatePost(input: UpdatePostInput) {
       {
         title: input.title,
         body: input.body,
-        post_score: input.post_score,
       }
     )
   ).data;
