@@ -97,7 +97,6 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	type updatePostInput struct {
 		Title     string `json:"title,omitempty"`
 		Body      string `json:"body,omitempty"`
-		PostScore int    `json:"post_score,omitempty"`
 	}
 
 	var err error
@@ -138,7 +137,6 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	updatePost := models.Post{
 		Title:     input.Title,
 		Body:      input.Body,
-		PostScore: input.PostScore,
 	}
 
 	// update post

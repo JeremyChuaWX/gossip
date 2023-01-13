@@ -90,8 +90,7 @@ func (h *CommentHandler) GetCommentById(c *fiber.Ctx) error {
 
 func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	type updateCommentInput struct {
-		Body         string `json:"body,omitempty"`
-		CommentScore int    `json:"comment_score,omitempty"`
+		Body string `json:"body,omitempty"`
 	}
 
 	var err error
@@ -130,8 +129,7 @@ func (h *CommentHandler) UpdateComment(c *fiber.Ctx) error {
 	}
 
 	updateCmt := models.Comment{
-		Body:         input.Body,
-		CommentScore: input.CommentScore,
+		Body: input.Body,
 	}
 
 	// update comment
