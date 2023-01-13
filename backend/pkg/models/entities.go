@@ -55,7 +55,7 @@ type Comment struct {
 
 type Tag struct {
 	Base
-	Name  string `gorm:"not null" json:"name"`
+	Name  string `gorm:"unique;not null" json:"name"`
 	Posts []Post `gorm:"many2many:taggable;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"posts"`
 }
 
