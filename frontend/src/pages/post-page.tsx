@@ -30,7 +30,7 @@ function PostPage() {
         {user?.id === post.user_id && <UpdatePostForm id={id} />}
       </div>
       {post.comments.map((cmt) => (
-        <p>{cmt.body}</p>
+        <p key={cmt.id}>{cmt.body}</p>
       ))}
     </div>
   );
