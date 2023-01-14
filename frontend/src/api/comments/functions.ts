@@ -24,7 +24,7 @@ interface CreateCommentInput {
 
 async function createComment(input: CreateCommentInput) {
   const res = (
-    await axiosConfig.put<ServerResponse<Comment>>("comments/create-comment/", {
+    await axiosConfig.post<ServerResponse<Comment>>("comments/create-comment/", {
       post_id: input.post_id,
       body: input.body,
       parent_id: input.parent_id,
