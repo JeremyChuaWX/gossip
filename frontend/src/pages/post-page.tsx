@@ -16,13 +16,14 @@ function PostPage() {
   const { id } = useParams();
 
   const { data: user } = useQuery(getMeQuery());
-  if (!id) throw Error("Invalid url params");
+  if (!id) throw Error("No such post");
 
-  const { data: post } = useQuery(getPostQuery(id));
-  if (!post) throw Error("No such post");
+  const { data: post, isLoading } = useQuery(getPostQuery(id));
+
+  if (!post || isLoading) return <div>loading...</div>;
 
   return (
-    <div>
+    <div className="p-4">
       <div className="border border-black">
         <h2>title: {post.title}</h2>
         <h3>author: {post.user.username}</h3>

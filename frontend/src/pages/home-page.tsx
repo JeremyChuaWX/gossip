@@ -15,7 +15,7 @@ function HomePage() {
   if (!posts) return <div>no posts</div>;
 
   return (
-    <div>
+    <div className="p-4">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}

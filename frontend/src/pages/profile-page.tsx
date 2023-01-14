@@ -10,18 +10,18 @@ function profilePageLoader(queryClient: QueryClient) {
 }
 
 function ProfilePage() {
-  const { data: user } = useQuery(getMeQuery());
+  const { data: user, isLoading } = useQuery(getMeQuery());
 
-  if (!user) throw Error("No user found");
+  if (!user || isLoading) return <div>loading...</div>;
 
   return (
-    <div>
+    <>
       <div className="p-4">
         <h1 className="text-3xl">Hello {user.username}</h1>
         <p>email: {user.email}</p>
       </div>
       <UpdateUserForm />
-    </div>
+    </>
   );
 }
 
