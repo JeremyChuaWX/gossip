@@ -4,6 +4,7 @@ import UpdatePostForm from "../components/update-post-form";
 import { getPostQuery } from "../api/posts/queries";
 import { getMeQuery } from "../api/users/queries";
 import AddCommentForm from "../components/add-comment-form";
+import { NavLink } from "react-router-dom";
 
 function postPageLoader(queryClient: QueryClient) {
   return async ({ params: { id } }: LoaderFunctionArgs) => {
@@ -15,11 +16,11 @@ function postPageLoader(queryClient: QueryClient) {
 
 function PostPage() {
   const { id } = useParams();
-
-  const { data: user } = useQuery(getMeQuery());
   if (!id) throw Error("No such post");
 
+  const { data: user } = useQuery(getMeQuery());
   const { data: post, isLoading } = useQuery(getPostQuery(id));
+  const isAuthor = user?.id === post?.user_id;
 
   if (!post || isLoading) return <div>loading...</div>;
 
@@ -29,14 +30,18 @@ function PostPage() {
         <h2>title: {post.title}</h2>
         <h3>author: {post.user.username}</h3>
         <p>body: {post.body}</p>
-        {user?.id === post.user_id && <UpdatePostForm id={id} />}
+        {isAuthor && <UpdatePostForm id={id} />}
       </div>
       <AddCommentForm post_id={post.id} />
       {post.comments.map((cmt) => (
-        <div className="flex flex-col gap-1" key={cmt.id}>
+        <NavLink
+          className="flex flex-col gap-1"
+          key={cmt.id}
+          to={`comment/${cmt.id}`}
+        >
           <p>{cmt.user.username}</p>
           <p>{cmt.body}</p>
-        </div>
+        </NavLink>
       ))}
     </div>
   );
