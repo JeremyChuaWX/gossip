@@ -82,7 +82,7 @@ func (h *PostHandler) GetPostById(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	// get post by id
-	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&post).Error; err != nil {
+	if err = h.DB.Where("id = ?", id).Preload("Comments.User").Preload(clause.Associations).First(&post).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Post not found")
 	}
 
