@@ -11,9 +11,9 @@ function useUpdatePostMutation() {
 
   return useMutation({
     mutationFn: (input: UpdatePostInput) => updatePost(input),
-    onSuccess: (data, variables) => {
+    onSuccess: (variables) => {
       queryClient.invalidateQueries({ queryKey: ["get-posts"] });
-      queryClient.setQueryData(["get-post", variables.id], data);
+      queryClient.invalidateQueries({ queryKey: ["get-post", variables.id] });
     },
   });
 }

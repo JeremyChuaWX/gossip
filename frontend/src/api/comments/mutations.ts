@@ -14,7 +14,9 @@ function useUpdateCommentMutation() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["get-posts"] });
       queryClient.invalidateQueries({ queryKey: ["get-post", data.post_id] });
-      queryClient.setQueryData(["get-comment", variables.id], data);
+      queryClient.invalidateQueries({
+        queryKey: ["get-comment", variables.id],
+      });
     },
   });
 }
@@ -27,7 +29,9 @@ function useUpdateCommentScoreMutation() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["get-posts"] });
       queryClient.invalidateQueries({ queryKey: ["get-post", data.post_id] });
-      queryClient.setQueryData(["get-comment", variables.id], data);
+      queryClient.invalidateQueries({
+        queryKey: ["get-comment", variables.id],
+      });
     },
   });
 }
