@@ -22,6 +22,7 @@ import SignUpPage from "./pages/signup-page";
 
 // layouts
 import BaseLayout from "./layouts/base-layout";
+import CommentPage, { commentPageLoader } from "./pages/comment-page";
 
 const TWO_MINS = 1000 * 60 * 2;
 
@@ -67,7 +68,11 @@ const router = createBrowserRouter(
           element={<PostPage />}
           loader={postPageLoader(queryClient)}
         />
-        <Route path="comment/:id" />
+        <Route
+          path="comment/:id"
+          element={<CommentPage />}
+          loader={commentPageLoader(queryClient)}
+        />
       </Route>
 
       <Route path="*" element={<ErrorPage />} />
