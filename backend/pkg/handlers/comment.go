@@ -77,7 +77,7 @@ func (h *CommentHandler) GetCommentById(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	// get comment by id
-	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&cmt).Error; err != nil {
+	if err = h.DB.Where("id = ?", id).Preload("Replies.User").Preload(clause.Associations).First(&cmt).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, "Comment not found")
 	}
 
