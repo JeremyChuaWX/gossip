@@ -4,9 +4,11 @@ import type { Post } from "../models/entities";
 function PostCard({ post }: { post: Post }) {
   return (
     <NavLink to={`post/${post.id}`}>
-      <div className="pb-2 border border-b-black">
+      <div className="border-b border-gray-300">
         <h2 className="text-lg">{post.title}</h2>
-        <p className="text-sm">{post.body}</p>
+        <NavLink to={`user/${post.user_id}`}>
+          <h3 className="w-max text-sm text-gray-500">{post.user.username}</h3>
+        </NavLink>
       </div>
     </NavLink>
   );

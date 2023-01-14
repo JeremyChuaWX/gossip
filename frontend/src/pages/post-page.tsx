@@ -3,6 +3,7 @@ import { LoaderFunctionArgs, useParams } from "react-router-dom";
 import UpdatePostForm from "../components/update-post-form";
 import { getPostQuery } from "../api/posts/queries";
 import { getMeQuery } from "../api/users/queries";
+import AddCommentForm from "../components/add-comment-form";
 
 function postPageLoader(queryClient: QueryClient) {
   return async ({ params: { id } }: LoaderFunctionArgs) => {
@@ -23,15 +24,19 @@ function PostPage() {
   if (!post || isLoading) return <div>loading...</div>;
 
   return (
-    <div className="p-4">
+    <div className="flex flex-col gap-4 p-4">
       <div className="border border-black">
         <h2>title: {post.title}</h2>
         <h3>author: {post.user.username}</h3>
         <p>body: {post.body}</p>
         {user?.id === post.user_id && <UpdatePostForm id={id} />}
       </div>
+      <AddCommentForm post_id={post.id} />
       {post.comments.map((cmt) => (
-        <p key={cmt.id}>{cmt.body}</p>
+        <div className="flex flex-col gap-1" key={cmt.id}>
+          <p>{cmt.user.username}</p>
+          <p>{cmt.body}</p>
+        </div>
       ))}
     </div>
   );
