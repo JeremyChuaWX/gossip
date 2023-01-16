@@ -12,11 +12,9 @@ func initUserRouter(router fiber.Router, DB *gorm.DB) {
 	userHandler := handlers.UserHandler{DB: DB}
 	userRouter := router.Group("/users")
 
-	userRouter.Use(middlewares.Jwtware())
-
 	userRouter.Get("/get-user/:id", userHandler.GetUserById)
-	userRouter.Get("/get-me", userHandler.GetMe)
-	userRouter.Put("/update-me", userHandler.UpdateMe)
-	userRouter.Delete("/delete-me", userHandler.DeleteMe)
-	userRouter.Get("/toggle-visibility", userHandler.ToggleProfileVisibility)
+	userRouter.Get("/get-me", middlewares.Jwtware(), userHandler.GetMe)
+	userRouter.Put("/update-me", middlewares.Jwtware(), userHandler.UpdateMe)
+	userRouter.Delete("/delete-me", middlewares.Jwtware(), userHandler.DeleteMe)
+	userRouter.Get("/toggle-visibility", middlewares.Jwtware(), userHandler.ToggleProfileVisibility)
 }

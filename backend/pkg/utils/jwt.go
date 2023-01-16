@@ -128,5 +128,12 @@ func SetUserId(c *fiber.Ctx, sub string) error {
 }
 
 func GetUserId(c *fiber.Ctx) string {
-	return c.Locals("user-id").(string)
+	id := c.Locals("user-id")
+
+	// handle not signed in
+	if id != nil {
+		return c.Locals("user-id").(string)
+	}
+
+	return ""
 }

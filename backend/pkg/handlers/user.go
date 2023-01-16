@@ -18,11 +18,8 @@ func (h *UserHandler) GetUserById(c *fiber.Ctx) error {
 	var user models.User
 	id := c.Params("id")
 
-	// get user id
+	// get user id (allow empty for not signed in)
 	currId := utils.GetUserId(c)
-	if currId == "" {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid user id")
-	}
 
 	// get user by id
 	if err = h.DB.Where("id = ?", id).Preload(clause.Associations).First(&user).Error; err != nil {
