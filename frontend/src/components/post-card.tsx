@@ -6,8 +6,11 @@ function PostCard({ post }: { post: Post }) {
     <NavLink to={`post/${post.id}`}>
       <div className="border-b border-gray-300">
         <h2 className="text-lg">{post.title}</h2>
-        <NavLink to={`user/${post.user_id}`}>
-          <h3 className="w-max text-sm text-gray-500">{post.user.username}</h3>
+        <NavLink
+          className="w-max text-sm text-gray-500 duration-75 hover:text-black"
+          to={`user/${post.user_id}`}
+        >
+          {post.user.username}
         </NavLink>
       </div>
     </NavLink>
