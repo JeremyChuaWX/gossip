@@ -28,7 +28,7 @@ interface CreatePostInput {
 
 async function createPost(input: CreatePostInput) {
   const res = (
-    await axiosConfig.put<ServerResponse<Post>>("posts/create-post/", {
+    await axiosConfig.post<ServerResponse<Post>>("posts/create-post/", {
       title: input.title,
       body: input.body,
     })
