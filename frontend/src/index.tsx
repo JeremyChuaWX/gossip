@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // pages
-import HomePage, { homePageLoader } from "./pages/home-page";
+import HomePage, { homePageLoader } from "./pages/home-page/page";
 import PostPage, { postPageLoader } from "./pages/post-page";
 import ErrorPage from "./pages/error-page";
 import UserPage, { userPageLoader } from "./pages/user-page";
