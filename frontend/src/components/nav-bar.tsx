@@ -3,8 +3,9 @@ import { NavLink } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getMeQuery } from "../api/users/queries";
 import { useSignOutMutation } from "../api/auth/mutations";
+import { ReactNode } from "react";
 
-function NavButton({ children }: { children: React.ReactNode }) {
+function NavButton({ children }: { children: ReactNode }) {
   return (
     <div className="duration-75 ease-out hover:scale-110 group">
       {children}
