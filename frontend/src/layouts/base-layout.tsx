@@ -6,7 +6,7 @@ function BaseLayout() {
     <div className="w-full h-full">
       <NavBar />
 
-      <main className="w-full h-full">
+      <main className="mx-auto w-1/2 max-w-screen-xl">
         <Outlet />
       </main>
     </div>
