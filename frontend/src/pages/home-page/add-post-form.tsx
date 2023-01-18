@@ -33,7 +33,7 @@ function AddPostForm() {
       <input {...register("title")} className="w-full border border-black" />
       <label>body</label>
       <textarea {...register("body")} className="w-full border border-black" />
-      <input type="submit" className="rounded-md border border-black" />
+      <input type="submit" className="px-1 rounded-md border border-black" />
     </form>
   );
 }

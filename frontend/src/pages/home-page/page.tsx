@@ -2,8 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import PostCard from "./post-card";
 import { getPostsQuery } from "../../api/posts/queries";
-// import ToolBar from "./tool-bar";
-import AddPostForm from "./add-post-form";
+import TopBar from "./top-bar";
 
 function homePageLoader(queryClient: QueryClient) {
   return async () => {
@@ -14,16 +13,15 @@ function homePageLoader(queryClient: QueryClient) {
 function HomePage() {
   const { data: posts } = useQuery(getPostsQuery());
 
-  if (!posts) return <div>no posts</div>;
+  if (!posts) return <div>No posts</div>;
 
   return (
-    <div className="mx-auto mt-4 w-3/4">
-      <AddPostForm />
-      <div className="flex flex-col gap-2">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
+    <div className="flex flex-col gap-2">
+      <TopBar />
+
+      {posts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
     </div>
   );
 }
