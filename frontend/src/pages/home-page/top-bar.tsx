@@ -30,8 +30,12 @@ function useButtonStates() {
     filter: false,
   });
 
-  const flipButtonState = (button: keyof ButtonStates) =>
-    setButtonStates((curr) => ({ ...curr, [button]: !curr[button] }));
+  const flipButtonState = (button: keyof ButtonStates) => {
+    const isOpen = buttonStates[button];
+    setButtonStates({ newPost: false, filter: false });
+    !isOpen &&
+      setButtonStates((curr) => ({ ...curr, [button]: !curr[button] }));
+  };
 
   return [buttonStates, flipButtonState] as const;
 }
