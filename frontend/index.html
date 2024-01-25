@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Gossip</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script type="text/javascript" src="./index.js" defer></script>
+    </head>
+
+    <body>
+        <h1>Gossip</h1>
+
+        <section>
+            <h2>Rooms</h2>
+
+            <ul id="available-rooms">
+                <li>List of all available rooms...</li>
+            </ul>
+
+            <form id="new-room">
+                <label>Room: <input name="room-name" type="text" /></label>
+                <button type="submit">New Room</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Join Room</h2>
+
+            <form id="join-room">
+                <label>Username: <input name="username" type="text" /></label>
+                <label>Room: <input name="room-name" type="text" /></label>
+                <button type="submit">Join</button>
+            </form>
+        </section>
+
+        <section>
+            <h2 id="current-status"></h2>
+            <textarea id="messages" readonly></textarea>
+            <form id="send-message">
+                <label>
+                    Message:
+                    <input type="text" name="message" />
+                    <button type="submit">Send</button>
+                </label>
+            </form>
+        </section>
+    </body>
+</html>
