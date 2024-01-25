@@ -7,11 +7,17 @@ let currentUsername = undefined;
 /** @type WebSocket | undefined */
 let ws = undefined;
 
+/** @type string[] */
+let rooms = [];
+
 const HTTP_URL = "http://127.0.0.1:3000/room/";
 const WS_URL = "ws://127.0.0.1:3000/room/";
 
+const availableRoomsList = document.getElementById("available-rooms");
 const newRoomForm = document.getElementById("new-room");
 const joinRoomForm = document.getElementById("join-room");
+const currentStatusHeader = document.getElementById("current-status");
+const messagesTextArea = document.getElementById("messages");
 const sendMessageForm = document.getElementById("send-message");
 
 function bootstrap() {
@@ -31,7 +37,10 @@ async function newRoom(e) {
     }
     const newRoomURL = new URL(HTTP_URL);
     newRoomURL.searchParams.append("name", name);
-    console.log(await fetch(newRoomURL, { method: "POST" }));
+    await fetch(newRoomURL, { method: "POST" });
+    const data = await fetch(HTTP_URL).then((res) => res.json());
+    rooms = data.rooms;
+    render();
 }
 
 function joinRoom(e) {
@@ -54,8 +63,14 @@ function sendMessage(e) {
 }
 
 function render() {
-    // get list of available rooms from server
     // render li for available rooms
+    const roomsLi = rooms.map((room) => {
+        const elem = document.createElement("li");
+        elem.appendChild(document.createTextNode(room));
+        return elem;
+    });
+    availableRoomsList.replaceChildren(...roomsLi);
+
     // render header for current status: room (user)
 }
 
