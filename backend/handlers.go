@@ -36,6 +36,19 @@ func (h *Handlers) NewRoomHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, fmt.Sprintf("room %s created", name))
 }
 
+func (h *Handlers) GetRoomsHandler(w http.ResponseWriter, r *http.Request) {
+	type GetRoomsResponse struct {
+		Rooms []string `json:"rooms"`
+	}
+	rooms := make([]string, 0, len(h.Rooms))
+	for room := range h.Rooms {
+		rooms = append(rooms, room)
+	}
+	body := GetRoomsResponse{rooms}
+	w.Header().Add("content-type", "application/json")
+	json.NewEncoder(w).Encode(body)
+}
+
 func (h *Handlers) JoinRoomHandler(w http.ResponseWriter, r *http.Request) {
 	// upgrade connection to websocket
 	conn, err := h.WsUpgrader.Upgrade(w, r, nil)
