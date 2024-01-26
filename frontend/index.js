@@ -10,6 +10,9 @@ let ws = undefined;
 /** @type string[] */
 let rooms = [];
 
+/** @type string[] */
+let messages = [];
+
 const HTTP_URL = "http://127.0.0.1:3000/room/";
 const WS_URL = "ws://127.0.0.1:3000/room/";
 
@@ -40,7 +43,7 @@ async function newRoom(e) {
     await fetch(newRoomURL, { method: "POST" });
     const data = await fetch(HTTP_URL).then((res) => res.json());
     rooms = data.rooms;
-    render();
+    renderAvailableRooms();
 }
 
 function joinRoom(e) {
@@ -52,6 +55,7 @@ function joinRoom(e) {
     const joinRoomURL = new URL(currentRoom, WS_URL);
     joinRoomURL.searchParams.append("username", currentUsername);
     initWS(joinRoomURL);
+    renderCurrentStatus(currentRoom, currentUsername);
 }
 
 function sendMessage(e) {
@@ -62,16 +66,28 @@ function sendMessage(e) {
     ws.send(JSON.stringify({ message }));
 }
 
-function render() {
-    // render li for available rooms
-    const roomsLi = rooms.map((room) => {
+function renderAvailableRooms() {
+    const elems = rooms.map((room) => {
         const elem = document.createElement("li");
         elem.appendChild(document.createTextNode(room));
         return elem;
     });
-    availableRoomsList.replaceChildren(...roomsLi);
+    availableRoomsList.replaceChildren(...elems);
+}
 
-    // render header for current status: room (user)
+/**
+ * @param {string} room
+ * @param {string} username
+ */
+function renderCurrentStatus(room, username) {
+    currentStatusHeader.replaceChildren(
+        document.createTextNode(`${room} (${username})`),
+    );
+}
+
+function renderMessages() {
+    const value = messages.join("\n");
+    // replace textarea value
 }
 
 /**
