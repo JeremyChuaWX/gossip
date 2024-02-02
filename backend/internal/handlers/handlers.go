@@ -1,24 +1,20 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
+	"gossip/internal/manager"
 	"io"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )
 
 type Handlers struct {
-	Rooms      map[string]*Room
+	Manager    *manager.Manager
 	WsUpgrader *websocket.Upgrader
-}
-
-type WebsocketDTO struct {
-	Message string `json:"message"`
 }
 
 func (h *Handlers) NewRoomHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,23 +24,21 @@ func (h *Handlers) NewRoomHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "error parsing URL query")
 		return
 	}
-
-	room := NewRoom(name)
-	h.Rooms[name] = room
-	go BroadcastMessages(room) // TODO: add context to cancel when room closes
-
+	room, err := h.Manager.AddRoom(name)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	go room.BroadcastMessages() // TODO: add context to cancel when room closes
 	io.WriteString(w, fmt.Sprintf("room %s created", name))
 }
 
 func (h *Handlers) GetRoomsHandler(w http.ResponseWriter, r *http.Request) {
-	type GetRoomsResponse struct {
+	type Response struct {
 		Rooms []string `json:"rooms"`
 	}
-	rooms := make([]string, 0, len(h.Rooms))
-	for room := range h.Rooms {
-		rooms = append(rooms, room)
-	}
-	body := GetRoomsResponse{rooms}
+	rooms := h.Manager.Rooms()
+	body := Response{Rooms: rooms}
 	w.Header().Add("content-type", "application/json")
 	json.NewEncoder(w).Encode(body)
 }
@@ -73,58 +67,20 @@ func (h *Handlers) JoinRoomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get room by name
-	room, ok := h.Rooms[roomName]
-	if !ok {
-		log.Printf("room %s does not exist", roomName)
+	room, err := h.Manager.Room(roomName)
+	if err != nil {
+		log.Println(err)
 		return
 	}
 
 	// client join room
-	_, ok = room.Clients[clientName]
-	if ok {
-		log.Printf("client %s already joined room", clientName)
+	client, err := room.AddClient(clientName, conn)
+	if err != nil {
+		log.Println(err)
 		return
 	}
-	client := &Client{
-		Name: clientName,
-		Room: room.Name,
-		Conn: conn,
-	}
-	room.Clients[client.Name] = client
 
-	// get requests from connection and push on channel
-	for {
-		var dto WebsocketDTO
-		if err := conn.ReadJSON(&dto); err != nil {
-			log.Println(err)
-			delete(room.Clients, client.Name)
-			return
-		}
-		rm := RoomMessage{
-			Timestamp: time.Now(),
-			Client:    client,
-			Body:      dto.Message,
-		}
-		room.Messages <- rm
-	}
-}
-
-func BroadcastMessages(room *Room) {
-	for {
-		rm := <-room.Messages
-		formattedMessage := rm.String()
-		dto := WebsocketDTO{
-			Message: formattedMessage,
-		}
-		for client := range room.Clients {
-			conn := room.Clients[client].Conn
-			if err := conn.WriteJSON(dto); err != nil {
-				log.Println(err)
-				conn.Close()
-				delete(room.Clients, client)
-			}
-		}
-	}
+	go client.ReadMessages()
 }
 
 func parseJSON[T any](r *http.Request) (T, error) {
