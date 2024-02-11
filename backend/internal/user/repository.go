@@ -18,17 +18,17 @@ func (r *Repository) create(
 	sql := `
 	INSERT INTO users (
 		username,
-		password
+		password_hash
 	) VALUES (
 		$1,
 		$2
 	) RETURNING (
 		id,
 		username,
-		password
+		password_hash
 	);
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.Password)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
@@ -40,12 +40,12 @@ func (r *Repository) findOne(
 	SELECT (
 		id,
 		username,
-		password
+		password_hash
 	) FROM users WHERE (
 		id = $1,
 	);
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
@@ -56,16 +56,16 @@ func (r *Repository) update(
 	sql := `
 	UPDATE users SET (
 		username = COALESCE($1, username),
-		password = COALESCE($2, password)
+		password_hash = COALESCE($2, password_hash)
 	) WHERE (
 		id = $3,
 	) RETURNING (
 		id,
 		username,
-		password
+		password_hash
 	);
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.Password, dto.Id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
@@ -79,9 +79,9 @@ func (r *Repository) delete(
 	) RETURNING (
 		id,
 		username,
-		password
+		password_hash
 	);
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
