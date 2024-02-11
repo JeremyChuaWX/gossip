@@ -15,7 +15,7 @@ const ADDRESS string = "127.0.0.1:3000"
 
 func main() {
 	// constants
-	wsUpgrader := &websocket.Upgrader{
+	_ = &websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
@@ -28,7 +28,7 @@ func main() {
 	// adapters
 	pgPool, err := postgres.Init(ctx, "")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer pgPool.Close()
 
@@ -39,7 +39,7 @@ func main() {
 	userService := &user.Service{
 		Repository: userRepository,
 	}
-	user.InitRoutes(router, userService)
+	userService.InitRoutes(router)
 
 	// run server
 	log.Println("running server on address", ADDRESS)
