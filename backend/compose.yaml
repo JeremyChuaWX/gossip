@@ -14,6 +14,18 @@ services:
     volumes:
       - ./pg_data:/var/lib/postgresql/data
 
+  postgres.migrate:
+    command: ["up"]
+    container_name: migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["migrate", "-database", "$POSTGRES_URL", "-path", "/migrations"]
+    env_file: .env
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+
   pgadmin:
     configs:
       - source: pgpass
