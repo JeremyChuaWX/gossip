@@ -22,11 +22,11 @@ func (r *Repository) create(
 	) VALUES (
 		$1,
 		$2
-	) RETURNING (
+	) RETURNING
 		id,
 		username,
 		password_hash
-	);
+	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
@@ -37,13 +37,13 @@ func (r *Repository) findOne(
 	dto findOneDTO,
 ) (User, error) {
 	sql := `
-	SELECT (
+	SELECT
 		id,
 		username,
 		password_hash
-	) FROM users WHERE (
+	FROM users WHERE
 		id = $1
-	);
+	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
@@ -54,16 +54,16 @@ func (r *Repository) update(
 	dto updateDTO,
 ) (User, error) {
 	sql := `
-	UPDATE users SET (
+	UPDATE users SET
 		username = COALESCE($1, username),
 		password_hash = COALESCE($2, password_hash)
-	) WHERE (
+	WHERE
 		id = $3
-	) RETURNING (
+	RETURNING
 		id,
 		username,
 		password_hash
-	);
+	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
@@ -74,13 +74,13 @@ func (r *Repository) delete(
 	dto deleteDTO,
 ) (User, error) {
 	sql := `
-	DELETE FROM users WHERE (
+	DELETE FROM users WHERE
 		id = $1
-	) RETURNING (
+	RETURNING
 		id,
 		username,
 		password_hash
-	);
+	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
