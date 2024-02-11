@@ -1,0 +1,38 @@
+services:
+  postgres:
+    command: ["postgres", "-c", "log_statement=all"]
+    container_name: postgres
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $POSTGRES_URL"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+
+  pgadmin:
+    configs:
+      - source: pgpass
+        target: /pgpass
+      - source: servers.json
+        target: /pgadmin4/servers.json
+    container_name: pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pg_admin:/var/lib/pgadmin
+
+configs:
+  pgpass:
+    file: ./pg_config/pgpass
+  servers.json:
+    file: ./pg_config/servers.json
