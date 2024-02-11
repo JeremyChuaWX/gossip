@@ -8,10 +8,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/websocket"
 )
 
-const ADDRESS string = "127.0.0.1:3000"
+const ADDRESS string = "server:3000"
 
 func main() {
 	// constants
@@ -22,11 +23,14 @@ func main() {
 			return true
 		},
 	}
-	router := chi.NewMux()
+	router := InitRouter()
 	ctx := context.Background()
 
 	// adapters
-	pgPool, err := postgres.Init(ctx, "")
+	pgPool, err := postgres.Init(
+		ctx,
+		"postgresql://admin:password123@postgres:5432/my_db?sslmode=disable",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,4 +48,11 @@ func main() {
 	// run server
 	log.Println("running server on address", ADDRESS)
 	log.Fatal(http.ListenAndServe(ADDRESS, router))
+}
+
+func InitRouter() *chi.Mux {
+	router := chi.NewMux()
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	return router
 }
