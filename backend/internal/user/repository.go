@@ -42,7 +42,7 @@ func (r *Repository) findOne(
 		username,
 		password_hash
 	) FROM users WHERE (
-		id = $1,
+		id = $1
 	);
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
@@ -58,7 +58,7 @@ func (r *Repository) update(
 		username = COALESCE($1, username),
 		password_hash = COALESCE($2, password_hash)
 	) WHERE (
-		id = $3,
+		id = $3
 	) RETURNING (
 		id,
 		username,
@@ -75,7 +75,7 @@ func (r *Repository) delete(
 ) (User, error) {
 	sql := `
 	DELETE FROM users WHERE (
-		id = $1,
+		id = $1
 	) RETURNING (
 		id,
 		username,
