@@ -53,7 +53,7 @@ func (s *Service) userRouter() *chi.Mux {
 			Message string `json:"message"`
 			User    User
 		}
-		writeJSON(w, http.StatusOK, response{
+		writeJSON(w, http.StatusCreated, response{
 			Message: "created user",
 			User:    user,
 		})
@@ -83,7 +83,7 @@ func (s *Service) userRouter() *chi.Mux {
 			User    User
 		}
 		writeJSON(w, http.StatusOK, response{
-			Message: "created user",
+			Message: "found user",
 			User:    user,
 		})
 	})
@@ -129,7 +129,7 @@ func (s *Service) userRouter() *chi.Mux {
 			User    User
 		}
 		writeJSON(w, http.StatusOK, response{
-			Message: "created user",
+			Message: "updated user",
 			User:    user,
 		})
 	})
@@ -156,7 +156,7 @@ func (s *Service) userRouter() *chi.Mux {
 			User    User
 		}
 		writeJSON(w, http.StatusOK, response{
-			Message: "created user",
+			Message: "deleted user",
 			User:    user,
 		})
 	})
