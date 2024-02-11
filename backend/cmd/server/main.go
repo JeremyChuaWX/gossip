@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
+	"gossip/internal/adapters/postgres"
+	"gossip/internal/user"
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )
 
 const ADDRESS string = "127.0.0.1:3000"
 
 func main() {
+	// constants
 	wsUpgrader := &websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -17,12 +22,26 @@ func main() {
 			return true
 		},
 	}
-	handlers := &Handlers{
-		Rooms:      make(map[string]*Room),
-		WsUpgrader: wsUpgrader,
-	}
-	router := NewRouter(handlers)
+	router := chi.NewMux()
+	ctx := context.Background()
 
+	// adapters
+	pgPool, err := postgres.Init(ctx, "")
+	if err != nil {
+		panic(err)
+	}
+	defer pgPool.Close()
+
+	// user module
+	userRepository := &user.Repository{
+		PgPool: pgPool,
+	}
+	userService := &user.Service{
+		Repository: userRepository,
+	}
+	user.InitRoutes(router, userService)
+
+	// run server
 	log.Println("running server on address", ADDRESS)
-	log.Fatal(http.ListenAndServe(ADDRESS, router.Mux))
+	log.Fatal(http.ListenAndServe(ADDRESS, router))
 }
