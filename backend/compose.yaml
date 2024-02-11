@@ -43,6 +43,16 @@ services:
     volumes:
       - ./pg_admin:/var/lib/pgadmin
 
+  server:
+    build: .
+    container_name: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - "3000:3000"
+
 configs:
   pgpass:
     file: ./pg_config/pgpass
