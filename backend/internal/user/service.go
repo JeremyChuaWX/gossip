@@ -1,17 +1,13 @@
 package user
 
 import (
-	"encoding/json"
 	"gossip/internal/password"
+	"gossip/internal/utils"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 )
-
-type errorResponse struct {
-	Error string `json:"error"`
-}
 
 type Service struct {
 	Repository *Repository
@@ -31,11 +27,15 @@ func (s *Service) userRouter() *chi.Mux {
 			Username string `json:"username"`
 			Password string `json:"password"`
 		}
-		req := readJSON[request](r)
+		req, err := utils.ReadJSON[request](r)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
 
 		passwordHash, err := password.Hash(req.Password)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -45,7 +45,7 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 		user, err := s.Repository.create(r.Context(), dto)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -53,7 +53,7 @@ func (s *Service) userRouter() *chi.Mux {
 			Message string `json:"message"`
 			User    User   `json:"user"`
 		}
-		writeJSON(w, http.StatusCreated, response{
+		utils.WriteJSON(w, http.StatusCreated, response{
 			Message: "created user",
 			User:    user,
 		})
@@ -64,7 +64,7 @@ func (s *Service) userRouter() *chi.Mux {
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -74,7 +74,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		user, err := s.Repository.findOne(r.Context(), dto)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -82,7 +82,7 @@ func (s *Service) userRouter() *chi.Mux {
 			Message string `json:"message"`
 			User    User   `json:"user"`
 		}
-		writeJSON(w, http.StatusOK, response{
+		utils.WriteJSON(w, http.StatusOK, response{
 			Message: "found user",
 			User:    user,
 		})
@@ -94,12 +94,16 @@ func (s *Service) userRouter() *chi.Mux {
 			Username *string `json:"username,omitempty"`
 			Password *string `json:"password,omitempty"`
 		}
-		req := readJSON[Request](r)
+		req, err := utils.ReadJSON[Request](r)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
 
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -113,14 +117,14 @@ func (s *Service) userRouter() *chi.Mux {
 			passwordHash, err := password.Hash(*req.Password)
 			dto.passwordHash = passwordHash
 			if err != nil {
-				writeError(w, http.StatusInternalServerError, err)
+				utils.WriteError(w, http.StatusInternalServerError, err)
 				return
 			}
 		}
 
 		user, err := s.Repository.update(r.Context(), dto)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -128,7 +132,7 @@ func (s *Service) userRouter() *chi.Mux {
 			Message string `json:"message"`
 			User    User   `json:"user"`
 		}
-		writeJSON(w, http.StatusOK, response{
+		utils.WriteJSON(w, http.StatusOK, response{
 			Message: "updated user",
 			User:    user,
 		})
@@ -139,7 +143,7 @@ func (s *Service) userRouter() *chi.Mux {
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 		dto := deleteDTO{
@@ -147,7 +151,7 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 		user, err := s.Repository.delete(r.Context(), dto)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -155,33 +159,11 @@ func (s *Service) userRouter() *chi.Mux {
 			Message string `json:"message"`
 			User    User   `json:"user"`
 		}
-		writeJSON(w, http.StatusOK, response{
+		utils.WriteJSON(w, http.StatusOK, response{
 			Message: "deleted user",
 			User:    user,
 		})
 	})
 
 	return userRouter
-}
-
-func readJSON[T any](r *http.Request) T {
-	var res T
-	json.NewDecoder(r.Body).Decode(&res)
-	return res
-}
-
-func writeJSON(w http.ResponseWriter, status int, value any) {
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(value); err != nil {
-		json.NewEncoder(w).Encode(errorResponse{
-			Error: err.Error(),
-		})
-	}
-}
-
-func writeError(w http.ResponseWriter, status int, err error) {
-	writeJSON(w, status, errorResponse{
-		Error: err.Error(),
-	})
 }
