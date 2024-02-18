@@ -58,6 +58,13 @@ func (s *service) chatRouter() *chi.Mux {
 
 		client := newClient(uuid.UUID{}, "", conn) // TODO: insert user info
 		s.ingress <- makeNewClientEvent(client)
+
+		type response struct {
+			Message string `json:"message"`
+		}
+		utils.WriteJSON(w, http.StatusCreated, response{
+			Message: fmt.Sprintf("client connected %s", client.userId.String()),
+		})
 	})
 
 	// new room
