@@ -4,13 +4,15 @@ type room struct {
 	name    string
 	clients map[*client]bool
 	ingress chan event
+	service *service
 }
 
-func newRoom(name string) *room {
+func newRoom(name string, service *service) *room {
 	return &room{
 		name:    name,
 		clients: make(map[*client]bool),
 		ingress: make(chan event),
+		service: service,
 	}
 }
 
@@ -20,7 +22,8 @@ func (r *room) init() {
 }
 
 func (r *room) destroy() {
-	// send event to chat service to handle destory
+	close(r.ingress)
+	r.service.ingress <- makeRemoveRoomEvent(r)
 }
 
 // run as goroutine

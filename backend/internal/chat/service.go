@@ -56,7 +56,7 @@ func (s *service) chatRouter() *chi.Mux {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 		}
 
-		client := newClient(uuid.UUID{}, "", conn) // TODO: insert user info
+		client := newClient(uuid.UUID{}, "", conn, s) // TODO: insert user info
 		s.ingress <- makeNewClientEvent(client)
 
 		type response struct {
@@ -77,7 +77,7 @@ func (s *service) chatRouter() *chi.Mux {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 		}
 
-		room := newRoom(req.Name)
+		room := newRoom(req.Name, s)
 		s.ingress <- makeNewRoomEvent(room)
 
 		type response struct {
@@ -141,7 +141,7 @@ func (s *service) receiveEvents() {
 		case *newClientEvent:
 			s.clients[e.client.userId] = e.client
 			e.client.init()
-		case *disconnectClientEvent:
+		case *clientDisconnectEvent:
 			delete(s.clients, e.client.userId)
 		case *newRoomEvent:
 			s.rooms[e.room.name] = e.room

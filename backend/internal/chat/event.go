@@ -6,7 +6,7 @@ type eventType string
 
 const (
 	NEW_CLIENT        eventType = "NEW_CLIENT"
-	DISCONNECT_CLIENT eventType = "DISCONNECT_CLIENT"
+	CLIENT_DISCONNECT eventType = "CLIENT_DISCONNECT"
 
 	NEW_ROOM    eventType = "NEW_ROOM"
 	REMOVE_ROOM eventType = "REMOVE_ROOM"
@@ -38,21 +38,21 @@ func (e *newClientEvent) name() eventType {
 	return e._name
 }
 
-// disconnect client
+// client disconnect
 
-type disconnectClientEvent struct {
+type clientDisconnectEvent struct {
 	_name  eventType
 	client *client
 }
 
-func makeDisconnectClientEvent(client *client) *disconnectClientEvent {
-	return &disconnectClientEvent{
-		_name:  DISCONNECT_CLIENT,
+func makeClientDisconnectEvent(client *client) *clientDisconnectEvent {
+	return &clientDisconnectEvent{
+		_name:  CLIENT_DISCONNECT,
 		client: client,
 	}
 }
 
-func (e *disconnectClientEvent) name() eventType {
+func (e *clientDisconnectEvent) name() eventType {
 	return e._name
 }
 

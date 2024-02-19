@@ -11,12 +11,14 @@ type client struct {
 	rooms    map[*room]bool
 	conn     *websocket.Conn
 	ingress  chan event
+	service  *service
 }
 
 func newClient(
 	userId uuid.UUID,
 	username string,
 	conn *websocket.Conn,
+	service *service,
 ) *client {
 	return &client{
 		userId:   userId,
@@ -24,6 +26,7 @@ func newClient(
 		rooms:    make(map[*room]bool),
 		conn:     conn,
 		ingress:  make(chan event),
+		service:  service,
 	}
 }
 
@@ -33,7 +36,8 @@ func (c *client) init() {
 
 func (c *client) disconnect() {
 	c.conn.Close()
-	// send event to chat service to handle disconnect
+	close(c.ingress)
+	c.service.ingress <- makeClientDisconnectEvent(c)
 }
 
 // run as goroutine
