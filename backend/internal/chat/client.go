@@ -1,6 +1,8 @@
 package chat
 
 import (
+	"log"
+
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
@@ -12,6 +14,7 @@ type client struct {
 	conn     *websocket.Conn
 	ingress  chan event
 	service  *service
+	handlers map[eventType]func(event)
 }
 
 func newClient(
@@ -20,14 +23,19 @@ func newClient(
 	conn *websocket.Conn,
 	service *service,
 ) *client {
-	return &client{
+	c := &client{
 		userId:   userId,
 		username: username,
 		rooms:    make(map[*room]bool),
 		conn:     conn,
 		ingress:  make(chan event),
 		service:  service,
+		handlers: make(map[eventType]func(event)),
 	}
+	c.handlers[MESSAGE] = c.messageHandler
+	c.handlers[CLIENT_JOIN_ROOM] = c.clientJoinRoomHandler
+	c.handlers[CLIENT_LEAVE_ROOM] = c.clientLeaveRoomHandler
+	return c
 }
 
 func (c *client) init() {
@@ -44,14 +52,28 @@ func (c *client) disconnect() {
 func (c *client) receiveEvents() {
 	for {
 		e := <-c.ingress
-		switch e := e.(type) {
-		case *messageEvent:
-			msg := e.toJSON()
-			c.conn.WriteJSON(msg) // TODO: handle error
-		case *clientJoinRoomEvent:
-			c.rooms[e.room] = true
-		case *clientLeaveRoomEvent:
-			delete(c.rooms, e.room)
+		handler, ok := c.handlers[e.name()]
+		if !ok {
+			log.Panic("no handler")
 		}
+		handler(e)
 	}
+}
+
+// handlers
+
+func (c *client) messageHandler(e event) {
+	event := e.(*messageEvent)
+	msg := event.toJSON()
+	c.conn.WriteJSON(msg) // TODO: handle error
+}
+
+func (c *client) clientJoinRoomHandler(e event) {
+	event := e.(*clientJoinRoomEvent)
+	c.rooms[event.room] = true
+}
+
+func (c *client) clientLeaveRoomHandler(e event) {
+	event := e.(*clientLeaveRoomEvent)
+	delete(c.rooms, event.room)
 }
