@@ -17,7 +17,8 @@ const ADDRESS string = "server:3000"
 func main() {
 	// constants
 	router := InitRouter()
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// adapters
 	pgPool, err := postgres.Init(
