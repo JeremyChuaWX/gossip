@@ -14,7 +14,7 @@ type client struct {
 	conn     *websocket.Conn
 	ingress  chan event
 	service  *service
-	handlers map[eventType]func(event)
+	handlers map[eventType]func(*client, event)
 }
 
 func newClient(
@@ -30,11 +30,11 @@ func newClient(
 		conn:     conn,
 		ingress:  make(chan event),
 		service:  service,
-		handlers: make(map[eventType]func(event)),
+		handlers: make(map[eventType]func(*client, event)),
 	}
-	c.handlers[MESSAGE] = c.messageHandler
-	c.handlers[CLIENT_JOIN_ROOM] = c.clientJoinRoomHandler
-	c.handlers[CLIENT_LEAVE_ROOM] = c.clientLeaveRoomHandler
+	c.handlers[MESSAGE] = (*client).messageHandler
+	c.handlers[CLIENT_JOIN_ROOM] = (*client).clientJoinRoomHandler
+	c.handlers[CLIENT_LEAVE_ROOM] = (*client).clientLeaveRoomHandler
 	return c
 }
 
@@ -42,21 +42,25 @@ func (c *client) init() {
 	go c.receiveEvents()
 }
 
-func (c *client) disconnect() {
-	c.conn.Close()
-	close(c.ingress)
-	c.service.ingress <- makeClientDisconnectEvent(c)
-}
+// func (c *client) disconnect() {
+// 	c.conn.Close()
+// 	close(c.ingress)
+// 	c.service.ingress <- makeClientDisconnectEvent(c)
+// }
 
 // run as goroutine
 func (c *client) receiveEvents() {
 	for {
-		e := <-c.ingress
+		e, ok := <-c.ingress
+		if !ok {
+			continue
+		}
 		handler, ok := c.handlers[e.name()]
 		if !ok {
-			log.Panic("no handler")
+			log.Println("invalid event")
+			continue
 		}
-		handler(e)
+		handler(c, e)
 	}
 }
 

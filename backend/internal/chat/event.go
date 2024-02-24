@@ -8,8 +8,8 @@ const (
 	NEW_CLIENT        eventType = "NEW_CLIENT"
 	CLIENT_DISCONNECT eventType = "CLIENT_DISCONNECT"
 
-	NEW_ROOM    eventType = "NEW_ROOM"
-	REMOVE_ROOM eventType = "REMOVE_ROOM"
+	NEW_ROOM     eventType = "NEW_ROOM"
+	DESTROY_ROOM eventType = "DESTROY_ROOM"
 
 	MESSAGE           eventType = "MESSAGE"
 	CLIENT_JOIN_ROOM  eventType = "CLIENT_JOIN_ROOM"
@@ -76,19 +76,19 @@ func (e *newRoomEvent) name() eventType {
 
 // remove room
 
-type removeRoomEvent struct {
+type destroyRoomEvent struct {
 	_name eventType
 	room  *room
 }
 
-func makeRemoveRoomEvent(room *room) *removeRoomEvent {
-	return &removeRoomEvent{
-		_name: REMOVE_ROOM,
+func makeDestroyRoomEvent(room *room) *destroyRoomEvent {
+	return &destroyRoomEvent{
+		_name: DESTROY_ROOM,
 		room:  room,
 	}
 }
 
-func (e *removeRoomEvent) name() eventType {
+func (e *destroyRoomEvent) name() eventType {
 	return e._name
 }
 

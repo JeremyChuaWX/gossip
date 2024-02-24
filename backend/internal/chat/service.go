@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gossip/internal/utils"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -21,6 +22,7 @@ type service struct {
 	rooms      map[string]*room
 	clients    map[uuid.UUID]*client
 	ingress    chan event
+	handlers   map[eventType]func(*service, event)
 }
 
 func InitService() *service {
@@ -31,14 +33,19 @@ func InitService() *service {
 			return true
 		},
 	}
-	service := &service{
+	s := &service{
 		wsUpgrader: wsUpgrader,
 		rooms:      make(map[string]*room),
 		clients:    make(map[uuid.UUID]*client),
 		ingress:    make(chan event),
+		handlers:   make(map[eventType]func(*service, event)),
 	}
-	go service.receiveEvents()
-	return service
+	s.handlers[NEW_CLIENT] = (*service).newClientHandler
+	s.handlers[CLIENT_DISCONNECT] = (*service).clientDisconnectHandler
+	s.handlers[NEW_ROOM] = (*service).newRoomHandler
+	s.handlers[DESTROY_ROOM] = (*service).destroyRoomHandler
+	go s.receiveEvents()
+	return s
 }
 
 func (s *service) InitRoutes(router *chi.Mux) {
@@ -58,13 +65,6 @@ func (s *service) chatRouter() *chi.Mux {
 
 		client := newClient(uuid.UUID{}, "", conn, s) // TODO: insert user info
 		s.ingress <- makeNewClientEvent(client)
-
-		type response struct {
-			Message string `json:"message"`
-		}
-		utils.WriteJSON(w, http.StatusCreated, response{
-			Message: fmt.Sprintf("client connected %s", client.userId.String()),
-		})
 	})
 
 	// new room
@@ -87,6 +87,35 @@ func (s *service) chatRouter() *chi.Mux {
 			Message: fmt.Sprintf("room created %s", room.name),
 		})
 	})
+
+	// destroy room
+	chatRouter.Delete(
+		"/rooms/{name}",
+		func(w http.ResponseWriter, r *http.Request) {
+			name := chi.URLParam(r, "name")
+
+			room, ok := s.rooms[name]
+			if !ok {
+				utils.WriteError(
+					w,
+					http.StatusBadRequest,
+					roomDoesNotExistError,
+				)
+				return
+			}
+
+			event := makeDestroyRoomEvent(room)
+			room.ingress <- event
+			s.ingress <- event
+
+			type response struct {
+				Message string `json:"message"`
+			}
+			utils.WriteJSON(w, http.StatusCreated, response{
+				Message: fmt.Sprintf("room destroyed %s", room.name),
+			})
+		},
+	)
 
 	// client join room
 	chatRouter.Post(
@@ -136,18 +165,39 @@ func (s *service) chatRouter() *chi.Mux {
 // run as goroutine
 func (s *service) receiveEvents() {
 	for {
-		e := <-s.ingress
-		switch e := e.(type) {
-		case *newClientEvent:
-			s.clients[e.client.userId] = e.client
-			e.client.init()
-		case *clientDisconnectEvent:
-			delete(s.clients, e.client.userId)
-		case *newRoomEvent:
-			s.rooms[e.room.name] = e.room
-			e.room.init()
-		case *removeRoomEvent:
-			delete(s.rooms, e.room.name)
+		e, ok := <-s.ingress
+		if !ok {
+			continue
 		}
+		handler, ok := s.handlers[e.name()]
+		if !ok {
+			log.Println("invalid event")
+			continue
+		}
+		handler(s, e)
 	}
+}
+
+// handlers
+
+func (s *service) newClientHandler(e event) {
+	event := e.(*newClientEvent)
+	s.clients[event.client.userId] = event.client
+	event.client.init()
+}
+
+func (s *service) clientDisconnectHandler(e event) {
+	event := e.(*clientDisconnectEvent)
+	delete(s.clients, event.client.userId)
+}
+
+func (s *service) newRoomHandler(e event) {
+	event := e.(*newRoomEvent)
+	s.rooms[event.room.name] = event.room
+	event.room.init()
+}
+
+func (s *service) destroyRoomHandler(e event) {
+	event := e.(*destroyRoomEvent)
+	delete(s.rooms, event.room.name)
 }
