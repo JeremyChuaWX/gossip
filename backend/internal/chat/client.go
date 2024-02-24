@@ -42,11 +42,11 @@ func (c *client) init() {
 	go c.receiveEvents()
 }
 
-// func (c *client) disconnect() {
-// 	c.conn.Close()
-// 	close(c.ingress)
-// 	c.service.ingress <- makeClientDisconnectEvent(c)
-// }
+func (c *client) disconnect() {
+	c.conn.Close()
+	close(c.ingress)
+	c.service.ingress <- makeClientDisconnectEvent(c)
+}
 
 // run as goroutine
 func (c *client) receiveEvents() {
@@ -69,7 +69,9 @@ func (c *client) receiveEvents() {
 func (c *client) messageHandler(e event) {
 	event := e.(*messageEvent)
 	msg := event.toJSON()
-	c.conn.WriteJSON(msg) // TODO: handle error
+	if err := c.conn.WriteJSON(msg); err != nil {
+		c.disconnect()
+	}
 }
 
 func (c *client) clientJoinRoomHandler(e event) {

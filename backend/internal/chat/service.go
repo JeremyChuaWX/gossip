@@ -61,9 +61,26 @@ func (s *service) chatRouter() *chi.Mux {
 		conn, err := s.wsUpgrader.Upgrade(w, r, nil)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
 		}
 
-		client := newClient(uuid.UUID{}, "", conn, s) // TODO: insert user info
+		type response struct {
+			Message string `json:"message"`
+		}
+		if err := conn.WriteJSON(response{
+			Message: "client connected",
+		}); err != nil {
+			conn.Close()
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		client := newClient(
+			uuid.UUID{},
+			"user1",
+			conn,
+			s,
+		) // TODO: insert user info
 		s.ingress <- makeNewClientEvent(client)
 	})
 
@@ -75,6 +92,7 @@ func (s *service) chatRouter() *chi.Mux {
 		req, err := utils.ReadJSON[request](r)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
 		}
 
 		room := newRoom(req.Name, s)
