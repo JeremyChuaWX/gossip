@@ -22,6 +22,7 @@ type service struct {
 	rooms      map[string]*room
 	clients    map[uuid.UUID]*client
 	ingress    chan event
+	alive      chan bool
 	handlers   map[eventType]func(*service, event)
 }
 
@@ -38,6 +39,7 @@ func InitService() *service {
 		rooms:      make(map[string]*room),
 		clients:    make(map[uuid.UUID]*client),
 		ingress:    make(chan event),
+		alive:      make(chan bool),
 		handlers:   make(map[eventType]func(*service, event)),
 	}
 	s.handlers[NEW_CLIENT] = (*service).newClientHandler
@@ -58,6 +60,15 @@ func (s *service) chatRouter() *chi.Mux {
 
 	// new client
 	chatRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		username := chi.URLParam(r, "username")
+
+		userIdStr := chi.URLParam(r, "userId")
+		userId, err := uuid.FromString(userIdStr)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		conn, err := s.wsUpgrader.Upgrade(w, r, nil)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
@@ -75,12 +86,7 @@ func (s *service) chatRouter() *chi.Mux {
 			return
 		}
 
-		client := newClient(
-			uuid.UUID{},
-			"user1",
-			conn,
-			s,
-		) // TODO: insert user info
+		client := newClient(userId, username, conn, s)
 		s.ingress <- makeNewClientEvent(client)
 	})
 
@@ -183,16 +189,17 @@ func (s *service) chatRouter() *chi.Mux {
 // run as goroutine
 func (s *service) receiveEvents() {
 	for {
-		e, ok := <-s.ingress
-		if !ok {
-			continue
+		select {
+		case <-s.alive:
+			break
+		case e := <-s.ingress:
+			handler, ok := s.handlers[e.name()]
+			if !ok {
+				log.Println("invalid event")
+				continue
+			}
+			handler(s, e)
 		}
-		handler, ok := s.handlers[e.name()]
-		if !ok {
-			log.Println("invalid event")
-			continue
-		}
-		handler(s, e)
 	}
 }
 

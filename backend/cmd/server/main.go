@@ -7,6 +7,7 @@ import (
 	"gossip/internal/user"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -44,8 +45,7 @@ func main() {
 	chatService.InitRoutes(router)
 
 	// run server
-	log.Println("running server on address", ADDRESS)
-	log.Fatal(http.ListenAndServe(ADDRESS, router))
+	StartRouter(router)
 }
 
 func InitRouter() *chi.Mux {
@@ -53,4 +53,18 @@ func InitRouter() *chi.Mux {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	return router
+}
+
+func StartRouter(router *chi.Mux) {
+	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		route = strings.Replace(route, "/*/", "/", -1)
+		log.Printf("%s %s\n", method, route)
+		return nil
+	}
+	if err := chi.Walk(router, walkFunc); err != nil {
+		log.Printf("Logging err: %s\n", err.Error())
+	}
+
+	log.Println("running server on address", ADDRESS)
+	log.Fatal(http.ListenAndServe(ADDRESS, router))
 }
