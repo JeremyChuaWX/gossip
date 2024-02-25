@@ -13,6 +13,7 @@ type client struct {
 	rooms    map[*room]bool
 	conn     *websocket.Conn
 	ingress  chan event
+	alive    chan bool
 	service  *service
 	handlers map[eventType]func(*client, event)
 }
@@ -29,6 +30,7 @@ func newClient(
 		rooms:    make(map[*room]bool),
 		conn:     conn,
 		ingress:  make(chan event),
+		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*client, event)),
 	}
@@ -44,23 +46,27 @@ func (c *client) init() {
 
 func (c *client) disconnect() {
 	c.conn.Close()
-	close(c.ingress)
 	c.service.ingress <- makeClientDisconnectEvent(c)
+	c.alive <- false
 }
 
 // run as goroutine
 func (c *client) receiveEvents() {
 	for {
-		e, ok := <-c.ingress
-		if !ok {
-			continue
+		select {
+		case <-c.alive:
+			break
+		case e, ok := <-c.ingress:
+			if !ok {
+				continue
+			}
+			handler, ok := c.handlers[e.name()]
+			if !ok {
+				log.Println("invalid event")
+				continue
+			}
+			handler(c, e)
 		}
-		handler, ok := c.handlers[e.name()]
-		if !ok {
-			log.Println("invalid event")
-			continue
-		}
-		handler(c, e)
 	}
 }
 

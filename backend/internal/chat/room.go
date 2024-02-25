@@ -6,6 +6,7 @@ type room struct {
 	name     string
 	clients  map[*client]bool
 	ingress  chan event
+	alive    chan bool
 	service  *service
 	handlers map[eventType]func(*room, event)
 }
@@ -15,6 +16,7 @@ func newRoom(name string, service *service) *room {
 		name:     name,
 		clients:  make(map[*client]bool),
 		ingress:  make(chan event),
+		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*room, event)),
 	}
@@ -33,14 +35,19 @@ func (r *room) init() {
 // run as goroutine
 func (r *room) receiveMessages() {
 	for {
-		var msg messageJSON
-		for client := range r.clients {
-			if err := client.conn.ReadJSON(&msg); err != nil {
-				client.ingress <- makeClientLeaveRoomEvent(client, r)
-				r.ingress <- makeClientLeaveRoomEvent(client, r)
+		select {
+		case <-r.alive:
+			break
+		default:
+			var msg messageJSON
+			for client := range r.clients {
+				if err := client.conn.ReadJSON(&msg); err != nil {
+					client.ingress <- makeClientLeaveRoomEvent(client, r)
+					r.ingress <- makeClientLeaveRoomEvent(client, r)
+				}
+				e := msg.toEvent()
+				r.ingress <- e
 			}
-			e := msg.toEvent()
-			r.ingress <- e
 		}
 	}
 }
@@ -48,16 +55,17 @@ func (r *room) receiveMessages() {
 // run as goroutine
 func (r *room) receiveEvents() {
 	for {
-		e, ok := <-r.ingress
-		if !ok {
-			continue
+		select {
+		case <-r.alive:
+			break
+		case e := <-r.ingress:
+			handler, ok := r.handlers[e.name()]
+			if !ok {
+				log.Println("invalid event")
+				continue
+			}
+			handler(r, e)
 		}
-		handler, ok := r.handlers[e.name()]
-		if !ok {
-			log.Println("invalid event")
-			continue
-		}
-		handler(r, e)
 	}
 }
 
@@ -83,5 +91,5 @@ func (r *room) destroyRoomHandler(e event) {
 	for client := range r.clients {
 		client.ingress <- makeClientLeaveRoomEvent(client, r)
 	}
-	close(r.ingress)
+	r.alive <- false
 }

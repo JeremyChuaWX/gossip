@@ -13,8 +13,8 @@ let rooms = [];
 /** @type string[] */
 let messages = [];
 
-const HTTP_URL = "http://127.0.0.1:3000/room/";
-const WS_URL = "ws://127.0.0.1:3000/room/";
+const HTTP_URL = "http://127.0.0.1:3000";
+const WS_URL = "ws://127.0.0.1:3000";
 
 const availableRoomsList = document.getElementById("available-rooms");
 const newRoomForm = document.getElementById("new-room");
@@ -38,7 +38,7 @@ async function newRoom(e) {
         console.log("empty room name");
         return;
     }
-    const newRoomURL = new URL(HTTP_URL);
+    const newRoomURL = new URL(`${HTTP_URL}/chat/rooms`);
     newRoomURL.searchParams.append("name", name);
     await fetch(newRoomURL, { method: "POST" });
     const data = await fetch(HTTP_URL).then((res) => res.json());
@@ -54,7 +54,7 @@ function joinRoom(e) {
     currentUsername = joinRoomData.get("username");
     const joinRoomURL = new URL(currentRoom, WS_URL);
     joinRoomURL.searchParams.append("username", currentUsername);
-    initWS(joinRoomURL);
+    initWS(`${joinRoomURL}/chat`);
     renderCurrentStatus(currentRoom, currentUsername);
 }
 
