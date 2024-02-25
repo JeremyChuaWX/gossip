@@ -60,17 +60,27 @@ func (s *service) chatRouter() *chi.Mux {
 
 	// new client
 	chatRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		username := chi.URLParam(r, "username")
-
-		userIdStr := chi.URLParam(r, "userId")
-		userId, err := uuid.FromString(userIdStr)
+		type request struct {
+			Username string `query:"username"`
+			UserId   string `query:"userId"`
+		}
+		query, err := utils.GetURLQueryStruct[request](r.URL)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			log.Println(err.Error())
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		userId, err := uuid.FromString(query.UserId)
+		if err != nil {
+			log.Println(err.Error())
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
 		conn, err := s.wsUpgrader.Upgrade(w, r, nil)
 		if err != nil {
+			log.Println(err.Error())
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -86,7 +96,7 @@ func (s *service) chatRouter() *chi.Mux {
 			return
 		}
 
-		client := newClient(userId, username, conn, s)
+		client := newClient(userId, query.Username, conn, s)
 		s.ingress <- makeNewClientEvent(client)
 	})
 
@@ -97,6 +107,7 @@ func (s *service) chatRouter() *chi.Mux {
 		}
 		req, err := utils.ReadJSON[request](r)
 		if err != nil {
+			log.Println(err.Error())
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
