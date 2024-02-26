@@ -52,10 +52,11 @@ func (c *client) disconnect() {
 
 // run as goroutine
 func (c *client) receiveEvents() {
+loop:
 	for {
 		select {
 		case <-c.alive:
-			break
+			break loop
 		case e, ok := <-c.ingress:
 			if !ok {
 				continue
@@ -68,6 +69,8 @@ func (c *client) receiveEvents() {
 			handler(c, e)
 		}
 	}
+	close(c.ingress)
+	close(c.alive)
 }
 
 // handlers

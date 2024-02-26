@@ -29,15 +29,22 @@ func newRoom(name string, service *service) *room {
 
 func (r *room) init() {
 	go r.receiveEvents()
-	go r.receiveMessages()
 }
 
 // run as goroutine
-func (r *room) receiveMessages() {
+func (r *room) receiveEvents() {
+loop:
 	for {
 		select {
 		case <-r.alive:
-			break
+			break loop
+		case e := <-r.ingress:
+			handler, ok := r.handlers[e.name()]
+			if !ok {
+				log.Println("invalid event")
+				continue
+			}
+			handler(r, e)
 		default:
 			var msg messageJSON
 			for client := range r.clients {
@@ -50,23 +57,8 @@ func (r *room) receiveMessages() {
 			}
 		}
 	}
-}
-
-// run as goroutine
-func (r *room) receiveEvents() {
-	for {
-		select {
-		case <-r.alive:
-			break
-		case e := <-r.ingress:
-			handler, ok := r.handlers[e.name()]
-			if !ok {
-				log.Println("invalid event")
-				continue
-			}
-			handler(r, e)
-		}
-	}
+	close(r.ingress)
+	close(r.alive)
 }
 
 // handlers

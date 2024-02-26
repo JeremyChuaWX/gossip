@@ -199,10 +199,11 @@ func (s *service) chatRouter() *chi.Mux {
 
 // run as goroutine
 func (s *service) receiveEvents() {
+loop:
 	for {
 		select {
 		case <-s.alive:
-			break
+			break loop
 		case e := <-s.ingress:
 			handler, ok := s.handlers[e.name()]
 			if !ok {
@@ -212,6 +213,8 @@ func (s *service) receiveEvents() {
 			handler(s, e)
 		}
 	}
+	close(s.ingress)
+	close(s.alive)
 }
 
 // handlers
