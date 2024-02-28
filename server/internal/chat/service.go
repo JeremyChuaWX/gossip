@@ -105,14 +105,14 @@ func (s *service) chatRouter() *chi.Mux {
 		type request struct {
 			Name string `json:"name"`
 		}
-		req, err := utils.ReadJSON[request](r)
+		body, err := utils.ReadJSON[request](r)
 		if err != nil {
 			log.Println(err.Error())
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
-		room := newRoom(req.Name, s)
+		room := newRoom(body.Name, s)
 		s.ingress <- makeNewRoomEvent(room)
 
 		type response struct {
@@ -156,8 +156,24 @@ func (s *service) chatRouter() *chi.Mux {
 	chatRouter.Post(
 		"/rooms/{name}",
 		func(w http.ResponseWriter, r *http.Request) {
-			// TODO: userId from JWT
-			userId := uuid.UUID{}
+			roomName := chi.URLParam(r, "name")
+
+			type request struct {
+				UserId string `json:"userId"`
+			}
+			body, err := utils.ReadJSON[request](r)
+			if err != nil {
+				log.Println(err.Error())
+				utils.WriteError(w, http.StatusBadRequest, err)
+				return
+			}
+
+			userId, err := uuid.FromString(body.UserId)
+			if err != nil {
+				log.Println(err.Error())
+				utils.WriteError(w, http.StatusBadRequest, err)
+				return
+			}
 
 			client, ok := s.clients[userId]
 			if !ok {
@@ -169,9 +185,7 @@ func (s *service) chatRouter() *chi.Mux {
 				return
 			}
 
-			name := chi.URLParam(r, "name")
-
-			room, ok := s.rooms[name]
+			room, ok := s.rooms[roomName]
 			if !ok {
 				utils.WriteError(
 					w,
