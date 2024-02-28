@@ -33,11 +33,14 @@ func (r *room) init() {
 
 // run as goroutine
 func (r *room) receiveEvents() {
-loop:
+	defer (func() {
+		close(r.ingress)
+		close(r.alive)
+	})()
 	for {
 		select {
 		case <-r.alive:
-			break loop
+			return
 		case e := <-r.ingress:
 			handler, ok := r.handlers[e.name()]
 			if !ok {
@@ -57,8 +60,6 @@ loop:
 			}
 		}
 	}
-	close(r.ingress)
-	close(r.alive)
 }
 
 // handlers

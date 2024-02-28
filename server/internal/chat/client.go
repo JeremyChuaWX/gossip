@@ -52,15 +52,16 @@ func (c *client) disconnect() {
 
 // run as goroutine
 func (c *client) receiveEvents() {
-loop:
+	defer (func() {
+		close(c.ingress)
+		close(c.alive)
+	})()
 	for {
 		select {
 		case <-c.alive:
-			break loop
-		case e, ok := <-c.ingress:
-			if !ok {
-				continue
-			}
+			return
+		case e := <-c.ingress:
+			log.Printf("[client] event received: %v", e)
 			handler, ok := c.handlers[e.name()]
 			if !ok {
 				log.Println("invalid event")
@@ -69,8 +70,6 @@ loop:
 			handler(c, e)
 		}
 	}
-	close(c.ingress)
-	close(c.alive)
 }
 
 // handlers
@@ -78,6 +77,7 @@ loop:
 func (c *client) messageHandler(e event) {
 	event := e.(*messageEvent)
 	msg := event.toJSON()
+	log.Printf("[client] writing websocket message: %v", msg)
 	if err := c.conn.WriteJSON(msg); err != nil {
 		c.disconnect()
 	}
