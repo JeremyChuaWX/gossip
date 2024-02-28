@@ -15,7 +15,7 @@ func newRoom(name string, service *service) *room {
 	r := &room{
 		name:     name,
 		clients:  make(map[*client]bool),
-		ingress:  make(chan event),
+		ingress:  make(chan event, 100),
 		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*room, event)),
@@ -29,15 +29,26 @@ func newRoom(name string, service *service) *room {
 
 func (r *room) init() {
 	go r.receiveEvents()
-	go r.receiveMessages()
 }
 
 // run as goroutine
-func (r *room) receiveMessages() {
+func (r *room) receiveEvents() {
+	defer (func() {
+		close(r.ingress)
+		close(r.alive)
+	})()
 	for {
 		select {
 		case <-r.alive:
-			break
+			return
+		case e := <-r.ingress:
+			log.Printf("[room] event received: %v", e)
+			handler, ok := r.handlers[e.name()]
+			if !ok {
+				log.Println("invalid event")
+				continue
+			}
+			handler(r, e)
 		default:
 			var msg messageJSON
 			for client := range r.clients {
@@ -46,25 +57,9 @@ func (r *room) receiveMessages() {
 					r.ingress <- makeClientLeaveRoomEvent(client, r)
 				}
 				e := msg.toEvent()
+				log.Printf("[room] websocket message received: %v", e)
 				r.ingress <- e
 			}
-		}
-	}
-}
-
-// run as goroutine
-func (r *room) receiveEvents() {
-	for {
-		select {
-		case <-r.alive:
-			break
-		case e := <-r.ingress:
-			handler, ok := r.handlers[e.name()]
-			if !ok {
-				log.Println("invalid event")
-				continue
-			}
-			handler(r, e)
 		}
 	}
 }
@@ -72,6 +67,7 @@ func (r *room) receiveEvents() {
 // handlers
 
 func (r *room) messageHandler(e event) {
+	log.Printf("number of clients: %d", len(r.clients))
 	for client := range r.clients {
 		client.ingress <- e
 	}

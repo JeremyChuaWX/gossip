@@ -29,7 +29,7 @@ func newClient(
 		username: username,
 		rooms:    make(map[*room]bool),
 		conn:     conn,
-		ingress:  make(chan event),
+		ingress:  make(chan event, 100),
 		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*client, event)),
@@ -52,14 +52,16 @@ func (c *client) disconnect() {
 
 // run as goroutine
 func (c *client) receiveEvents() {
+	defer (func() {
+		close(c.ingress)
+		close(c.alive)
+	})()
 	for {
 		select {
 		case <-c.alive:
-			break
-		case e, ok := <-c.ingress:
-			if !ok {
-				continue
-			}
+			return
+		case e := <-c.ingress:
+			log.Printf("[client] event received: %v", e)
 			handler, ok := c.handlers[e.name()]
 			if !ok {
 				log.Println("invalid event")
@@ -75,6 +77,7 @@ func (c *client) receiveEvents() {
 func (c *client) messageHandler(e event) {
 	event := e.(*messageEvent)
 	msg := event.toJSON()
+	log.Printf("[client] writing websocket message: %v", msg)
 	if err := c.conn.WriteJSON(msg); err != nil {
 		c.disconnect()
 	}
