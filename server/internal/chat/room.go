@@ -42,6 +42,7 @@ func (r *room) receiveEvents() {
 		case <-r.alive:
 			return
 		case e := <-r.ingress:
+			log.Printf("[room] event received: %v", e)
 			handler, ok := r.handlers[e.name()]
 			if !ok {
 				log.Println("invalid event")
@@ -56,6 +57,7 @@ func (r *room) receiveEvents() {
 					r.ingress <- makeClientLeaveRoomEvent(client, r)
 				}
 				e := msg.toEvent()
+				log.Printf("[room] websocket message received: %v", e)
 				r.ingress <- e
 			}
 		}
@@ -65,6 +67,7 @@ func (r *room) receiveEvents() {
 // handlers
 
 func (r *room) messageHandler(e event) {
+	log.Printf("number of clients: %d", len(r.clients))
 	for client := range r.clients {
 		client.ingress <- e
 	}

@@ -222,6 +222,7 @@ func (s *service) receiveEvents() {
 		case <-s.alive:
 			return
 		case e := <-s.ingress:
+			log.Printf("[service] event received: %v", e)
 			handler, ok := s.handlers[e.name()]
 			if !ok {
 				log.Println("invalid event")
