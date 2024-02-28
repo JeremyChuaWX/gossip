@@ -15,7 +15,7 @@ func newRoom(name string, service *service) *room {
 	r := &room{
 		name:     name,
 		clients:  make(map[*client]bool),
-		ingress:  make(chan event),
+		ingress:  make(chan event, 100),
 		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*room, event)),

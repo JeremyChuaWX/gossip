@@ -38,7 +38,7 @@ func InitService() *service {
 		wsUpgrader: wsUpgrader,
 		rooms:      make(map[string]*room),
 		clients:    make(map[uuid.UUID]*client),
-		ingress:    make(chan event),
+		ingress:    make(chan event, 100),
 		alive:      make(chan bool),
 		handlers:   make(map[eventType]func(*service, event)),
 	}

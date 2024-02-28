@@ -29,7 +29,7 @@ func newClient(
 		username: username,
 		rooms:    make(map[*room]bool),
 		conn:     conn,
-		ingress:  make(chan event),
+		ingress:  make(chan event, 100),
 		alive:    make(chan bool),
 		service:  service,
 		handlers: make(map[eventType]func(*client, event)),
