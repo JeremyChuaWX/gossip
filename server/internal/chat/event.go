@@ -1,6 +1,10 @@
 package chat
 
-import "time"
+import (
+	"time"
+
+	"github.com/gofrs/uuid/v5"
+)
 
 type eventType string
 
@@ -97,6 +101,8 @@ func (e *destroyRoomEvent) name() eventType {
 type messageEvent struct {
 	_name     eventType
 	timestamp time.Time
+	room      string
+	sender    uuid.UUID
 	message   string
 }
 
@@ -107,19 +113,25 @@ func (e *messageEvent) name() eventType {
 func (e *messageEvent) toJSON() messageJSON {
 	return messageJSON{
 		Timestamp: e.timestamp,
+		Room:      e.room,
+		Sender:    e.sender.String(),
 		Message:   e.message,
 	}
 }
 
 type messageJSON struct {
 	Timestamp time.Time `json:"timestamp"`
+	Room      string    `json:"room"`
+	Sender    string    `json:"sender"`
 	Message   string    `json:"message"`
 }
 
-func (m *messageJSON) toEvent() *messageEvent {
+func (m *messageJSON) toEvent(sender uuid.UUID) *messageEvent {
 	return &messageEvent{
 		_name:     MESSAGE,
 		timestamp: m.Timestamp,
+		room:      m.Room,
+		sender:    sender,
 		message:   m.Message,
 	}
 }

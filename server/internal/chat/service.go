@@ -46,6 +46,7 @@ func InitService() *service {
 	s.handlers[CLIENT_DISCONNECT] = (*service).clientDisconnectHandler
 	s.handlers[NEW_ROOM] = (*service).newRoomHandler
 	s.handlers[DESTROY_ROOM] = (*service).destroyRoomHandler
+	s.handlers[MESSAGE] = (*service).messageHandler
 	go s.receiveEvents()
 	return s
 }
@@ -255,4 +256,10 @@ func (s *service) newRoomHandler(e event) {
 func (s *service) destroyRoomHandler(e event) {
 	event := e.(*destroyRoomEvent)
 	delete(s.rooms, event.room.name)
+}
+
+func (s *service) messageHandler(e event) {
+	event := e.(*messageEvent)
+	room := s.rooms[event.room]
+	room.ingress <- event
 }
