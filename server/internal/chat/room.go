@@ -49,17 +49,6 @@ func (r *room) receiveEvents() {
 				continue
 			}
 			handler(r, e)
-		default:
-			var msg messageJSON
-			for client := range r.clients {
-				if err := client.conn.ReadJSON(&msg); err != nil {
-					client.ingress <- makeClientLeaveRoomEvent(client, r)
-					r.ingress <- makeClientLeaveRoomEvent(client, r)
-				}
-				e := msg.toEvent()
-				log.Printf("[room] websocket message received: %v", e)
-				r.ingress <- e
-			}
 		}
 	}
 }

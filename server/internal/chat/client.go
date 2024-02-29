@@ -47,6 +47,9 @@ func (c *client) init() {
 func (c *client) disconnect() {
 	c.conn.Close()
 	c.service.ingress <- makeClientDisconnectEvent(c)
+	for room := range c.rooms {
+		room.ingress <- makeClientLeaveRoomEvent(c, room)
+	}
 	c.alive <- false
 }
 
@@ -68,6 +71,14 @@ func (c *client) receiveEvents() {
 				continue
 			}
 			handler(c, e)
+		default:
+			var msgJSON messageJSON
+			if err := c.conn.ReadJSON(&msgJSON); err != nil {
+				c.disconnect()
+			}
+			msgEvent := msgJSON.toEvent()
+			log.Printf("[room] websocket message received: %v", msgEvent)
+			c.service.ingress <- msgEvent
 		}
 	}
 }
