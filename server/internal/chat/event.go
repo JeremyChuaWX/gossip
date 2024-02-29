@@ -126,8 +126,7 @@ type messageJSON struct {
 	Message   string    `json:"message"`
 }
 
-func (m *messageJSON) toEvent() *messageEvent {
-	sender, _ := uuid.FromString(m.Sender)
+func (m *messageJSON) toEvent(sender uuid.UUID) *messageEvent {
 	return &messageEvent{
 		_name:     MESSAGE,
 		timestamp: m.Timestamp,
