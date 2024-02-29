@@ -56,7 +56,6 @@ func (r *room) receiveEvents() {
 // handlers
 
 func (r *room) messageHandler(e event) {
-	log.Printf("number of clients: %d", len(r.clients))
 	for client := range r.clients {
 		client.ingress <- e
 	}
