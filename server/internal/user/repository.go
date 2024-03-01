@@ -11,9 +11,9 @@ type Repository struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Repository) create(
+func (r *Repository) Create(
 	ctx context.Context,
-	dto createDTO,
+	dto CreateDTO,
 ) (User, error) {
 	sql := `
 	INSERT INTO users (
@@ -28,7 +28,7 @@ func (r *Repository) create(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
@@ -49,9 +49,9 @@ func (r *Repository) findOne(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) findOneByUsername(
+func (r *Repository) FindOneByUsername(
 	ctx context.Context,
-	dto findOneByUsernameDTO,
+	dto FindOneByUsernameDTO,
 ) (User, error) {
 	sql := `
 	SELECT
@@ -62,7 +62,7 @@ func (r *Repository) findOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 

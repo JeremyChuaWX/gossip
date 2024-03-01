@@ -16,9 +16,6 @@ type Service struct {
 func (s *Service) InitRoutes(router *chi.Mux) {
 	userRouter := s.userRouter()
 	router.Mount("/users", userRouter)
-
-	authRouter := s.authRouter()
-	router.Mount("/auth", authRouter)
 }
 
 func (s *Service) userRouter() *chi.Mux {
@@ -67,11 +64,11 @@ func (s *Service) userRouter() *chi.Mux {
 			return
 		}
 
-		dto := findOneByUsernameDTO{
-			username: req.Username,
+		dto := FindOneByUsernameDTO{
+			Username: req.Username,
 		}
 
-		user, err := s.Repository.findOneByUsername(r.Context(), dto)
+		user, err := s.Repository.FindOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -174,90 +171,4 @@ func (s *Service) userRouter() *chi.Mux {
 	})
 
 	return userRouter
-}
-
-func (s *Service) authRouter() *chi.Mux {
-	authRouter := chi.NewRouter()
-
-	// sign in
-	authRouter.Post("/signin", func(w http.ResponseWriter, r *http.Request) {
-		type request struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		req, err := utils.ReadJSON[request](r)
-		if err != nil {
-			utils.WriteError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		dto := findOneByUsernameDTO{
-			username: req.Username,
-		}
-		user, err := s.Repository.findOneByUsername(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		if err = password.Compare([]byte(user.PasswordHash), req.Password); err != nil {
-			utils.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			User User `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "signed in",
-			},
-			User: user,
-		})
-	})
-
-	// sign up
-	authRouter.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
-		type request struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		req, err := utils.ReadJSON[request](r)
-		if err != nil {
-			utils.WriteError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		passwordHash, err := password.Hash(req.Password)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		dto := createDTO{
-			username:     req.Username,
-			passwordHash: passwordHash,
-		}
-		user, err := s.Repository.create(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			User User `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "signed up",
-			},
-			User: user,
-		})
-	})
-
-	return authRouter
 }
