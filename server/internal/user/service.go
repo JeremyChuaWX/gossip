@@ -44,12 +44,15 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
-			Message: "found user",
-			User:    user,
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "found user",
+			},
+			User: user,
 		})
 	})
 
@@ -75,12 +78,15 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
-			Message: "found user",
-			User:    user,
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "found user",
+			},
+			User: user,
 		})
 	})
 
@@ -125,12 +131,15 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
-			Message: "updated user",
-			User:    user,
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "updated user",
+			},
+			User: user,
 		})
 	})
 
@@ -152,12 +161,15 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
-			Message: "deleted user",
-			User:    user,
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "deleted user",
+			},
+			User: user,
 		})
 	})
 
@@ -194,12 +206,15 @@ func (s *Service) authRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
-		utils.WriteJSON(w, http.StatusCreated, response{
-			Message: "signed in",
-			User:    user,
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "signed in",
+			},
+			User: user,
 		})
 	})
 
@@ -232,12 +247,15 @@ func (s *Service) authRouter() *chi.Mux {
 		}
 
 		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
+			utils.BaseResponse
+			User User `json:"user"`
 		}
-		utils.WriteJSON(w, http.StatusCreated, response{
-			Message: "signed up",
-			User:    user,
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "signed up",
+			},
+			User: user,
 		})
 	})
 
