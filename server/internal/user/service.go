@@ -211,7 +211,7 @@ func (s *Service) authRouter() *chi.Mux {
 	})
 
 	// sign up
-	authRouter.Get("/signup", func(w http.ResponseWriter, r *http.Request) {
+	authRouter.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
 		type request struct {
 			Username string `json:"username"`
 			Password string `json:"password"`

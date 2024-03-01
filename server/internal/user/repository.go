@@ -62,7 +62,7 @@ func (r *Repository) findOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.username)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
