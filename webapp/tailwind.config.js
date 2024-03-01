@@ -59,7 +59,7 @@ const config = {
             },
             keyframes: {
                 "widen-tracking": {
-                    "0%": { "letter-spacing": "0em", "font-weight": "400" },
+                    "0%": { "letter-spacing": "-0.05em", "font-weight": "400" },
                     "100%": { "letter-spacing": "0.1em", "font-weight": "200" },
                 },
             },
