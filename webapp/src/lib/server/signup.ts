@@ -14,9 +14,13 @@ export async function signup(params: SignupParams) {
         username: params.username,
         password: params.password,
     };
-    const res: SignupResponse = await request(`${BASE_URL}/auth/signup`, "post", body);
+    const res = await request<SignupResponse>(`${BASE_URL}/auth/signup`, "post", body);
+    if (res === undefined) {
+        return undefined;
+    }
     if (res.error) {
-        throw new Error(res.message);
+        console.error("signup error", res.message);
+        return undefined;
     }
     return res.user;
 }

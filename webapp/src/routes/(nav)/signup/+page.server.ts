@@ -1,9 +1,9 @@
 import type { PageServerLoad, Actions } from "./$types";
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
 import { formSchema } from "./schema";
 import { zod } from "sveltekit-superforms/adapters";
-import { signin } from "$lib/server/signin";
+import { signup } from "$lib/server/signup";
 
 export const load: PageServerLoad = async () => {
     return {
@@ -17,11 +17,15 @@ export const actions: Actions = {
         if (!form.valid) {
             return fail(400, { form });
         }
-        const res = await signin({
+        const res = await signup({
             username: form.data.username,
             password: form.data.password,
         });
-        console.log("signin successful", res);
-        return res;
+        if (res === undefined) {
+            return fail(500);
+        }
+        console.log("signup response", res);
+        // set cookies
+        throw redirect(302, "/home");
     },
 };

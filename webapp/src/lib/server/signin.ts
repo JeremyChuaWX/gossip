@@ -14,9 +14,13 @@ export async function signin(params: SigninParams) {
         username: params.username,
         password: params.password,
     };
-    const res: SigninResponse = await request(`${BASE_URL}/auth/signin`, "post", body);
+    const res = await request<SigninResponse>(`${BASE_URL}/auth/signin`, "post", body);
+    if (res === undefined) {
+        return undefined;
+    }
     if (res.error) {
-        throw new Error(res.message);
+        console.error("signin error", res.message);
+        return undefined;
     }
     return res.user;
 }
