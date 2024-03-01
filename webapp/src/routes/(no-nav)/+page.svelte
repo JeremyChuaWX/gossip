@@ -8,11 +8,11 @@
         <p class="animate-[widen-tracking_2s_ease-out_forwards] text-5xl">Speak your mind.</p>
     </div>
     <div class="flex w-fit gap-8">
-        <Button href="/signup" variant="ghost" class="h-fit w-fit px-6 py-4 text-3xl"
-            >Sign Up</Button
-        >
-        <Button href="/signin" variant="ghost" class="h-fit w-fit px-6 py-4 text-3xl"
-            >Sign In</Button
-        >
+        <Button href="/signup" variant="ghost" class="h-fit w-fit px-6 py-4 text-2xl">
+            Sign Up
+        </Button>
+        <Button href="/signin" variant="ghost" class="h-fit w-fit px-6 py-4 text-2xl">
+            Sign In
+        </Button>
     </div>
 </div>
