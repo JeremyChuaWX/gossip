@@ -11,5 +11,5 @@ export async function signup(params: SignupParams) {
         username: params.username,
         password: params.password,
     };
-    return await request(`${BASE_URL}/users`, "post", body);
+    return await request(`${BASE_URL}/auth/signup`, "post", body);
 }
