@@ -11,5 +11,5 @@ export async function signin(params: SigninParams) {
         username: params.username,
         password: params.password,
     };
-    return await request(`${BASE_URL}/users`, "post", body);
+    return await request(`${BASE_URL}/auth/signin`, "post", body);
 }
