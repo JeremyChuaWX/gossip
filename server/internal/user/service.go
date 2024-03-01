@@ -29,7 +29,7 @@ func (s *Service) userRouter() *chi.Mux {
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -61,14 +61,14 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 		req, err := utils.ReadJSON[Request](r)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
