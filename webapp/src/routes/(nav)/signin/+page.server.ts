@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from "./$types";
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
 import { formSchema } from "./schema";
 import { zod } from "sveltekit-superforms/adapters";
@@ -21,7 +21,11 @@ export const actions: Actions = {
             username: form.data.username,
             password: form.data.password,
         });
-        console.log("signin successful", res);
-        return res;
+        if (res === undefined) {
+            return fail(500);
+        }
+        console.log("signin response", res);
+        // set cookies
+        throw redirect(302, "/home");
     },
 };
