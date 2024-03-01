@@ -53,6 +53,37 @@ func (s *Service) userRouter() *chi.Mux {
 		})
 	})
 
+	// find one user by username
+	userRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		type request struct {
+			Username string `query:"username"`
+		}
+		req, err := utils.GetURLQueryStruct[request](r.URL)
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		dto := findOneByUsernameDTO{
+			username: req.Username,
+		}
+
+		user, err := s.Repository.findOneByUsername(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			Message string `json:"message"`
+			User    User   `json:"user"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			Message: "found user",
+			User:    user,
+		})
+	})
+
 	// update user
 	userRouter.Patch("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		type Request struct {
