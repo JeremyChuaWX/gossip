@@ -116,10 +116,8 @@ func (s *service) chatRouter() *chi.Mux {
 		room := newRoom(body.Name, s)
 		s.ingress <- makeNewRoomEvent(room)
 
-		type response struct {
-			Message string `json:"message"`
-		}
-		utils.WriteJSON(w, http.StatusCreated, response{
+		utils.WriteJSON(w, http.StatusCreated, utils.BaseResponse{
+			Error:   false,
 			Message: fmt.Sprintf("room created %s", room.name),
 		})
 	})
@@ -144,10 +142,8 @@ func (s *service) chatRouter() *chi.Mux {
 			room.ingress <- event
 			s.ingress <- event
 
-			type response struct {
-				Message string `json:"message"`
-			}
-			utils.WriteJSON(w, http.StatusCreated, response{
+			utils.WriteJSON(w, http.StatusCreated, utils.BaseResponse{
+				Error:   false,
 				Message: fmt.Sprintf("room destroyed %s", room.name),
 			})
 		},
@@ -200,10 +196,8 @@ func (s *service) chatRouter() *chi.Mux {
 			client.ingress <- event
 			room.ingress <- event
 
-			type response struct {
-				Message string `json:"message"`
-			}
-			utils.WriteJSON(w, http.StatusCreated, response{
+			utils.WriteJSON(w, http.StatusCreated, utils.BaseResponse{
+				Error:   false,
 				Message: fmt.Sprintf("joined room %s", room.name),
 			})
 		},

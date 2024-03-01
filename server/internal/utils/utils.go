@@ -10,8 +10,9 @@ import (
 
 var MissingURLQueryKeyError = errors.New("missing URL query key")
 
-type errorResponse struct {
-	Error string `json:"error"`
+type BaseResponse struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
 }
 
 func ReadJSON[T any](r *http.Request) (T, error) {
@@ -24,15 +25,17 @@ func WriteJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(value); err != nil {
-		json.NewEncoder(w).Encode(errorResponse{
-			Error: err.Error(),
+		json.NewEncoder(w).Encode(BaseResponse{
+			Error:   true,
+			Message: err.Error(),
 		})
 	}
 }
 
 func WriteError(w http.ResponseWriter, status int, err error) {
-	WriteJSON(w, status, errorResponse{
-		Error: err.Error(),
+	WriteJSON(w, status, BaseResponse{
+		Error:   true,
+		Message: err.Error(),
 	})
 }
 
