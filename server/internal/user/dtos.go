@@ -11,6 +11,10 @@ type findOneDTO struct {
 	id uuid.UUID
 }
 
+type findOneByUsernameDTO struct {
+	username string
+}
+
 type updateDTO struct {
 	id           uuid.UUID
 	username     *string

@@ -49,6 +49,23 @@ func (r *Repository) findOne(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
+func (r *Repository) findOneByUsername(
+	ctx context.Context,
+	dto findOneByUsernameDTO,
+) (User, error) {
+	sql := `
+	SELECT
+		id,
+		username,
+		password_hash
+	FROM users WHERE
+		username = $1
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+}
+
 func (r *Repository) update(
 	ctx context.Context,
 	dto updateDTO,
