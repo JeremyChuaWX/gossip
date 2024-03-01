@@ -122,7 +122,7 @@ func (e *messageEvent) toJSON() messageJSON {
 type messageJSON struct {
 	Timestamp time.Time `json:"timestamp"`
 	Room      string    `json:"room"`
-	Sender    string    `json:"sender"`
+	Sender    string    `json:"sender,omitempty"`
 	Message   string    `json:"message"`
 }
 
