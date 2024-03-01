@@ -24,50 +24,12 @@ func (s *Service) InitRoutes(router *chi.Mux) {
 func (s *Service) userRouter() *chi.Mux {
 	userRouter := chi.NewRouter()
 
-	// create user
-	userRouter.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		type request struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		req, err := utils.ReadJSON[request](r)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		passwordHash, err := password.Hash(req.Password)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		dto := createDTO{
-			username:     req.Username,
-			passwordHash: passwordHash,
-		}
-		user, err := s.Repository.create(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			Message string `json:"message"`
-			User    User   `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusCreated, response{
-			Message: "created user",
-			User:    user,
-		})
-	})
-
 	// find one user
 	userRouter.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -91,6 +53,37 @@ func (s *Service) userRouter() *chi.Mux {
 		})
 	})
 
+	// find one user by username
+	userRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		type request struct {
+			Username string `query:"username"`
+		}
+		req, err := utils.GetURLQueryStruct[request](r.URL)
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		dto := findOneByUsernameDTO{
+			username: req.Username,
+		}
+
+		user, err := s.Repository.findOneByUsername(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			Message string `json:"message"`
+			User    User   `json:"user"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			Message: "found user",
+			User:    user,
+		})
+	})
+
 	// update user
 	userRouter.Patch("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		type Request struct {
@@ -99,14 +92,14 @@ func (s *Service) userRouter() *chi.Mux {
 		}
 		req, err := utils.ReadJSON[Request](r)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
 		urlId := chi.URLParam(r, "id")
 		id, err := uuid.FromString(urlId)
 		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
+			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -211,7 +204,7 @@ func (s *Service) authRouter() *chi.Mux {
 	})
 
 	// sign up
-	authRouter.Get("/signup", func(w http.ResponseWriter, r *http.Request) {
+	authRouter.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
 		type request struct {
 			Username string `json:"username"`
 			Password string `json:"password"`
