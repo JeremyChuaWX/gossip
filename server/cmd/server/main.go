@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"gossip/internal/adapters/postgres"
+	"gossip/internal/adapters/redis"
 	"gossip/internal/chat"
 	"gossip/internal/user"
 	"log"
@@ -17,7 +18,7 @@ const ADDRESS string = "server:3000"
 
 func main() {
 	// constants
-	router := InitRouter()
+	router := initRouter()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -53,17 +54,17 @@ func main() {
 	chatService.InitRoutes(router)
 
 	// run server
-	StartRouter(router)
+	startRouter(router)
 }
 
-func InitRouter() *chi.Mux {
+func initRouter() *chi.Mux {
 	router := chi.NewMux()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	return router
 }
 
-func StartRouter(router *chi.Mux) {
+func startRouter(router *chi.Mux) {
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		route = strings.Replace(route, "/*/", "/", -1)
 		log.Printf("%s %s\n", method, route)
