@@ -18,7 +18,6 @@ func (s *Service) InitRoutes(router *chi.Mux) {
 	router.Mount("/auth", authRouter)
 
 	userRouter := s.userRouter()
-	userRouter.Use(AuthMiddleware(s.Repository))
 	router.Mount("/users", userRouter)
 }
 
@@ -120,6 +119,7 @@ func (s *Service) authRouter() *chi.Mux {
 
 func (s *Service) userRouter() *chi.Mux {
 	userRouter := chi.NewRouter()
+	userRouter.Use(AuthMiddleware(s.Repository))
 
 	// find one user
 	userRouter.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
