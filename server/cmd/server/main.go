@@ -33,7 +33,7 @@ func main() {
 	defer pgPool.Close()
 
 	// redis
-	redis, err := redis.Init(ctx, "", "")
+	redis, err := redis.Init(ctx, "redis:6379", "")
 	if err != nil {
 		log.Fatal(err)
 	}
