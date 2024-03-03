@@ -2,15 +2,12 @@ package user
 
 import (
 	"context"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
-
-const SESSION_EXPIRATION = time.Hour * 24 * 7
 
 type Repository struct {
 	PgPool *pgxpool.Pool
