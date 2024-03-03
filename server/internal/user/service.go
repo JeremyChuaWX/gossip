@@ -14,11 +14,108 @@ type Service struct {
 }
 
 func (s *Service) InitRoutes(router *chi.Mux) {
-	userRouter := s.userRouter()
-	router.Mount("/users", userRouter)
-
 	authRouter := s.authRouter()
 	router.Mount("/auth", authRouter)
+
+	userRouter := s.userRouter()
+	userRouter.Use(AuthMiddleware(s.Repository))
+	router.Mount("/users", userRouter)
+}
+
+func (s *Service) authRouter() *chi.Mux {
+	authRouter := chi.NewRouter()
+
+	// sign in
+	authRouter.Post("/signin", func(w http.ResponseWriter, r *http.Request) {
+		type request struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		req, err := utils.ReadJSON[request](r)
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		dto := userFindOneByUsernameDTO{
+			username: req.Username,
+		}
+		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		if err = password.Compare([]byte(user.PasswordHash), req.Password); err != nil {
+			utils.WriteError(w, http.StatusUnauthorized, err)
+			return
+		}
+
+		sessionId, err := s.Repository.sessionCreate(
+			r.Context(),
+			user.Id.String(),
+		)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			utils.BaseResponse
+			SessionId string `json:"sessionId"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "signed in",
+			},
+			SessionId: sessionId,
+		})
+	})
+
+	// sign up
+	authRouter.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
+		type request struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+
+		req, err := utils.ReadJSON[request](r)
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		passwordHash, err := password.Hash(req.Password)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		dto := userCreateDTO{
+			username:     req.Username,
+			passwordHash: passwordHash,
+		}
+		user, err := s.Repository.userCreate(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			utils.BaseResponse
+			User User `json:"user"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "signed up",
+			},
+			User: user,
+		})
+	})
+
+	return authRouter
 }
 
 func (s *Service) userRouter() *chi.Mux {
@@ -174,100 +271,4 @@ func (s *Service) userRouter() *chi.Mux {
 	})
 
 	return userRouter
-}
-
-func (s *Service) authRouter() *chi.Mux {
-	authRouter := chi.NewRouter()
-
-	// sign in
-	authRouter.Post("/signin", func(w http.ResponseWriter, r *http.Request) {
-		type request struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		req, err := utils.ReadJSON[request](r)
-		if err != nil {
-			utils.WriteError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		dto := userFindOneByUsernameDTO{
-			username: req.Username,
-		}
-		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		if err = password.Compare([]byte(user.PasswordHash), req.Password); err != nil {
-			utils.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
-
-		sessionId, err := s.Repository.sessionCreate(
-			r.Context(),
-			user.Id.String(),
-		)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			SessionId string `json:"sessionId"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "signed in",
-			},
-			SessionId: sessionId,
-		})
-	})
-
-	// sign up
-	authRouter.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
-		type request struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-
-		req, err := utils.ReadJSON[request](r)
-		if err != nil {
-			utils.WriteError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		passwordHash, err := password.Hash(req.Password)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		dto := userCreateDTO{
-			username:     req.Username,
-			passwordHash: passwordHash,
-		}
-		user, err := s.Repository.userCreate(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			User User `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "signed up",
-			},
-			User: user,
-		})
-	})
-
-	return authRouter
 }
