@@ -21,7 +21,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// adapters
+	// postgres
 	pgPool, err := postgres.Init(
 		ctx,
 		"postgresql://admin:password123@postgres:5432/my_db?sslmode=disable",
@@ -31,9 +31,17 @@ func main() {
 	}
 	defer pgPool.Close()
 
+	// redis
+	redis, err := redis.Init(ctx, "", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer redis.Close()
+
 	// user module
 	userRepository := &user.Repository{
 		PgPool: pgPool,
+		Redis:  redis,
 	}
 	userService := &user.Service{
 		Repository: userRepository,
