@@ -33,11 +33,11 @@ func (s *Service) userRouter() *chi.Mux {
 			return
 		}
 
-		dto := findOneDTO{
+		dto := userFindOneDTO{
 			id: id,
 		}
 
-		user, err := s.Repository.findOne(r.Context(), dto)
+		user, err := s.Repository.userFindOne(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -67,11 +67,11 @@ func (s *Service) userRouter() *chi.Mux {
 			return
 		}
 
-		dto := findOneByUsernameDTO{
+		dto := userFindOneByUsernameDTO{
 			username: req.Username,
 		}
 
-		user, err := s.Repository.findOneByUsername(r.Context(), dto)
+		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -124,7 +124,7 @@ func (s *Service) userRouter() *chi.Mux {
 			}
 		}
 
-		user, err := s.Repository.update(r.Context(), dto)
+		user, err := s.Repository.userUpdate(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -154,7 +154,7 @@ func (s *Service) userRouter() *chi.Mux {
 		dto := deleteDTO{
 			id: id,
 		}
-		user, err := s.Repository.delete(r.Context(), dto)
+		user, err := s.Repository.userDelete(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -191,10 +191,10 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
-		dto := findOneByUsernameDTO{
+		dto := userFindOneByUsernameDTO{
 			username: req.Username,
 		}
-		user, err := s.Repository.findOneByUsername(r.Context(), dto)
+		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -205,16 +205,25 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
+		sessionId, err := s.Repository.sessionCreate(
+			r.Context(),
+			user.Id.String(),
+		)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		type response struct {
 			utils.BaseResponse
-			User User `json:"user"`
+			SessionId string `json:"sessionId"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
 			BaseResponse: utils.BaseResponse{
 				Error:   false,
 				Message: "signed in",
 			},
-			User: user,
+			SessionId: sessionId,
 		})
 	})
 
@@ -224,6 +233,7 @@ func (s *Service) authRouter() *chi.Mux {
 			Username string `json:"username"`
 			Password string `json:"password"`
 		}
+
 		req, err := utils.ReadJSON[request](r)
 		if err != nil {
 			utils.WriteError(w, http.StatusBadRequest, err)
@@ -236,11 +246,11 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
-		dto := createDTO{
+		dto := userCreateDTO{
 			username:     req.Username,
 			passwordHash: passwordHash,
 		}
-		user, err := s.Repository.create(r.Context(), dto)
+		user, err := s.Repository.userCreate(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return

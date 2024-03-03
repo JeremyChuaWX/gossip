@@ -2,16 +2,16 @@ package user
 
 import "github.com/gofrs/uuid/v5"
 
-type createDTO struct {
+type userCreateDTO struct {
 	username     string
 	passwordHash []byte
 }
 
-type findOneDTO struct {
+type userFindOneDTO struct {
 	id uuid.UUID
 }
 
-type findOneByUsernameDTO struct {
+type userFindOneByUsernameDTO struct {
 	username string
 }
 
