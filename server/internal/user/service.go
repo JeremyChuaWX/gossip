@@ -156,6 +156,32 @@ func (s *Service) userRouter() *chi.Mux {
 		})
 	})
 
+	// me
+	userRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
+		id := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+
+		dto := userFindOneDTO{
+			id: id,
+		}
+		user, err := s.Repository.userFindOne(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			utils.BaseResponse
+			User User `json:"user"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "current logged in user",
+			},
+			User: user,
+		})
+	})
+
 	// find one user by username
 	userRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		type request struct {
