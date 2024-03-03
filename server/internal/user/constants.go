@@ -6,4 +6,4 @@ const SESSION_EXPIRATION = time.Hour * 24 * 7
 
 type UserContextKey string
 
-const USER_CONTEXT_KEY UserContextKey = "user"
+const USER_ID_CONTEXT_KEY UserContextKey = "USER_ID"

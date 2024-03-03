@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"gossip/internal/password"
 	"gossip/internal/utils"
 	"net/http"
@@ -8,6 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 )
+
+var UserForbiddenError = errors.New("mismatch user ID")
 
 type Service struct {
 	Repository *Repository
@@ -189,18 +192,24 @@ func (s *Service) userRouter() *chi.Mux {
 
 	// update user
 	userRouter.Patch("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		type Request struct {
-			Username *string `json:"username,omitempty"`
-			Password *string `json:"password,omitempty"`
-		}
-		req, err := utils.ReadJSON[Request](r)
+		urlId := chi.URLParam(r, "id")
+		id, err := uuid.FromString(urlId)
 		if err != nil {
 			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 
-		urlId := chi.URLParam(r, "id")
-		id, err := uuid.FromString(urlId)
+		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+		if authUserId != id {
+			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			return
+		}
+
+		type Request struct {
+			Username *string `json:"username,omitempty"`
+			Password *string `json:"password,omitempty"`
+		}
+		req, err := utils.ReadJSON[Request](r)
 		if err != nil {
 			utils.WriteError(w, http.StatusBadRequest, err)
 			return
@@ -248,6 +257,13 @@ func (s *Service) userRouter() *chi.Mux {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
+
+		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+		if authUserId != id {
+			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			return
+		}
+
 		dto := deleteDTO{
 			id: id,
 		}
