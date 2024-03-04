@@ -1,13 +1,23 @@
 import type { Cookies } from "@sveltejs/kit";
-import { COOKIE_MAX_AGE } from "./constants";
+import { COOKIE_MAX_AGE, SESSION_ID_HEADER } from "./constants";
 import { dev } from "$app/environment";
 
-export async function request<Response = void>(url: string, method: string, body?: unknown) {
+type RequestOptions = {
+    sessionId?: string;
+    body?: unknown;
+};
+
+export async function request<Response = void>(url: string, method: string, opts?: RequestOptions) {
     const req: RequestInit = {
         method: method,
     };
-    if (body !== undefined) {
-        req.body = JSON.stringify(body);
+    if (opts !== undefined && opts.body !== undefined) {
+        req.body = JSON.stringify(opts.body);
+    }
+    if (opts !== undefined && opts.sessionId !== undefined) {
+        req.headers = {
+            [SESSION_ID_HEADER]: opts.sessionId,
+        };
     }
     try {
         const res = await fetch(url, req);
