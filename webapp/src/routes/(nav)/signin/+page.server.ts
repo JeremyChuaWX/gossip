@@ -4,6 +4,8 @@ import { superValidate } from "sveltekit-superforms";
 import { formSchema } from "./schema";
 import { zod } from "sveltekit-superforms/adapters";
 import { signin } from "$lib/server/signin";
+import { SESSION_ID_COOKIE } from "$lib/server/constants";
+import { setCookie } from "$lib/server/utils";
 
 export const load: PageServerLoad = async () => {
     return {
@@ -25,7 +27,7 @@ export const actions: Actions = {
             return fail(500);
         }
         console.log("signin response", res);
-        // set cookies
+        setCookie(event.cookies, SESSION_ID_COOKIE, res.sessionId);
         throw redirect(302, "/home");
     },
 };
