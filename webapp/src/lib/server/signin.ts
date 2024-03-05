@@ -14,7 +14,7 @@ export async function signin(params: SigninParams) {
         username: params.username,
         password: params.password,
     };
-    const res = await request<SigninResponse>(`${BASE_URL}/auth/signin`, "post", body);
+    const res = await request<SigninResponse>(`${BASE_URL}/auth/signin`, "post", { body });
     if (res === undefined) {
         return undefined;
     }
