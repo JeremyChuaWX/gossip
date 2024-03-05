@@ -1,9 +1,11 @@
-import type { PageServerLoad, Actions } from "./$types";
+import { SESSION_ID_COOKIE } from "$lib/server/constants";
+import { signup } from "$lib/server/signup";
+import { setCookie } from "$lib/server/utils";
 import { fail, redirect } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
-import { formSchema } from "./schema";
 import { zod } from "sveltekit-superforms/adapters";
-import { signup } from "$lib/server/signup";
+import type { Actions, PageServerLoad } from "./$types";
+import { formSchema } from "./schema";
 
 export const load: PageServerLoad = async () => {
     return {
@@ -25,7 +27,7 @@ export const actions: Actions = {
             return fail(500);
         }
         console.log("signup response", res);
-        // set cookies
+        setCookie(event.cookies, SESSION_ID_COOKIE, res.sessionId);
         throw redirect(302, "/home");
     },
 };
