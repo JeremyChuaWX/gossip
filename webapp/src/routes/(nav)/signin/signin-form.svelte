@@ -14,7 +14,7 @@
     const { form: formData, enhance } = form;
 </script>
 
-<form method="post" use:enhance class="flex w-full flex-col items-center gap-4 md:w-1/2 lg:w-1/3">
+<form method="post" use:enhance class="flex w-[320px] flex-col items-center gap-4">
     <Form.Field {form} name="username" class="w-full">
         <Form.Control let:attrs>
             <Form.Label class="text-base">Username</Form.Label>
