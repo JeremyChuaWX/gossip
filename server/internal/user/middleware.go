@@ -13,7 +13,7 @@ type Middleware func(http.Handler) http.Handler
 func AuthMiddleware(repository *Repository) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionId := r.Header.Get("Authorization")
+			sessionId := r.Header.Get(SESSION_ID_HEADER)
 
 			userIdStr, err := repository.sessionsGet(r.Context(), sessionId)
 			if err != nil {
