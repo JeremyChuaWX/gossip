@@ -104,16 +104,25 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
+		sessionId, err := s.Repository.sessionCreate(
+			r.Context(),
+			user.Id.String(),
+		)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		type response struct {
 			utils.BaseResponse
-			User User `json:"user"`
+			SessionId string `json:"sessionId"`
 		}
 		utils.WriteJSON(w, http.StatusOK, response{
 			BaseResponse: utils.BaseResponse{
 				Error:   false,
 				Message: "signed up",
 			},
-			User: user,
+			SessionId: sessionId,
 		})
 	})
 
