@@ -1,6 +1,6 @@
-import { BASE_URL } from "./constants";
-import type { Response, User } from "./types";
-import { request } from "./utils";
+import { BASE_URL } from "$lib/server/constants";
+import type { Response, User } from "$lib/server/types";
+import { request } from "$lib/server/utils";
 
 type GetCurrentUserParams = {
     sessionId: string;

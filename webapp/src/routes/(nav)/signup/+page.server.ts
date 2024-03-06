@@ -1,5 +1,5 @@
 import { SESSION_ID_COOKIE } from "$lib/server/constants";
-import { signup } from "$lib/server/signup";
+import { signup } from "$lib/server/api/signup";
 import { setCookie } from "$lib/server/utils";
 import { fail, redirect } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
