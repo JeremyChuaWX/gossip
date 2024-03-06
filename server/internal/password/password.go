@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ErrorInvalidPassword     = errors.New("invalid password")
-	ErrorInvalidHash         = errors.New("encoded hash is in the wrong format")
-	ErrorIncompatibleVersion = errors.New("incompatible version of argon2")
+	invalidPasswordError     = errors.New("invalid password")
+	invalidHashError         = errors.New("encoded hash is in the wrong format")
+	incompatibleVersionError = errors.New("incompatible version of argon2")
 )
 
 type params struct {
@@ -65,14 +65,14 @@ func Hash(password string) (encodedHash string, err error) {
 func Verify(password string, encodedHash string) (err error) {
 	values := strings.Split(encodedHash, "$")
 	if len(values) != 6 {
-		return ErrorInvalidHash
+		return invalidHashError
 	}
 	var version int
 	if _, err = fmt.Sscanf(values[2], "v=%d", &version); err != nil {
 		return err
 	}
 	if version != argon2.Version {
-		return ErrorIncompatibleVersion
+		return incompatibleVersionError
 	}
 	p = params{}
 	if _, err = fmt.Sscanf(
@@ -104,5 +104,5 @@ func Verify(password string, encodedHash string) (err error) {
 	if subtle.ConstantTimeCompare(hash, otherHash) == 1 {
 		return nil
 	}
-	return ErrorInvalidPassword
+	return invalidPasswordError
 }

@@ -13,7 +13,7 @@ func TestPassword(t *testing.T) {
 		t.Fatal("failed to verify correct password", err)
 	}
 	err = Verify("wrongpassword", encodedHash)
-	if err.Error() != ErrorInvalidPassword.Error() {
+	if err.Error() != invalidPasswordError.Error() {
 		t.Fatal("failed to verify wrong password", err)
 	}
 }

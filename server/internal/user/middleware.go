@@ -11,7 +11,7 @@ import (
 
 type Middleware func(http.Handler) http.Handler
 
-var InvalidSessionIdError = errors.New("invalid session id")
+var invalidSessionIdError = errors.New("invalid session id")
 
 func AuthMiddleware(repository *Repository) Middleware {
 	return func(next http.Handler) http.Handler {
@@ -21,7 +21,7 @@ func AuthMiddleware(repository *Repository) Middleware {
 				utils.WriteError(
 					w,
 					http.StatusUnauthorized,
-					InvalidSessionIdError,
+					invalidSessionIdError,
 				)
 				return
 			}

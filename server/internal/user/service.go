@@ -10,7 +10,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-var UserForbiddenError = errors.New("mismatch user ID")
+var userForbiddenError = errors.New("mismatch user ID")
 
 type Service struct {
 	Repository *Repository
@@ -236,7 +236,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
-			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
 		}
 
@@ -295,7 +295,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
-			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
 		}
 

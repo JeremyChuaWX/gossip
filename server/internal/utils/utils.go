@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-var MissingURLQueryKeyError = errors.New("missing URL query key")
+var missingURLQueryKeyError = errors.New("missing URL query key")
 
 type BaseResponse struct {
 	Error   bool   `json:"error"`
@@ -50,7 +50,7 @@ func GetURLQueryStruct[T any](URL *url.URL) (T, error) {
 	for _, field := range reflect.VisibleFields(queryStructType) {
 		key := field.Tag.Get("query")
 		if !URLQuery.Has(key) {
-			return queryStruct, MissingURLQueryKeyError
+			return queryStruct, missingURLQueryKeyError
 		}
 		value := URLQuery.Get(key)
 		queryStructValue.FieldByIndex(field.Index).SetString(value)
