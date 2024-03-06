@@ -126,6 +126,20 @@ func (s *Service) authRouter() *chi.Mux {
 		})
 	})
 
+	// sign out
+	authRouter.Post("/signout", func(w http.ResponseWriter, r *http.Request) {
+		sessionId := r.Header.Get(SESSION_ID_HEADER)
+		if sessionId == "" {
+			utils.WriteError(w, http.StatusUnauthorized, invalidSessionIdError)
+			return
+		}
+
+		if err := s.Repository.sessionDelete(r.Context(), sessionId); err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+	})
+
 	// me
 	authRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
