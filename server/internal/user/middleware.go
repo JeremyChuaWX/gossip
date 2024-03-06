@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"gossip/internal/utils"
 	"net/http"
 
@@ -10,8 +9,6 @@ import (
 )
 
 type Middleware func(http.Handler) http.Handler
-
-var invalidSessionIdError = errors.New("invalid session id")
 
 func AuthMiddleware(repository *Repository) Middleware {
 	return func(next http.Handler) http.Handler {

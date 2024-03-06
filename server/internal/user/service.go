@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"gossip/internal/password"
 	"gossip/internal/utils"
 	"net/http"
@@ -9,8 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 )
-
-var userForbiddenError = errors.New("mismatch user ID")
 
 type Service struct {
 	Repository *Repository
