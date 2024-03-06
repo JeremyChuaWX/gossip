@@ -1,5 +1,5 @@
 import { BASE_URL } from "./constants";
-import type { Response, User } from "./types";
+import type { Response } from "./types";
 import { request } from "./utils";
 
 type SigninParams = {
@@ -7,14 +7,14 @@ type SigninParams = {
     password: string;
 };
 
-type SigninResponse = Response<{ user: User }>;
+type SigninResponse = Response<{ sessionId: string }>;
 
 export async function signin(params: SigninParams) {
     const body = {
         username: params.username,
         password: params.password,
     };
-    const res = await request<SigninResponse>(`${BASE_URL}/auth/signin`, "post", body);
+    const res = await request<SigninResponse>(`${BASE_URL}/auth/signin`, "post", { body });
     if (res === undefined) {
         return undefined;
     }
@@ -22,5 +22,5 @@ export async function signin(params: SigninParams) {
         console.error("signin error", res.message);
         return undefined;
     }
-    return res.user;
+    return res;
 }

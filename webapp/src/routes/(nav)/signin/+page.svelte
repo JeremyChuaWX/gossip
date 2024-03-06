@@ -6,6 +6,6 @@
 </script>
 
 <div class="flex h-full w-full flex-col items-center gap-8 pt-40">
-    <h1 class="text-5xl font-extrabold">Gossip</h1>
+    <h1 class="text-4xl font-extrabold">Welcome back</h1>
     <SigninForm data={data.form} />
 </div>

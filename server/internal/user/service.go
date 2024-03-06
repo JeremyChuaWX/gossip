@@ -104,6 +104,41 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
+		sessionId, err := s.Repository.sessionCreate(
+			r.Context(),
+			user.Id.String(),
+		)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type response struct {
+			utils.BaseResponse
+			SessionId string `json:"sessionId"`
+		}
+		utils.WriteJSON(w, http.StatusOK, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "signed up",
+			},
+			SessionId: sessionId,
+		})
+	})
+
+	// me
+	authRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
+		id := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+
+		dto := userFindOneDTO{
+			id: id,
+		}
+		user, err := s.Repository.userFindOne(r.Context(), dto)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		type response struct {
 			utils.BaseResponse
 			User User `json:"user"`
@@ -111,7 +146,7 @@ func (s *Service) authRouter() *chi.Mux {
 		utils.WriteJSON(w, http.StatusOK, response{
 			BaseResponse: utils.BaseResponse{
 				Error:   false,
-				Message: "signed up",
+				Message: "current signed in user",
 			},
 			User: user,
 		})
@@ -151,32 +186,6 @@ func (s *Service) userRouter() *chi.Mux {
 			BaseResponse: utils.BaseResponse{
 				Error:   false,
 				Message: "found user",
-			},
-			User: user,
-		})
-	})
-
-	// me
-	userRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
-		id := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
-
-		dto := userFindOneDTO{
-			id: id,
-		}
-		user, err := s.Repository.userFindOne(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			User User `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "current logged in user",
 			},
 			User: user,
 		})
