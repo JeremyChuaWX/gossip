@@ -48,7 +48,7 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
-		if err = password.Verify([]byte(user.PasswordHash), req.Password); err != nil {
+		if err = password.Verify(req.Password, user.PasswordHash); err != nil {
 			utils.WriteError(w, http.StatusUnauthorized, err)
 			return
 		}
@@ -258,7 +258,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		if req.Password != nil {
 			passwordHash, err := password.Hash(*req.Password)
-			dto.passwordHash = passwordHash
+			dto.passwordHash = &passwordHash
 			if err != nil {
 				utils.WriteError(w, http.StatusInternalServerError, err)
 				return

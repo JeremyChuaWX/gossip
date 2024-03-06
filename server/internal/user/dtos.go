@@ -4,7 +4,7 @@ import "github.com/gofrs/uuid/v5"
 
 type userCreateDTO struct {
 	username     string
-	passwordHash []byte
+	passwordHash string
 }
 
 type userFindOneDTO struct {
@@ -18,7 +18,7 @@ type userFindOneByUsernameDTO struct {
 type updateDTO struct {
 	id           uuid.UUID
 	username     *string
-	passwordHash []byte
+	passwordHash *string
 }
 
 type deleteDTO struct {
