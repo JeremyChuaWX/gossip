@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"gossip/internal/utils"
 	"net/http"
 
@@ -10,10 +11,20 @@ import (
 
 type Middleware func(http.Handler) http.Handler
 
+var invalidSessionIdError = errors.New("invalid session id")
+
 func AuthMiddleware(repository *Repository) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sessionId := r.Header.Get(SESSION_ID_HEADER)
+			if sessionId == "" {
+				utils.WriteError(
+					w,
+					http.StatusUnauthorized,
+					invalidSessionIdError,
+				)
+				return
+			}
 
 			userIdStr, err := repository.sessionsGet(r.Context(), sessionId)
 			if err != nil {

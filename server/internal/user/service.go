@@ -10,7 +10,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-var UserForbiddenError = errors.New("mismatch user ID")
+var userForbiddenError = errors.New("mismatch user ID")
 
 type Service struct {
 	Repository *Repository
@@ -48,7 +48,7 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
-		if err = password.Compare([]byte(user.PasswordHash), req.Password); err != nil {
+		if err = password.Verify(req.Password, user.PasswordHash); err != nil {
 			utils.WriteError(w, http.StatusUnauthorized, err)
 			return
 		}
@@ -236,7 +236,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
-			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
 		}
 
@@ -258,7 +258,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		if req.Password != nil {
 			passwordHash, err := password.Hash(*req.Password)
-			dto.passwordHash = passwordHash
+			dto.passwordHash = &passwordHash
 			if err != nil {
 				utils.WriteError(w, http.StatusInternalServerError, err)
 				return
@@ -295,7 +295,7 @@ func (s *Service) userRouter() *chi.Mux {
 
 		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
-			utils.WriteError(w, http.StatusForbidden, UserForbiddenError)
+			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
 		}
 
