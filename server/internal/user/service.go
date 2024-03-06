@@ -123,43 +123,45 @@ func (s *Service) authRouter() *chi.Mux {
 		})
 	})
 
-	// sign out
-	authRouter.Post("/signout", func(w http.ResponseWriter, r *http.Request) {
-		sessionId := r.Header.Get(SESSION_ID_HEADER)
-		if sessionId == "" {
-			utils.WriteError(w, http.StatusUnauthorized, invalidSessionIdError)
-			return
-		}
+	authRouter.Group(func(authRouter chi.Router) {
+		authRouter.Use(AuthMiddleware(s.Repository))
 
-		if err := s.Repository.sessionDelete(r.Context(), sessionId); err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-	})
-
-	// me
-	authRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
-		id := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
-
-		dto := userFindOneDTO{
-			id: id,
-		}
-		user, err := s.Repository.userFindOne(r.Context(), dto)
-		if err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type response struct {
-			utils.BaseResponse
-			User User `json:"user"`
-		}
-		utils.WriteJSON(w, http.StatusOK, response{
-			BaseResponse: utils.BaseResponse{
-				Error:   false,
-				Message: "current signed in user",
+		// sign out
+		authRouter.Post(
+			"/signout",
+			func(w http.ResponseWriter, r *http.Request) {
+				sessionId := r.Header.Get(SESSION_ID_HEADER)
+				if err := s.Repository.sessionDelete(r.Context(), sessionId); err != nil {
+					utils.WriteError(w, http.StatusUnauthorized, err)
+					return
+				}
 			},
-			User: user,
+		)
+
+		// me
+		authRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
+			authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+
+			dto := userFindOneDTO{
+				id: authUserId,
+			}
+			user, err := s.Repository.userFindOne(r.Context(), dto)
+			if err != nil {
+				utils.WriteError(w, http.StatusUnauthorized, err)
+				return
+			}
+
+			type response struct {
+				utils.BaseResponse
+				User User `json:"user"`
+			}
+			utils.WriteJSON(w, http.StatusOK, response{
+				BaseResponse: utils.BaseResponse{
+					Error:   false,
+					Message: "current signed in user",
+				},
+				User: user,
+			})
 		})
 	})
 
