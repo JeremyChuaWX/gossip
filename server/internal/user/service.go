@@ -1,7 +1,11 @@
 package user
 
 import (
+	"errors"
+	"gossip/internal/constants"
+	"gossip/internal/middlewares"
 	"gossip/internal/password"
+	"gossip/internal/session"
 	"gossip/internal/utils"
 	"net/http"
 
@@ -9,8 +13,12 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
+var userForbiddenError = errors.New("mismatch user ID")
+
 type Service struct {
-	Repository *Repository
+	UserRepository    *Repository
+	SessionRepository *session.Repository
+	Middlewares       *middlewares.Middlewares
 }
 
 func (s *Service) InitRoutes(router *chi.Mux) {
@@ -39,7 +47,7 @@ func (s *Service) authRouter() *chi.Mux {
 		dto := userFindOneByUsernameDTO{
 			username: req.Username,
 		}
-		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
+		user, err := s.UserRepository.userFindOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -50,7 +58,7 @@ func (s *Service) authRouter() *chi.Mux {
 			return
 		}
 
-		sessionId, err := s.Repository.sessionCreate(
+		sessionId, err := s.SessionRepository.Create(
 			r.Context(),
 			user.Id.String(),
 		)
@@ -95,13 +103,13 @@ func (s *Service) authRouter() *chi.Mux {
 			username:     req.Username,
 			passwordHash: passwordHash,
 		}
-		user, err := s.Repository.userCreate(r.Context(), dto)
+		user, err := s.UserRepository.userCreate(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		sessionId, err := s.Repository.sessionCreate(
+		sessionId, err := s.SessionRepository.Create(
 			r.Context(),
 			user.Id.String(),
 		)
@@ -124,14 +132,14 @@ func (s *Service) authRouter() *chi.Mux {
 	})
 
 	authRouter.Group(func(authRouter chi.Router) {
-		authRouter.Use(AuthMiddleware(s.Repository))
+		authRouter.Use(s.Middlewares.AuthMiddleware())
 
 		// sign out
 		authRouter.Post(
 			"/signout",
 			func(w http.ResponseWriter, r *http.Request) {
-				sessionId := r.Header.Get(SESSION_ID_HEADER)
-				if err := s.Repository.sessionDelete(r.Context(), sessionId); err != nil {
+				sessionId := r.Header.Get(constants.SESSION_ID_HEADER)
+				if err := s.SessionRepository.Delete(r.Context(), sessionId); err != nil {
 					utils.WriteError(w, http.StatusUnauthorized, err)
 					return
 				}
@@ -140,12 +148,12 @@ func (s *Service) authRouter() *chi.Mux {
 
 		// me
 		authRouter.Get("/me", func(w http.ResponseWriter, r *http.Request) {
-			authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+			authUserId := r.Context().Value(constants.USER_ID_CONTEXT_KEY).(uuid.UUID)
 
 			dto := userFindOneDTO{
 				id: authUserId,
 			}
-			user, err := s.Repository.userFindOne(r.Context(), dto)
+			user, err := s.UserRepository.userFindOne(r.Context(), dto)
 			if err != nil {
 				utils.WriteError(w, http.StatusUnauthorized, err)
 				return
@@ -170,7 +178,7 @@ func (s *Service) authRouter() *chi.Mux {
 
 func (s *Service) userRouter() *chi.Mux {
 	userRouter := chi.NewRouter()
-	userRouter.Use(AuthMiddleware(s.Repository))
+	userRouter.Use(s.Middlewares.AuthMiddleware())
 
 	// find one user
 	userRouter.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +193,7 @@ func (s *Service) userRouter() *chi.Mux {
 			id: id,
 		}
 
-		user, err := s.Repository.userFindOne(r.Context(), dto)
+		user, err := s.UserRepository.userFindOne(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -219,7 +227,7 @@ func (s *Service) userRouter() *chi.Mux {
 			username: req.Username,
 		}
 
-		user, err := s.Repository.userFindOneByUsername(r.Context(), dto)
+		user, err := s.UserRepository.userFindOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -247,7 +255,7 @@ func (s *Service) userRouter() *chi.Mux {
 			return
 		}
 
-		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+		authUserId := r.Context().Value(constants.USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
 			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
@@ -278,7 +286,7 @@ func (s *Service) userRouter() *chi.Mux {
 			}
 		}
 
-		user, err := s.Repository.userUpdate(r.Context(), dto)
+		user, err := s.UserRepository.userUpdate(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -306,7 +314,7 @@ func (s *Service) userRouter() *chi.Mux {
 			return
 		}
 
-		authUserId := r.Context().Value(USER_ID_CONTEXT_KEY).(uuid.UUID)
+		authUserId := r.Context().Value(constants.USER_ID_CONTEXT_KEY).(uuid.UUID)
 		if authUserId != id {
 			utils.WriteError(w, http.StatusForbidden, userForbiddenError)
 			return
@@ -315,7 +323,7 @@ func (s *Service) userRouter() *chi.Mux {
 		dto := deleteDTO{
 			id: id,
 		}
-		user, err := s.Repository.userDelete(r.Context(), dto)
+		user, err := s.UserRepository.userDelete(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return

@@ -5,6 +5,8 @@ import (
 	"gossip/internal/adapters/postgres"
 	"gossip/internal/adapters/redis"
 	"gossip/internal/chat"
+	"gossip/internal/middlewares"
+	"gossip/internal/session"
 	"gossip/internal/user"
 	"log"
 	"net/http"
@@ -17,12 +19,10 @@ import (
 const ADDRESS string = "server:3000"
 
 func main() {
-	// constants
 	router := initRouter()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// postgres
 	pgPool, err := postgres.Init(
 		ctx,
 		"postgresql://admin:password123@postgres:5432/my_db?sslmode=disable",
@@ -32,28 +32,33 @@ func main() {
 	}
 	defer pgPool.Close()
 
-	// redis
 	redis, err := redis.Init(ctx, "redis:6379", "")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer redis.Close()
 
-	// user module
+	sessionRepository := &session.Repository{
+		Redis: redis,
+	}
+
+	middlewares := &middlewares.Middlewares{
+		SessionRepository: sessionRepository,
+	}
+
 	userRepository := &user.Repository{
 		PgPool: pgPool,
-		Redis:  redis,
 	}
 	userService := &user.Service{
-		Repository: userRepository,
+		UserRepository:    userRepository,
+		SessionRepository: sessionRepository,
+		Middlewares:       middlewares,
 	}
 	userService.InitRoutes(router)
 
-	// chat module
 	chatService := chat.InitService()
 	chatService.InitRoutes(router)
 
-	// run server
 	startRouter(router)
 }
 

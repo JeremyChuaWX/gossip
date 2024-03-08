@@ -3,15 +3,12 @@ package user
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/redis/go-redis/v9"
 )
 
 type Repository struct {
 	PgPool *pgxpool.Pool
-	Redis  *redis.Client
 }
 
 func (r *Repository) userCreate(
@@ -104,32 +101,4 @@ func (r *Repository) userDelete(
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
-}
-
-func (r *Repository) sessionCreate(
-	ctx context.Context,
-	userId string,
-) (string, error) {
-	sessionId, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-	if err = r.Redis.Set(ctx, sessionId.String(), userId, SESSION_EXPIRATION).Err(); err != nil {
-		return "", err
-	}
-	return sessionId.String(), nil
-}
-
-func (r *Repository) sessionsGet(
-	ctx context.Context,
-	sessionId string,
-) (string, error) {
-	return r.Redis.Get(ctx, sessionId).Result()
-}
-
-func (r *Repository) sessionDelete(
-	ctx context.Context,
-	sessionId string,
-) error {
-	return r.Redis.Del(ctx, sessionId).Err()
 }
