@@ -11,7 +11,7 @@ type Repository struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Repository) userCreate(
+func (r *Repository) create(
 	ctx context.Context,
 	dto userCreateDTO,
 ) (User, error) {
@@ -32,7 +32,7 @@ func (r *Repository) userCreate(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userFindOne(
+func (r *Repository) findOne(
 	ctx context.Context,
 	dto userFindOneDTO,
 ) (User, error) {
@@ -49,7 +49,7 @@ func (r *Repository) userFindOne(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userFindOneByUsername(
+func (r *Repository) findOneByUsername(
 	ctx context.Context,
 	dto userFindOneByUsernameDTO,
 ) (User, error) {
@@ -66,7 +66,7 @@ func (r *Repository) userFindOneByUsername(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userUpdate(
+func (r *Repository) update(
 	ctx context.Context,
 	dto updateDTO,
 ) (User, error) {
@@ -86,7 +86,7 @@ func (r *Repository) userUpdate(
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userDelete(
+func (r *Repository) delete(
 	ctx context.Context,
 	dto deleteDTO,
 ) (User, error) {

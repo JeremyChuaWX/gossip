@@ -47,7 +47,7 @@ func (s *Service) authRouter() *chi.Mux {
 		dto := userFindOneByUsernameDTO{
 			username: req.Username,
 		}
-		user, err := s.UserRepository.userFindOneByUsername(r.Context(), dto)
+		user, err := s.UserRepository.findOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -103,7 +103,7 @@ func (s *Service) authRouter() *chi.Mux {
 			username:     req.Username,
 			passwordHash: passwordHash,
 		}
-		user, err := s.UserRepository.userCreate(r.Context(), dto)
+		user, err := s.UserRepository.create(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -153,7 +153,7 @@ func (s *Service) authRouter() *chi.Mux {
 			dto := userFindOneDTO{
 				id: authUserId,
 			}
-			user, err := s.UserRepository.userFindOne(r.Context(), dto)
+			user, err := s.UserRepository.findOne(r.Context(), dto)
 			if err != nil {
 				utils.WriteError(w, http.StatusUnauthorized, err)
 				return
@@ -193,7 +193,7 @@ func (s *Service) userRouter() *chi.Mux {
 			id: id,
 		}
 
-		user, err := s.UserRepository.userFindOne(r.Context(), dto)
+		user, err := s.UserRepository.findOne(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -227,7 +227,7 @@ func (s *Service) userRouter() *chi.Mux {
 			username: req.Username,
 		}
 
-		user, err := s.UserRepository.userFindOneByUsername(r.Context(), dto)
+		user, err := s.UserRepository.findOneByUsername(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -286,7 +286,7 @@ func (s *Service) userRouter() *chi.Mux {
 			}
 		}
 
-		user, err := s.UserRepository.userUpdate(r.Context(), dto)
+		user, err := s.UserRepository.update(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -323,7 +323,7 @@ func (s *Service) userRouter() *chi.Mux {
 		dto := deleteDTO{
 			id: id,
 		}
-		user, err := s.UserRepository.userDelete(r.Context(), dto)
+		user, err := s.UserRepository.delete(r.Context(), dto)
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
