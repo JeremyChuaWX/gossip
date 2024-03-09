@@ -3,20 +3,17 @@ package user
 import (
 	"context"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/redis/go-redis/v9"
 )
 
 type Repository struct {
 	PgPool *pgxpool.Pool
-	Redis  *redis.Client
 }
 
-func (r *Repository) userCreate(
+func (r *Repository) Create(
 	ctx context.Context,
-	dto userCreateDTO,
+	dto CreateDTO,
 ) (User, error) {
 	sql := `
 	INSERT INTO users (
@@ -31,13 +28,13 @@ func (r *Repository) userCreate(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userFindOne(
+func (r *Repository) FindOne(
 	ctx context.Context,
-	dto userFindOneDTO,
+	dto FindOneDTO,
 ) (User, error) {
 	sql := `
 	SELECT
@@ -48,13 +45,13 @@ func (r *Repository) userFindOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userFindOneByUsername(
+func (r *Repository) FindOneByUsername(
 	ctx context.Context,
-	dto userFindOneByUsernameDTO,
+	dto FindOneByUsernameDTO,
 ) (User, error) {
 	sql := `
 	SELECT
@@ -65,13 +62,13 @@ func (r *Repository) userFindOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userUpdate(
+func (r *Repository) Update(
 	ctx context.Context,
-	dto updateDTO,
+	dto UpdateDTO,
 ) (User, error) {
 	sql := `
 	UPDATE users SET
@@ -85,13 +82,13 @@ func (r *Repository) userUpdate(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) userDelete(
+func (r *Repository) Delete(
 	ctx context.Context,
-	dto deleteDTO,
+	dto DeleteDTO,
 ) (User, error) {
 	sql := `
 	DELETE FROM users WHERE
@@ -102,34 +99,6 @@ func (r *Repository) userDelete(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
-}
-
-func (r *Repository) sessionCreate(
-	ctx context.Context,
-	userId string,
-) (string, error) {
-	sessionId, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-	if err = r.Redis.Set(ctx, sessionId.String(), userId, SESSION_EXPIRATION).Err(); err != nil {
-		return "", err
-	}
-	return sessionId.String(), nil
-}
-
-func (r *Repository) sessionsGet(
-	ctx context.Context,
-	sessionId string,
-) (string, error) {
-	return r.Redis.Get(ctx, sessionId).Result()
-}
-
-func (r *Repository) sessionDelete(
-	ctx context.Context,
-	sessionId string,
-) error {
-	return r.Redis.Del(ctx, sessionId).Err()
 }

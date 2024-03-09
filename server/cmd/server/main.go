@@ -4,76 +4,57 @@ import (
 	"context"
 	"gossip/internal/adapters/postgres"
 	"gossip/internal/adapters/redis"
-	"gossip/internal/chat"
-	"gossip/internal/user"
+	"gossip/internal/domains/chat"
+	"gossip/internal/domains/session"
+	"gossip/internal/domains/user"
+	"gossip/internal/environment"
+	"gossip/internal/middlewares"
+	"gossip/internal/router"
 	"log"
-	"net/http"
-	"strings"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
-const ADDRESS string = "server:3000"
-
 func main() {
-	// constants
-	router := initRouter()
+	env, err := environment.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// postgres
-	pgPool, err := postgres.Init(
-		ctx,
-		"postgresql://admin:password123@postgres:5432/my_db?sslmode=disable",
-	)
+	pgPool, err := postgres.Init(ctx, env.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pgPool.Close()
 
-	// redis
-	redis, err := redis.Init(ctx, "redis:6379", "")
+	redis, err := redis.Init(ctx, env.RedisURL, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer redis.Close()
 
-	// user module
+	sessionRepository := &session.Repository{
+		Redis: redis,
+	}
+
 	userRepository := &user.Repository{
 		PgPool: pgPool,
-		Redis:  redis,
 	}
-	userService := &user.Service{
-		Repository: userRepository,
-	}
-	userService.InitRoutes(router)
 
-	// chat module
 	chatService := chat.InitService()
-	chatService.InitRoutes(router)
 
-	// run server
-	startRouter(router)
-}
-
-func initRouter() *chi.Mux {
-	router := chi.NewMux()
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	return router
-}
-
-func startRouter(router *chi.Mux) {
-	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		route = strings.Replace(route, "/*/", "/", -1)
-		log.Printf("%s %s\n", method, route)
-		return nil
-	}
-	if err := chi.Walk(router, walkFunc); err != nil {
-		log.Printf("Logging err: %s\n", err.Error())
+	middlewares := &middlewares.Middlewares{
+		SessionRepository: sessionRepository,
 	}
 
-	log.Println("running server on address", ADDRESS)
-	log.Fatal(http.ListenAndServe(ADDRESS, router))
+	router := &router.Router{
+		UserRepository:    userRepository,
+		SessionRepository: sessionRepository,
+		ChatService:       chatService,
+		Middlewares:       middlewares,
+	}
+
+	log.Println("running server on address", env.ServerAddress)
+	log.Fatal(router.Start(env.ServerAddress))
 }
