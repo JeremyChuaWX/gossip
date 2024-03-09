@@ -1,5 +1,5 @@
 import { SESSION_ID_COOKIE } from "$lib/server/constants";
-import { getCurrentUser } from "$lib/server/get-current-user";
+import { getCurrentUser } from "$lib/server/api/get-current-user";
 import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 

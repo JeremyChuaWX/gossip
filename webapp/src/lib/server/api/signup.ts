@@ -1,6 +1,6 @@
-import { BASE_URL } from "./constants";
-import type { Response } from "./types";
-import { request } from "./utils";
+import { BASE_URL } from "$lib/server/constants";
+import type { Response } from "$lib/server/types";
+import { request } from "$lib/server/utils";
 
 type SignupParams = {
     username: string;
