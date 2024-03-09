@@ -5,6 +5,7 @@ import (
 	"gossip/internal/adapters/postgres"
 	"gossip/internal/adapters/redis"
 	"gossip/internal/chat"
+	"gossip/internal/environment"
 	"gossip/internal/middlewares"
 	"gossip/internal/session"
 	"gossip/internal/user"
@@ -16,23 +17,23 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-const ADDRESS string = "server:3000"
-
 func main() {
+	env, err := environment.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	router := initRouter()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pgPool, err := postgres.Init(
-		ctx,
-		"postgresql://admin:password123@postgres:5432/my_db?sslmode=disable",
-	)
+	pgPool, err := postgres.Init(ctx, env.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pgPool.Close()
 
-	redis, err := redis.Init(ctx, "redis:6379", "")
+	redis, err := redis.Init(ctx, env.RedisURL, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +60,7 @@ func main() {
 	chatService := chat.InitService()
 	chatService.InitRoutes(router)
 
-	startRouter(router)
+	startRouter(router, env.ServerAddress)
 }
 
 func initRouter() *chi.Mux {
@@ -69,7 +70,7 @@ func initRouter() *chi.Mux {
 	return router
 }
 
-func startRouter(router *chi.Mux) {
+func startRouter(router *chi.Mux, address string) {
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		route = strings.Replace(route, "/*/", "/", -1)
 		log.Printf("%s %s\n", method, route)
@@ -79,6 +80,6 @@ func startRouter(router *chi.Mux) {
 		log.Printf("Logging err: %s\n", err.Error())
 	}
 
-	log.Println("running server on address", ADDRESS)
-	log.Fatal(http.ListenAndServe(ADDRESS, router))
+	log.Println("running server on address", address)
+	log.Fatal(http.ListenAndServe(address, router))
 }
