@@ -7,11 +7,11 @@ type room struct {
 	clients  map[*client]bool
 	ingress  chan event
 	alive    chan bool
-	service  *service
+	service  *Service
 	handlers map[eventType]func(*room, event)
 }
 
-func newRoom(name string, service *service) *room {
+func newRoom(name string, service *Service) *room {
 	r := &room{
 		name:     name,
 		clients:  make(map[*client]bool),

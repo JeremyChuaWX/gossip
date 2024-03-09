@@ -11,9 +11,9 @@ type Repository struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Repository) create(
+func (r *Repository) Create(
 	ctx context.Context,
-	dto userCreateDTO,
+	dto CreateDTO,
 ) (User, error) {
 	sql := `
 	INSERT INTO users (
@@ -28,13 +28,13 @@ func (r *Repository) create(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) findOne(
+func (r *Repository) FindOne(
 	ctx context.Context,
-	dto userFindOneDTO,
+	dto FindOneDTO,
 ) (User, error) {
 	sql := `
 	SELECT
@@ -45,13 +45,13 @@ func (r *Repository) findOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) findOneByUsername(
+func (r *Repository) FindOneByUsername(
 	ctx context.Context,
-	dto userFindOneByUsernameDTO,
+	dto FindOneByUsernameDTO,
 ) (User, error) {
 	sql := `
 	SELECT
@@ -62,13 +62,13 @@ func (r *Repository) findOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) update(
+func (r *Repository) Update(
 	ctx context.Context,
-	dto updateDTO,
+	dto UpdateDTO,
 ) (User, error) {
 	sql := `
 	UPDATE users SET
@@ -82,13 +82,13 @@ func (r *Repository) update(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.username, dto.passwordHash, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) delete(
+func (r *Repository) Delete(
 	ctx context.Context,
-	dto deleteDTO,
+	dto DeleteDTO,
 ) (User, error) {
 	sql := `
 	DELETE FROM users WHERE
@@ -99,6 +99,6 @@ func (r *Repository) delete(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.id)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
 }

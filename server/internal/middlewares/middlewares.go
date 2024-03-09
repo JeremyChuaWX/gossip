@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"gossip/internal/constants"
-	"gossip/internal/session"
+	"gossip/internal/domains/session"
 	"gossip/internal/utils"
 	"net/http"
 
@@ -17,9 +17,9 @@ type Middlewares struct {
 	SessionRepository *session.Repository
 }
 
-type Middleware func(http.Handler) http.Handler
+type middleware func(http.Handler) http.Handler
 
-func (m *Middlewares) AuthMiddleware() Middleware {
+func (m *Middlewares) AuthMiddleware() middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sessionId := r.Header.Get(constants.SESSION_ID_HEADER)

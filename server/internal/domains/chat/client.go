@@ -14,7 +14,7 @@ type client struct {
 	conn     *websocket.Conn
 	ingress  chan event
 	alive    chan bool
-	service  *service
+	service  *Service
 	handlers map[eventType]func(*client, event)
 }
 
@@ -22,7 +22,7 @@ func newClient(
 	userId uuid.UUID,
 	username string,
 	conn *websocket.Conn,
-	service *service,
+	service *Service,
 ) *client {
 	c := &client{
 		userId:   userId,
