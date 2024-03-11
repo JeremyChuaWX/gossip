@@ -7,7 +7,9 @@ type RequestOptions = {
     body?: unknown;
 };
 
-export async function request<Response = void>(url: string, method: string, opts?: RequestOptions) {
+type Response<T> = ({ error: false; message: string } & T) | { error: true; message: string };
+
+export async function request<T = void>(url: string, method: string, opts?: RequestOptions) {
     const req: RequestInit = {
         method: method,
     };
@@ -21,7 +23,7 @@ export async function request<Response = void>(url: string, method: string, opts
     }
     try {
         const res = await fetch(url, req);
-        return (await res.json()) as Response;
+        return (await res.json()) as Response<T>;
     } catch (error) {
         console.error("request error", error);
         return undefined;

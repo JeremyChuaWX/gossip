@@ -23,7 +23,7 @@ export const actions: Actions = {
             username: form.data.username,
             password: form.data.password,
         });
-        if (res === undefined) {
+        if (res === undefined || res.error) {
             return fail(500);
         }
         console.log("signin response", res);
