@@ -63,6 +63,23 @@ func (router *Router) chatRouter() *chi.Mux {
 		})
 	})
 
+	// get rooms
+	chatRouter.Post("/rooms", func(w http.ResponseWriter, r *http.Request) {
+		rooms := router.ChatService.GetRooms()
+
+		type response struct {
+			utils.BaseResponse
+			Rooms []string `json:"rooms"`
+		}
+		utils.WriteJSON(w, http.StatusCreated, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "room names",
+			},
+			Rooms: rooms,
+		})
+	})
+
 	// destroy room
 	chatRouter.Delete(
 		"/rooms/{name}",
