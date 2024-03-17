@@ -57,12 +57,6 @@ const config = {
             fontFamily: {
                 sans: [...fontFamily.sans],
             },
-            keyframes: {
-                "widen-tracking": {
-                    "0%": { "letter-spacing": "-0.05em", "font-weight": "400" },
-                    "100%": { "letter-spacing": "0.1em", "font-weight": "200" },
-                },
-            },
         },
     },
 };
