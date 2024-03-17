@@ -14,7 +14,7 @@ func (router *Router) chatRouter() *chi.Mux {
 	chatRouter := chi.NewRouter()
 
 	// new client
-	chatRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	chatRouter.Get("/connect", func(w http.ResponseWriter, r *http.Request) {
 		type request struct {
 			Username string `query:"username"`
 			UserId   string `query:"userId"`
