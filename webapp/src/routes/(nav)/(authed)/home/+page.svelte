@@ -1,14 +1,15 @@
 <script lang="ts">
     import type { PageData } from "./$types";
+    import CreateRoomForm from "./create-room-form.svelte";
 
     export let data: PageData;
 </script>
 
-<div class="mx-auto flex h-full w-[min(80%,1000px)]">
+<div class="mx-auto flex h-full w-[80%] max-w-[1000px]">
     <div class="w-1/3 border-r border-zinc-800 p-4">
         <div class="flex justify-between">
             <h1>Rooms</h1>
-            <button>+</button>
+            <CreateRoomForm data={data.createRoomForm} />
         </div>
     </div>
     <div class="flex h-full w-full flex-col border-r border-zinc-800">
