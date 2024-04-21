@@ -14,7 +14,7 @@ func (router *Router) chatRouter() *chi.Mux {
 	chatRouter := chi.NewRouter()
 
 	// new client
-	chatRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	chatRouter.Get("/connect", func(w http.ResponseWriter, r *http.Request) {
 		type request struct {
 			Username string `query:"username"`
 			UserId   string `query:"userId"`
@@ -60,6 +60,23 @@ func (router *Router) chatRouter() *chi.Mux {
 		utils.WriteJSON(w, http.StatusCreated, utils.BaseResponse{
 			Error:   false,
 			Message: fmt.Sprintf("room created %s", body.Name),
+		})
+	})
+
+	// get rooms
+	chatRouter.Post("/rooms", func(w http.ResponseWriter, r *http.Request) {
+		rooms := router.ChatService.GetRooms()
+
+		type response struct {
+			utils.BaseResponse
+			Rooms []string `json:"rooms"`
+		}
+		utils.WriteJSON(w, http.StatusCreated, response{
+			BaseResponse: utils.BaseResponse{
+				Error:   false,
+				Message: "room names",
+			},
+			Rooms: rooms,
 		})
 	})
 

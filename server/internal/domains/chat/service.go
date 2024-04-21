@@ -84,6 +84,14 @@ func (s *Service) NewRoom(name string) {
 	s.ingress <- makeNewRoomEvent(room)
 }
 
+func (s *Service) GetRooms() []string {
+	var rooms []string
+	for name := range s.rooms {
+		rooms = append(rooms, name)
+	}
+	return rooms
+}
+
 func (s *Service) DestroyRoom(name string) error {
 	room, ok := s.rooms[name]
 	if !ok {
