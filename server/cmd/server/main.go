@@ -4,17 +4,17 @@ import (
 	"context"
 	"gossip/internal/adapters/postgres"
 	"gossip/internal/adapters/redis"
+	"gossip/internal/config"
 	"gossip/internal/domains/chat"
 	"gossip/internal/domains/session"
 	"gossip/internal/domains/user"
-	"gossip/internal/environment"
 	"gossip/internal/middlewares"
 	"gossip/internal/router"
 	"log"
 )
 
 func main() {
-	env, err := environment.Init()
+	config, err := config.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,13 +22,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pgPool, err := postgres.Init(ctx, env.PostgresURL)
+	pgPool, err := postgres.Init(ctx, config.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pgPool.Close()
 
-	redis, err := redis.Init(ctx, env.RedisURL, "")
+	redis, err := redis.Init(ctx, config.RedisURL, "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,6 +55,6 @@ func main() {
 		Middlewares:       middlewares,
 	}
 
-	log.Println("running server on address", env.ServerAddress)
-	log.Fatal(router.Start(env.ServerAddress))
+	log.Println("running server on address", config.ServerAddress)
+	log.Fatal(router.Start(config.ServerAddress))
 }
