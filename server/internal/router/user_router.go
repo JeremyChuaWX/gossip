@@ -3,6 +3,7 @@ package router
 import (
 	"errors"
 	"gossip/internal/constants"
+	_roomuser "gossip/internal/domains/roomuser"
 	_user "gossip/internal/domains/user"
 	"gossip/internal/password"
 	"gossip/internal/utils"
@@ -179,6 +180,106 @@ func (router *Router) userRouter() *chi.Mux {
 			User: user,
 		})
 	})
+
+	// join room
+	userRouter.Post(
+		"/{id}/join-room",
+		func(w http.ResponseWriter, r *http.Request) {
+			urlId := chi.URLParam(r, "id")
+			id, err := uuid.FromString(urlId)
+			if err != nil {
+				utils.WriteError(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			authUserId := r.Context().Value(constants.USER_ID_CONTEXT_KEY).(uuid.UUID)
+			if authUserId != id {
+				utils.WriteError(w, http.StatusForbidden, userForbiddenError)
+				return
+			}
+
+			type Request struct {
+				RoomId uuid.UUID `json:"roomId"`
+			}
+			req, err := utils.ReadJSON[Request](r)
+			if err != nil {
+				utils.WriteError(w, http.StatusBadRequest, err)
+				return
+			}
+
+			dto := _roomuser.CreateDTO{
+				RoomId: req.RoomId,
+				UserId: id,
+			}
+			roomUser, err := router.RoomUserRepository.Create(r.Context(), dto)
+			if err != nil {
+				utils.WriteError(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			type response struct {
+				utils.BaseResponse
+				RoomUser _roomuser.RoomUser `json:"roomUser"`
+			}
+			utils.WriteJSON(w, http.StatusOK, response{
+				BaseResponse: utils.BaseResponse{
+					Error:   false,
+					Message: "join room",
+				},
+				RoomUser: roomUser,
+			})
+		},
+	)
+
+	// leave room
+	userRouter.Post(
+		"/{id}/leave-room",
+		func(w http.ResponseWriter, r *http.Request) {
+			urlId := chi.URLParam(r, "id")
+			id, err := uuid.FromString(urlId)
+			if err != nil {
+				utils.WriteError(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			authUserId := r.Context().Value(constants.USER_ID_CONTEXT_KEY).(uuid.UUID)
+			if authUserId != id {
+				utils.WriteError(w, http.StatusForbidden, userForbiddenError)
+				return
+			}
+
+			type Request struct {
+				RoomId uuid.UUID `json:"roomId"`
+			}
+			req, err := utils.ReadJSON[Request](r)
+			if err != nil {
+				utils.WriteError(w, http.StatusBadRequest, err)
+				return
+			}
+
+			dto := _roomuser.DeleteDTO{
+				RoomId: req.RoomId,
+				UserId: id,
+			}
+			roomUser, err := router.RoomUserRepository.Delete(r.Context(), dto)
+			if err != nil {
+				utils.WriteError(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			type response struct {
+				utils.BaseResponse
+				RoomUser _roomuser.RoomUser `json:"roomUser"`
+			}
+			utils.WriteJSON(w, http.StatusOK, response{
+				BaseResponse: utils.BaseResponse{
+					Error:   false,
+					Message: "leave room",
+				},
+				RoomUser: roomUser,
+			})
+		},
+	)
 
 	return userRouter
 }

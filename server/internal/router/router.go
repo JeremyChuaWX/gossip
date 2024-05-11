@@ -2,6 +2,8 @@ package router
 
 import (
 	"gossip/internal/domains/chat"
+	"gossip/internal/domains/room"
+	"gossip/internal/domains/roomuser"
 	"gossip/internal/domains/session"
 	"gossip/internal/domains/user"
 	"gossip/internal/middlewares"
@@ -14,10 +16,12 @@ import (
 )
 
 type Router struct {
-	UserRepository    *user.Repository
-	SessionRepository *session.Repository
-	ChatService       *chat.Service
-	Middlewares       *middlewares.Middlewares
+	RoomRepository     *room.Repository
+	UserRepository     *user.Repository
+	RoomUserRepository *roomuser.Repository
+	SessionRepository  *session.Repository
+	ChatService        *chat.Service
+	Middlewares        *middlewares.Middlewares
 }
 
 func (r *Router) Start(address string) error {
