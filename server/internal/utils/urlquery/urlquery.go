@@ -8,7 +8,7 @@ import (
 
 var missingURLQueryKeyError = errors.New("missing URL query key")
 
-func GetURLQueryStruct[T any](URL *url.URL) (T, error) {
+func ParseStruct[T any](URL *url.URL) (T, error) {
 	var queryStruct T
 	URLQuery, err := url.ParseQuery(URL.RawQuery)
 	if err != nil {
