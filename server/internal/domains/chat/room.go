@@ -1,79 +1,25 @@
 package chat
 
-import "log"
+import (
+	room "gossip/internal/domains/room"
+	"gossip/internal/domains/user"
 
-type room struct {
-	name     string
-	clients  map[*client]bool
-	ingress  chan event
-	alive    chan bool
-	service  *Service
-	handlers map[eventType]func(*room, event)
+	"github.com/gofrs/uuid/v5"
+)
+
+type chatRoom struct {
+	service *service
+	ingress chan event
+	room    room.Room
+	userIds map[uuid.UUID]bool
 }
 
-func newRoom(name string, service *Service) *room {
-	r := &room{
-		name:     name,
-		clients:  make(map[*client]bool),
-		ingress:  make(chan event, 100),
-		alive:    make(chan bool),
-		service:  service,
-		handlers: make(map[eventType]func(*room, event)),
+func newChatRoom(room room.Room, users []*user.User) *chatRoom {
+	r := &chatRoom{
+		room: room,
 	}
-	r.handlers[MESSAGE] = (*room).messageHandler
-	r.handlers[CLIENT_JOIN_ROOM] = (*room).clientJoinRoomHandler
-	r.handlers[CLIENT_LEAVE_ROOM] = (*room).clientLeaveRoomHandler
-	r.handlers[DESTROY_ROOM] = (*room).destroyRoomHandler
+	for _, user := range users {
+		r.userIds[user.Id] = true
+	}
 	return r
-}
-
-func (r *room) init() {
-	go r.receiveEvents()
-}
-
-// run as goroutine
-func (r *room) receiveEvents() {
-	defer (func() {
-		close(r.ingress)
-		close(r.alive)
-	})()
-	for {
-		select {
-		case <-r.alive:
-			return
-		case e := <-r.ingress:
-			log.Printf("[room] event received: %v", e)
-			handler, ok := r.handlers[e.name()]
-			if !ok {
-				log.Println("invalid event")
-				continue
-			}
-			handler(r, e)
-		}
-	}
-}
-
-// handlers
-
-func (r *room) messageHandler(e event) {
-	for client := range r.clients {
-		client.ingress <- e
-	}
-}
-
-func (r *room) clientJoinRoomHandler(e event) {
-	event := e.(*clientJoinRoomEvent)
-	r.clients[event.client] = true
-}
-
-func (r *room) clientLeaveRoomHandler(e event) {
-	event := e.(*clientLeaveRoomEvent)
-	delete(r.clients, event.client)
-}
-
-func (r *room) destroyRoomHandler(e event) {
-	for client := range r.clients {
-		client.ingress <- makeClientLeaveRoomEvent(client, r)
-	}
-	r.alive <- false
 }
