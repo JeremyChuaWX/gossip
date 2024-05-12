@@ -2,19 +2,20 @@ package user
 
 import (
 	"context"
+	"gossip/internal/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Repository struct {
+type Service struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Repository) Create(
+func (r *Service) Create(
 	ctx context.Context,
 	dto CreateDTO,
-) (User, error) {
+) (models.User, error) {
 	sql := `
 	INSERT INTO users (
 		username,
@@ -29,13 +30,13 @@ func (r *Repository) Create(
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
-	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) FindOne(
+func (r *Service) FindOne(
 	ctx context.Context,
 	dto FindOneDTO,
-) (User, error) {
+) (models.User, error) {
 	sql := `
 	SELECT
 		id,
@@ -46,13 +47,13 @@ func (r *Repository) FindOne(
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
-	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) FindOneByUsername(
+func (r *Service) FindOneByUsername(
 	ctx context.Context,
 	dto FindOneByUsernameDTO,
-) (User, error) {
+) (models.User, error) {
 	sql := `
 	SELECT
 		id,
@@ -63,13 +64,13 @@ func (r *Repository) FindOneByUsername(
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
-	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) Update(
+func (r *Service) Update(
 	ctx context.Context,
 	dto UpdateDTO,
-) (User, error) {
+) (models.User, error) {
 	sql := `
 	UPDATE users SET
 		username = COALESCE($1, username),
@@ -83,13 +84,13 @@ func (r *Repository) Update(
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.Id)
-	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) Delete(
+func (r *Service) Delete(
 	ctx context.Context,
 	dto DeleteDTO,
-) (User, error) {
+) (models.User, error) {
 	sql := `
 	DELETE FROM users WHERE
 		id = $1
@@ -100,5 +101,5 @@ func (r *Repository) Delete(
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
-	return pgx.CollectExactlyOneRow[User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
