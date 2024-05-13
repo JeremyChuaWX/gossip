@@ -1,4 +1,4 @@
-package constants
+package session
 
 import "time"
 
