@@ -19,9 +19,11 @@ func (s *Service) Create(
 	sql := `
 	INSERT INTO rooms (
 		name
-	) VALUES (
+	)
+	VALUES (
 		$1
-	) RETURNING
+	)
+	RETURNING
 		id,
 		name
 	;
@@ -38,7 +40,8 @@ func (s *Service) FindOne(
 	SELECT
 		id,
 		name
-	FROM rooms WHERE
+	FROM rooms
+	WHERE
 		id = $1
 	;
 	`
@@ -51,7 +54,8 @@ func (s *Service) Update(
 	dto UpdateDTO,
 ) (models.Room, error) {
 	sql := `
-	UPDATE rooms SET
+	UPDATE rooms
+	SET
 		name = COALESCE($1, name)
 	WHERE
 		id = $2
@@ -70,7 +74,8 @@ func (s *Service) Delete(
 	dto DeleteDTO,
 ) (models.Room, error) {
 	sql := `
-	DELETE FROM rooms WHERE
+	DELETE FROM rooms
+	WHERE
 		id = $1
 	RETURNING
 		id,
