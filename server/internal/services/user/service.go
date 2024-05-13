@@ -20,10 +20,12 @@ func (s *Service) Create(
 	INSERT INTO users (
 		username,
 		password_hash
-	) VALUES (
+	)
+	VALUES (
 		$1,
 		$2
-	) RETURNING
+	)
+	RETURNING
 		id,
 		username,
 		password_hash
@@ -42,7 +44,8 @@ func (s *Service) FindOne(
 		id,
 		username,
 		password_hash
-	FROM users WHERE
+	FROM users
+	WHERE
 		id = $1
 	;
 	`
@@ -59,7 +62,8 @@ func (s *Service) FindOneByUsername(
 		id,
 		username,
 		password_hash
-	FROM users WHERE
+	FROM users
+	WHERE
 		username = $1
 	;
 	`
@@ -72,7 +76,8 @@ func (s *Service) Update(
 	dto UpdateDTO,
 ) (models.User, error) {
 	sql := `
-	UPDATE users SET
+	UPDATE users
+	SET
 		username = COALESCE($1, username),
 		password_hash = COALESCE($2, password_hash)
 	WHERE
@@ -92,7 +97,8 @@ func (s *Service) Delete(
 	dto DeleteDTO,
 ) (models.User, error) {
 	sql := `
-	DELETE FROM users WHERE
+	DELETE FROM users
+	WHERE
 		id = $1
 	RETURNING
 		id,
