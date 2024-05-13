@@ -2,19 +2,20 @@ package room
 
 import (
 	"context"
+	"gossip/internal/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Repository struct {
+type Service struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Repository) Create(
+func (s *Service) Create(
 	ctx context.Context,
 	dto CreateDTO,
-) (Room, error) {
+) (models.Room, error) {
 	sql := `
 	INSERT INTO rooms (
 		name
@@ -25,14 +26,14 @@ func (r *Repository) Create(
 		name
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Name)
-	return pgx.CollectExactlyOneRow[Room](rows, pgx.RowToStructByName)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Name)
+	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) FindOne(
+func (s *Service) FindOne(
 	ctx context.Context,
 	dto FindOneDTO,
-) (Room, error) {
+) (models.Room, error) {
 	sql := `
 	SELECT
 		id,
@@ -41,14 +42,14 @@ func (r *Repository) FindOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
-	return pgx.CollectExactlyOneRow[Room](rows, pgx.RowToStructByName)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
+	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) Update(
+func (s *Service) Update(
 	ctx context.Context,
 	dto UpdateDTO,
-) (Room, error) {
+) (models.Room, error) {
 	sql := `
 	UPDATE rooms SET
 		name = COALESCE($1, name)
@@ -60,14 +61,14 @@ func (r *Repository) Update(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Name, dto.Id)
-	return pgx.CollectExactlyOneRow[Room](rows, pgx.RowToStructByName)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Name, dto.Id)
+	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
-func (r *Repository) Delete(
+func (s *Service) Delete(
 	ctx context.Context,
 	dto DeleteDTO,
-) (Room, error) {
+) (models.Room, error) {
 	sql := `
 	DELETE FROM rooms WHERE
 		id = $1
@@ -76,6 +77,6 @@ func (r *Repository) Delete(
 		name
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
-	return pgx.CollectExactlyOneRow[Room](rows, pgx.RowToStructByName)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
+	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }

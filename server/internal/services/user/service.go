@@ -12,7 +12,7 @@ type Service struct {
 	PgPool *pgxpool.Pool
 }
 
-func (r *Service) Create(
+func (s *Service) Create(
 	ctx context.Context,
 	dto CreateDTO,
 ) (models.User, error) {
@@ -29,11 +29,11 @@ func (r *Service) Create(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
 	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Service) FindOne(
+func (s *Service) FindOne(
 	ctx context.Context,
 	dto FindOneDTO,
 ) (models.User, error) {
@@ -46,11 +46,11 @@ func (r *Service) FindOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Service) FindOneByUsername(
+func (s *Service) FindOneByUsername(
 	ctx context.Context,
 	dto FindOneByUsernameDTO,
 ) (models.User, error) {
@@ -63,11 +63,11 @@ func (r *Service) FindOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Username)
 	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Service) Update(
+func (s *Service) Update(
 	ctx context.Context,
 	dto UpdateDTO,
 ) (models.User, error) {
@@ -83,11 +83,11 @@ func (r *Service) Update(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.Id)
 	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
 
-func (r *Service) Delete(
+func (s *Service) Delete(
 	ctx context.Context,
 	dto DeleteDTO,
 ) (models.User, error) {
@@ -100,6 +100,6 @@ func (r *Service) Delete(
 		password_hash
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
 	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
 }
