@@ -2,46 +2,49 @@ package chat
 
 import (
 	"errors"
-	"gossip/internal/domains/room"
-	"gossip/internal/domains/user"
+	"gossip/internal/models"
+	"gossip/internal/services/roomuser"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"golang.org/x/net/context"
 )
 
 type service struct {
-	chatUsers map[uuid.UUID]*chatUser
-	chatRooms map[uuid.UUID]*chatRoom
+	roomUserService roomuser.Service
+	chatUsers       map[uuid.UUID]*chatUser
+	chatRooms       map[uuid.UUID]*chatRoom
 }
 
-func InitService() *service {
+func InitService(roomUserService roomuser.Service) *service {
 	s := &service{
-		chatUsers: make(map[uuid.UUID]*chatUser),
-		chatRooms: make(map[uuid.UUID]*chatRoom),
+		roomUserService: roomUserService,
+		chatUsers:       make(map[uuid.UUID]*chatUser),
+		chatRooms:       make(map[uuid.UUID]*chatRoom),
 	}
+	// TODO: init chat rooms
 	return s
 }
 
 func (s *service) chatUserConnect(
+	ctx context.Context,
 	conn *websocket.Conn,
-	user *user.User,
-	rooms []room.Room,
+	user *models.User,
 ) error {
 	_, ok := s.chatUsers[user.Id]
 	if ok {
 		return errors.New("chat user already connected")
 	}
-	chatUser := &chatUser{
-		service: s,
-		ingress: make(chan event),
-		user:    user,
-		roomIds: make(map[uuid.UUID]bool),
-		conn:    conn,
+	roomIds, err := s.roomUserService.FindRoomIdsByUserId(
+		ctx,
+		roomuser.FindRoomIdsByUserIdDTO{
+			UserId: user.Id,
+		},
+	)
+	if err != nil {
+		return err
 	}
-	for _, room := range rooms {
-		chatUser.roomIds[room.Id] = true
-	}
-	s.chatUsers[user.Id] = chatUser
+	s.chatUsers[user.Id] = newChatUser(s, user, roomIds, conn)
 	return nil
 }
 

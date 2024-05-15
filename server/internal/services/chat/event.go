@@ -17,3 +17,25 @@ const (
 type event interface {
 	name() eventName
 }
+
+// message event
+
+type payload struct {
+	RoomId    string    `json:"roomId"`
+	UserId    string    `json:"userId"`
+	Body      string    `json:"body"`
+}
+
+type messageEvent struct {
+	payload payload
+}
+
+func (e *messageEvent) name() eventName {
+	return MESSAGE
+}
+
+func newMessageEvent(payload payload) event {
+	return &messageEvent{
+		payload: payload,
+	}
+}
