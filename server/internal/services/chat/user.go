@@ -39,6 +39,8 @@ func newChatUser(
 	}
 
 	u.handlers[MESSAGE] = (*chatUser).messageEventHandler
+	u.handlers[USER_JOIN_ROOM] = (*chatUser).userJoinRoomEventHandler
+	u.handlers[USER_LEAVE_ROOM] = (*chatUser).userLeaveRoomEventHandler
 
 	go u.receiveEvents()
 	go u.receiveWebsocket()
@@ -58,7 +60,7 @@ func (u *chatUser) receiveEvents() {
 		case e := <-u.ingress:
 			handler, ok := u.handlers[e.name()]
 			if !ok {
-				log.Printf("invalid event")
+				log.Println("invalid event")
 				continue
 			}
 			handler(u, e)
@@ -79,12 +81,12 @@ func (u *chatUser) receiveWebsocket() {
 			}
 			roomId, err := uuid.FromString(payload.RoomId)
 			if err != nil {
-				log.Printf("invalid room ID")
+				log.Println("invalid room ID")
 				continue
 			}
 			room, ok := u.service.chatRooms[roomId]
 			if !ok {
-				log.Printf("invalid room ID")
+				log.Println("invalid room ID")
 				continue
 			}
 			room.ingress <- newMessageEvent(payload)
@@ -105,4 +107,30 @@ func (u *chatUser) messageEventHandler(e event) {
 		u.disconnect()
 		return
 	}
+}
+
+func (u *chatUser) userJoinRoomEventHandler(e event) {
+	event := e.(*userJoinRoomEvent)
+	if u.user.Id != event.userId {
+		log.Println("wrong user")
+		return
+	}
+	if _, ok := u.roomIds[event.roomId]; ok {
+		log.Println("user already in room")
+		return
+	}
+	u.roomIds[event.roomId] = true
+}
+
+func (u *chatUser) userLeaveRoomEventHandler(e event) {
+	event := e.(*userJoinRoomEvent)
+	if u.user.Id != event.userId {
+		log.Println("wrong user")
+		return
+	}
+	if _, ok := u.roomIds[event.roomId]; !ok {
+		log.Println("user not in room")
+		return
+	}
+	delete(u.roomIds, event.roomId)
 }

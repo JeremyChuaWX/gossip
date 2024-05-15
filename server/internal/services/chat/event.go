@@ -1,5 +1,7 @@
 package chat
 
+import "github.com/gofrs/uuid/v5"
+
 type eventName string
 
 const (
@@ -21,9 +23,9 @@ type event interface {
 // message event
 
 type payload struct {
-	RoomId    string    `json:"roomId"`
-	UserId    string    `json:"userId"`
-	Body      string    `json:"body"`
+	RoomId string `json:"roomId"`
+	UserId string `json:"userId"`
+	Body   string `json:"body"`
 }
 
 type messageEvent struct {
@@ -37,5 +39,41 @@ func (e *messageEvent) name() eventName {
 func newMessageEvent(payload payload) event {
 	return &messageEvent{
 		payload: payload,
+	}
+}
+
+// user join room
+
+type userJoinRoomEvent struct {
+	userId uuid.UUID
+	roomId uuid.UUID
+}
+
+func (e *userJoinRoomEvent) name() eventName {
+	return USER_JOIN_ROOM
+}
+
+func newUserJoinRoomEvent(userId uuid.UUID, roomId uuid.UUID) event {
+	return &userJoinRoomEvent{
+		userId: userId,
+		roomId: roomId,
+	}
+}
+
+// user leave room
+
+type userLeaveRoomEvent struct {
+	userId uuid.UUID
+	roomId uuid.UUID
+}
+
+func (e *userLeaveRoomEvent) name() eventName {
+	return USER_LEAVE_ROOM
+}
+
+func newUserLeaveRoomEvent(userId uuid.UUID, roomId uuid.UUID) event {
+	return &userLeaveRoomEvent{
+		userId: userId,
+		roomId: roomId,
 	}
 }

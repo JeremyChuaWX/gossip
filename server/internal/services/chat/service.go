@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gossip/internal/models"
 	"gossip/internal/services/roomuser"
+	"log"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -26,7 +27,7 @@ func InitService(roomUserService roomuser.Service) *service {
 	return s
 }
 
-func (s *service) chatUserConnect(
+func (s *service) userConnect(
 	ctx context.Context,
 	conn *websocket.Conn,
 	user *models.User,
@@ -48,10 +49,42 @@ func (s *service) chatUserConnect(
 	return nil
 }
 
-func (s *service) chatUserDisconnect(chatUserId uuid.UUID) error {
-	chatUser, ok := s.chatUsers[chatUserId]
+func (s *service) userDisconnect(userId uuid.UUID) error {
+	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		return errors.New("chat user not found")
 	}
 	return chatUser.disconnect()
+}
+
+func (s *service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
+	chatUser, ok := s.chatUsers[userId]
+	if !ok {
+		log.Println("user not found")
+		return
+	}
+	chatRoom, ok := s.chatRooms[roomId]
+	if !ok {
+		log.Println("room not found")
+		return
+	}
+	event := newUserJoinRoomEvent(userId, roomId)
+	chatUser.ingress <- event
+	chatRoom.ingress <- event
+}
+
+func (s *service) userLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
+	chatUser, ok := s.chatUsers[userId]
+	if !ok {
+		log.Println("user not found")
+		return
+	}
+	chatRoom, ok := s.chatRooms[roomId]
+	if !ok {
+		log.Println("room not found")
+		return
+	}
+	event := newUserLeaveRoomEvent(userId, roomId)
+	chatUser.ingress <- event
+	chatRoom.ingress <- event
 }
