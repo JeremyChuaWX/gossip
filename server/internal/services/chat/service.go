@@ -2,8 +2,8 @@ package chat
 
 import (
 	"errors"
-	"gossip/internal/models"
 	"gossip/internal/services/roomuser"
+	"gossip/internal/services/user"
 	"log"
 
 	"github.com/gofrs/uuid/v5"
@@ -12,6 +12,7 @@ import (
 )
 
 type service struct {
+	userService     user.Service
 	roomUserService roomuser.Service
 	chatUsers       map[uuid.UUID]*chatUser
 	chatRooms       map[uuid.UUID]*chatRoom
@@ -30,22 +31,31 @@ func InitService(roomUserService roomuser.Service) *service {
 func (s *service) userConnect(
 	ctx context.Context,
 	conn *websocket.Conn,
-	user *models.User,
+	userId uuid.UUID,
 ) error {
-	_, ok := s.chatUsers[user.Id]
+	_, ok := s.chatUsers[userId]
 	if ok {
 		return errors.New("chat user already connected")
 	}
 	roomIds, err := s.roomUserService.FindRoomIdsByUserId(
 		ctx,
 		roomuser.FindRoomIdsByUserIdDTO{
-			UserId: user.Id,
+			UserId: userId,
 		},
 	)
 	if err != nil {
 		return err
 	}
-	s.chatUsers[user.Id] = newChatUser(s, user, roomIds, conn)
+	_user, err := s.userService.FindOne(
+		ctx,
+		user.FindOneDTO{
+			Id: userId,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	s.chatUsers[userId] = newChatUser(s, &_user, roomIds, conn)
 	return nil
 }
 
