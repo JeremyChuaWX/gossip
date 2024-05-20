@@ -86,10 +86,19 @@ func (u *chatUser) receiveWebsocket() {
 			}
 			room, ok := u.service.chatRooms[roomId]
 			if !ok {
-				log.Println("invalid room ID")
+				log.Println("room not found")
 				continue
 			}
-			room.ingress <- newMessageEvent(payload)
+			userId, err := uuid.FromString(payload.UserId)
+			if err != nil {
+				log.Println("invalid user ID")
+				continue
+			}
+			if userId != u.user.Id {
+				log.Println("invalid user ID")
+				continue
+			}
+			room.ingress <- newMessageEvent(roomId, userId, payload)
 		}
 	}
 }

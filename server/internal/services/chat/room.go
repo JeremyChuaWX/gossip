@@ -1,7 +1,9 @@
 package chat
 
 import (
+	"context"
 	"gossip/internal/models"
+	"gossip/internal/services/message"
 	"log"
 
 	"github.com/gofrs/uuid/v5"
@@ -69,12 +71,23 @@ func (r *chatRoom) close() {
 // handlers
 
 func (r *chatRoom) messageEventHandler(e event) {
+	event := e.(*messageEvent)
+	ctx := context.Background()
+	r.service.messageService.Save(ctx, message.SaveDto{
+		UserId: event.userId,
+		RoomId: event.roomId,
+		Body:   event.payload.Body,
+	})
 	for userId := range r.userIds {
+		// NOTE: skip the sender
+		if userId == event.userId {
+			continue
+		}
 		user, ok := r.service.chatUsers[userId]
 		if !ok {
 			log.Printf("user %s not found", userId.String())
 		}
-		user.ingress <- e
+		user.ingress <- event
 	}
 }
 

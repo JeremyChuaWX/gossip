@@ -23,6 +23,8 @@ type payload struct {
 }
 
 type messageEvent struct {
+	roomId  uuid.UUID
+	userId  uuid.UUID
 	payload payload
 }
 
@@ -30,8 +32,14 @@ func (e *messageEvent) name() eventName {
 	return MESSAGE
 }
 
-func newMessageEvent(payload payload) event {
+func newMessageEvent(
+	roomId uuid.UUID,
+	userId uuid.UUID,
+	payload payload,
+) event {
 	return &messageEvent{
+		roomId:  roomId,
+		userId:  userId,
 		payload: payload,
 	}
 }

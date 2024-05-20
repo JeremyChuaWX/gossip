@@ -2,6 +2,7 @@ package chat
 
 import (
 	"errors"
+	"gossip/internal/services/message"
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/user"
 	"log"
@@ -14,13 +15,20 @@ import (
 type service struct {
 	userService     user.Service
 	roomUserService roomuser.Service
+	messageService  message.Service
 	chatUsers       map[uuid.UUID]*chatUser
 	chatRooms       map[uuid.UUID]*chatRoom
 }
 
-func InitService(roomUserService roomuser.Service) *service {
+func InitService(
+	userService user.Service,
+	roomUserService roomuser.Service,
+	messageService message.Service,
+) *service {
 	s := &service{
+		userService:     userService,
 		roomUserService: roomUserService,
+		messageService:  messageService,
 		chatUsers:       make(map[uuid.UUID]*chatUser),
 		chatRooms:       make(map[uuid.UUID]*chatRoom),
 	}
@@ -64,6 +72,7 @@ func (s *service) userDisconnect(userId uuid.UUID) error {
 	if !ok {
 		return errors.New("chat user not found")
 	}
+	delete(s.chatUsers, userId)
 	return chatUser.disconnect()
 }
 
