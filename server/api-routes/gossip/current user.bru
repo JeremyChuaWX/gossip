@@ -1,0 +1,15 @@
+meta {
+  name: current user
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/users
+  body: none
+  auth: none
+}
+
+headers {
+  {{sessionIdHeader}}: {{sessionId}}
+}

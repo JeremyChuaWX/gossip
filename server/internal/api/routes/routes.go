@@ -281,4 +281,41 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			Message: "user left room",
 		})
 	})
+
+	mux.Post("/rooms", func(w http.ResponseWriter, r *http.Request) {
+		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
+		_, err := router.UserService.FindOne(
+			r.Context(),
+			user.FindOneDTO{
+				UserId: userId,
+			},
+		)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusUnauthorized, err)
+			return
+		}
+		body, err := httpjson.Read[struct {
+			RoomName string `json:"roomName"`
+		}](r)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		room, err := router.RoomService.Create(r.Context(), room.CreateDTO{
+			Name: body.RoomName,
+		})
+		if err != nil {
+			httpjson.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
+			Success: true,
+			Message: "room created",
+			Data: struct {
+				Room models.Room `json:"room"`
+			}{
+				Room: room,
+			},
+		})
+	})
 }

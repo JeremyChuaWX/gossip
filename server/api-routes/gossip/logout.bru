@@ -5,13 +5,13 @@ meta {
 }
 
 post {
-  url: 127.0.0.1:3000/logout
+  url: {{baseUrl}}/logout
   body: none
   auth: none
 }
 
 headers {
-  x-session-id: {{sessionId}}
+  {{sessionIdHeader}}: {{sessionId}}
 }
 
 script:post-response {
