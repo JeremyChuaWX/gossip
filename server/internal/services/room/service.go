@@ -49,6 +49,18 @@ func (s *Service) FindOne(
 	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
+func (s *Service) FindMany(ctx context.Context) ([]models.Room, error) {
+	sql := `
+	SELECT
+		id,
+		name
+	FROM rooms
+	;
+	`
+	rows, _ := s.PgPool.Query(ctx, sql)
+	return pgx.CollectRows[models.Room](rows, pgx.RowToStructByName)
+}
+
 func (s *Service) Update(
 	ctx context.Context,
 	dto UpdateDTO,

@@ -3,6 +3,7 @@ package chat
 import (
 	"errors"
 	"gossip/internal/services/message"
+	"gossip/internal/services/room"
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/user"
 	"log"
@@ -14,6 +15,7 @@ import (
 
 type service struct {
 	userService     user.Service
+	roomService     room.Service
 	roomUserService roomuser.Service
 	messageService  message.Service
 	chatUsers       map[uuid.UUID]*chatUser
@@ -22,18 +24,56 @@ type service struct {
 
 func InitService(
 	userService user.Service,
+	roomService room.Service,
 	roomUserService roomuser.Service,
 	messageService message.Service,
-) *service {
+) (*service, error) {
 	s := &service{
 		userService:     userService,
+		roomService:     roomService,
 		roomUserService: roomUserService,
 		messageService:  messageService,
 		chatUsers:       make(map[uuid.UUID]*chatUser),
 		chatRooms:       make(map[uuid.UUID]*chatRoom),
 	}
-	// TODO: init chat rooms
-	return s
+
+	ctx := context.Background()
+	rooms, err := roomService.FindMany(ctx)
+	if err != nil {
+		return nil, err
+	}
+	errors := make(chan error, len(rooms))
+	chatRooms := make(chan *chatRoom, len(rooms))
+	for _, room := range rooms {
+		go func() {
+			roomUsers, err := roomUserService.FindUserIdsByRoomId(
+				ctx,
+				roomuser.FindUserIdsByRoomIdDTO{
+					RoomId: room.Id,
+				},
+			)
+			if err != nil {
+				errors <- err
+				return
+			}
+			chatRooms <- newChatRoom(s, &room, roomUsers)
+		}()
+	}
+
+	counter := len(rooms)
+	for {
+		select {
+		case err = <-errors:
+			return nil, err
+		case chatRoom := <-chatRooms:
+			s.chatRooms[chatRoom.room.Id] = chatRoom
+			counter--
+		default:
+			if counter <= 0 {
+				return s, nil
+			}
+		}
+	}
 }
 
 func (s *service) userConnect(

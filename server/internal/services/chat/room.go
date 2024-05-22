@@ -21,7 +21,7 @@ type chatRoom struct {
 func newChatRoom(
 	service *service,
 	room *models.Room,
-	userIds []uuid.UUID,
+	roomUsers []models.RoomUser,
 ) *chatRoom {
 	r := &chatRoom{
 		service:  service,
@@ -32,8 +32,8 @@ func newChatRoom(
 		userIds:  make(map[uuid.UUID]bool),
 	}
 
-	for _, userId := range userIds {
-		r.userIds[userId] = true
+	for _, roomUser := range roomUsers {
+		r.userIds[roomUser.UserId] = true
 	}
 
 	r.handlers[MESSAGE] = (*chatRoom).messageEventHandler

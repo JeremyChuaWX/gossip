@@ -21,7 +21,7 @@ type chatUser struct {
 func newChatUser(
 	service *service,
 	user *models.User,
-	roomIds []uuid.UUID,
+	roomUsers []models.RoomUser,
 	conn *websocket.Conn,
 ) *chatUser {
 	u := &chatUser{
@@ -34,8 +34,8 @@ func newChatUser(
 		conn:     conn,
 	}
 
-	for _, roomId := range roomIds {
-		u.roomIds[roomId] = true
+	for _, roomUser := range roomUsers {
+		u.roomIds[roomUser.RoomId] = true
 	}
 
 	u.handlers[MESSAGE] = (*chatUser).messageEventHandler

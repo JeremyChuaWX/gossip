@@ -4,7 +4,6 @@ import (
 	"context"
 	"gossip/internal/models"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -63,7 +62,7 @@ func (s *Service) UserLeaveRoom(
 func (s *Service) FindRoomIdsByUserId(
 	ctx context.Context,
 	dto FindRoomIdsByUserIdDTO,
-) ([]uuid.UUID, error) {
+) ([]models.RoomUser, error) {
 	sql := `
 	SELECT
 		user_id,
@@ -74,13 +73,13 @@ func (s *Service) FindRoomIdsByUserId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
-	return pgx.CollectRows(rows, pgx.RowToStructByName)
+	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
 }
 
 func (s *Service) FindUserIdsByRoomId(
 	ctx context.Context,
 	dto FindUserIdsByRoomIdDTO,
-) ([]uuid.UUID, error) {
+) ([]models.RoomUser, error) {
 	sql := `
 	SELECT
 		user_id,
@@ -91,5 +90,5 @@ func (s *Service) FindUserIdsByRoomId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectRows(rows, pgx.RowToStructByName)
+	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
 }
