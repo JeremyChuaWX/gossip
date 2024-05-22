@@ -1,0 +1,19 @@
+meta {
+  name: logout
+  type: http
+  seq: 4
+}
+
+post {
+  url: 127.0.0.1:3000/logout
+  body: none
+  auth: none
+}
+
+headers {
+  x-session-id: {{sessionId}}
+}
+
+script:post-response {
+  bru.setEnvVar("sessionId", "")
+}

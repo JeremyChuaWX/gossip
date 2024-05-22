@@ -76,6 +76,24 @@ func (s *Service) FindRoomIdsByUserId(
 	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
 }
 
+func (s *Service) FindRoomsByUserId(
+	ctx context.Context,
+	dto FindRoomIdsByUserIdDTO,
+) ([]models.Room, error) {
+	sql := `
+	SELECT
+		rooms.id,
+		rooms.name
+	FROM roomusers
+		INNER JOIN users ON users.id = room_users.user_id
+	WHERE
+		user_id = $1
+	;
+	`
+	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
+	return pgx.CollectRows[models.Room](rows, pgx.RowToStructByName)
+}
+
 func (s *Service) FindUserIdsByRoomId(
 	ctx context.Context,
 	dto FindUserIdsByRoomIdDTO,
@@ -91,4 +109,23 @@ func (s *Service) FindUserIdsByRoomId(
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
 	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
+}
+
+func (s *Service) FindUsersByRoomId(
+	ctx context.Context,
+	dto FindUserIdsByRoomIdDTO,
+) ([]models.User, error) {
+	sql := `
+	SELECT
+		users.id,
+		users.username,
+		users.password_hash
+	FROM roomusers
+		INNER JOIN rooms ON rooms.id = room_users.room_id
+	WHERE
+		room_id = $1
+	;
+	`
+	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
+	return pgx.CollectRows[models.User](rows, pgx.RowToStructByName)
 }

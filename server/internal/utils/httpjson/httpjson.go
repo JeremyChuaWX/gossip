@@ -8,6 +8,7 @@ import (
 type BaseResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+	Data    any    `json:"data"`
 }
 
 func Read[T any](r *http.Request) (T, error) {

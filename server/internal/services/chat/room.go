@@ -10,7 +10,7 @@ import (
 )
 
 type chatRoom struct {
-	service  *service
+	service  *Service
 	alive    chan bool
 	ingress  chan event
 	handlers map[eventName]func(*chatRoom, event)
@@ -19,7 +19,7 @@ type chatRoom struct {
 }
 
 func newChatRoom(
-	service *service,
+	service *Service,
 	room *models.Room,
 	roomUsers []models.RoomUser,
 ) *chatRoom {

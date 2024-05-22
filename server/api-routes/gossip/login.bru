@@ -1,0 +1,22 @@
+meta {
+  name: login
+  type: http
+  seq: 3
+}
+
+post {
+  url: 127.0.0.1:3000/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{username}}",
+    "password": "{{password}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("sessionId", res.body.data.sessionId);
+}

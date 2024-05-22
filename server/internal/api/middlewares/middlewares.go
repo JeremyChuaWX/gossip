@@ -15,33 +15,29 @@ type Middlewares struct {
 	SessionService *session.Service
 }
 
-type middleware func(http.Handler) http.Handler
-
-func (m *Middlewares) AuthMiddleware() middleware {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sessionId := r.Header.Get(api.SESSION_ID_HEADER)
-			if sessionId == "" {
-				httpjson.WriteError(
-					w,
-					http.StatusUnauthorized,
-					invalidSessionIdError,
-				)
-				return
-			}
-			userId, err := m.SessionService.Get(r.Context(), sessionId)
-			if err != nil {
-				httpjson.WriteError(w, http.StatusUnauthorized, err)
-				return
-			}
-			nextReq := r.WithContext(
-				context.WithValue(
-					r.Context(),
-					api.USER_ID_CONTEXT_KEY,
-					userId,
-				),
+func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionId := r.Header.Get(api.SESSION_ID_HEADER)
+		if sessionId == "" {
+			httpjson.WriteError(
+				w,
+				http.StatusUnauthorized,
+				invalidSessionIdError,
 			)
-			next.ServeHTTP(w, nextReq)
-		})
-	}
+			return
+		}
+		userId, err := m.SessionService.Get(r.Context(), sessionId)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusUnauthorized, err)
+			return
+		}
+		nextReq := r.WithContext(
+			context.WithValue(
+				r.Context(),
+				api.USER_ID_CONTEXT_KEY,
+				userId,
+			),
+		)
+		next.ServeHTTP(w, nextReq)
+	})
 }

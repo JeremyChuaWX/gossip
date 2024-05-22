@@ -13,22 +13,22 @@ import (
 	"golang.org/x/net/context"
 )
 
-type service struct {
-	userService     user.Service
-	roomService     room.Service
-	roomUserService roomuser.Service
-	messageService  message.Service
+type Service struct {
+	userService     *user.Service
+	roomService     *room.Service
+	roomUserService *roomuser.Service
+	messageService  *message.Service
 	chatUsers       map[uuid.UUID]*chatUser
 	chatRooms       map[uuid.UUID]*chatRoom
 }
 
 func InitService(
-	userService user.Service,
-	roomService room.Service,
-	roomUserService roomuser.Service,
-	messageService message.Service,
-) (*service, error) {
-	s := &service{
+	userService *user.Service,
+	roomService *room.Service,
+	roomUserService *roomuser.Service,
+	messageService *message.Service,
+) (*Service, error) {
+	s := &Service{
 		userService:     userService,
 		roomService:     roomService,
 		roomUserService: roomUserService,
@@ -76,7 +76,7 @@ func InitService(
 	}
 }
 
-func (s *service) userConnect(
+func (s *Service) userConnect(
 	ctx context.Context,
 	conn *websocket.Conn,
 	userId uuid.UUID,
@@ -97,7 +97,7 @@ func (s *service) userConnect(
 	_user, err := s.userService.FindOne(
 		ctx,
 		user.FindOneDTO{
-			Id: userId,
+			UserId: userId,
 		},
 	)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *service) userConnect(
 	return nil
 }
 
-func (s *service) userDisconnect(userId uuid.UUID) error {
+func (s *Service) userDisconnect(userId uuid.UUID) error {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		return errors.New("chat user not found")
@@ -116,7 +116,7 @@ func (s *service) userDisconnect(userId uuid.UUID) error {
 	return chatUser.disconnect()
 }
 
-func (s *service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
+func (s *Service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		log.Println("user not found")
@@ -132,7 +132,7 @@ func (s *service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatRoom.ingress <- event
 }
 
-func (s *service) userLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
+func (s *Service) userLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		log.Println("user not found")
