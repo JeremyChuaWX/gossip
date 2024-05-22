@@ -282,6 +282,25 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		})
 	})
 
+	mux.Get("/users/connect", func(w http.ResponseWriter, r *http.Request) {
+		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
+		user, err := router.UserService.FindOne(
+			r.Context(),
+			user.FindOneDTO{
+				UserId: userId,
+			},
+		)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusUnauthorized, err)
+			return
+		}
+		err = router.ChatService.UserConnect(r.Context(), &user, w, r)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+	})
+
 	mux.Post("/rooms", func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
 		_, err := router.UserService.FindOne(

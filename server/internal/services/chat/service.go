@@ -2,11 +2,13 @@ package chat
 
 import (
 	"errors"
+	"gossip/internal/models"
 	"gossip/internal/services/message"
 	"gossip/internal/services/room"
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/user"
 	"log"
+	"net/http"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -14,6 +16,7 @@ import (
 )
 
 type Service struct {
+	wsUpgrader      *websocket.Upgrader
 	userService     *user.Service
 	roomService     *room.Service
 	roomUserService *roomuser.Service
@@ -29,6 +32,13 @@ func InitService(
 	messageService *message.Service,
 ) (*Service, error) {
 	s := &Service{
+		wsUpgrader: &websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
 		userService:     userService,
 		roomService:     roomService,
 		roomUserService: roomUserService,
@@ -76,38 +86,34 @@ func InitService(
 	}
 }
 
-func (s *Service) userConnect(
+func (s *Service) UserConnect(
 	ctx context.Context,
-	conn *websocket.Conn,
-	userId uuid.UUID,
+	user *models.User,
+	w http.ResponseWriter,
+	r *http.Request,
 ) error {
-	_, ok := s.chatUsers[userId]
+	_, ok := s.chatUsers[user.Id]
 	if ok {
 		return errors.New("chat user already connected")
 	}
 	roomIds, err := s.roomUserService.FindRoomIdsByUserId(
 		ctx,
 		roomuser.FindRoomIdsByUserIdDTO{
-			UserId: userId,
+			UserId: user.Id,
 		},
 	)
 	if err != nil {
 		return err
 	}
-	_user, err := s.userService.FindOne(
-		ctx,
-		user.FindOneDTO{
-			UserId: userId,
-		},
-	)
+	conn, err := s.wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
-	s.chatUsers[userId] = newChatUser(s, &_user, roomIds, conn)
+	s.chatUsers[user.Id] = newChatUser(s, user, roomIds, conn)
 	return nil
 }
 
-func (s *Service) userDisconnect(userId uuid.UUID) error {
+func (s *Service) UserDisconnect(userId uuid.UUID) error {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		return errors.New("chat user not found")
@@ -116,7 +122,7 @@ func (s *Service) userDisconnect(userId uuid.UUID) error {
 	return chatUser.disconnect()
 }
 
-func (s *Service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
+func (s *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		log.Println("user not found")
@@ -132,7 +138,7 @@ func (s *Service) userJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatRoom.ingress <- event
 }
 
-func (s *Service) userLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
+func (s *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
 		log.Println("user not found")

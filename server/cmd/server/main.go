@@ -7,6 +7,8 @@ import (
 	"gossip/internal/api/middlewares"
 	"gossip/internal/api/routes"
 	"gossip/internal/config"
+	"gossip/internal/services/chat"
+	"gossip/internal/services/message"
 	"gossip/internal/services/room"
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/session"
@@ -51,7 +53,19 @@ func main() {
 		PgPool: pgPool,
 	}
 
-	// chatService := chat.InitService(userRepository, room)
+	messageService := &message.Service{
+		PgPool: pgPool,
+	}
+
+	chatService, err := chat.InitService(
+		userService,
+		roomService,
+		roomUserService,
+		messageService,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	middlewares := &middlewares.Middlewares{
 		SessionService: sessionService,
@@ -62,6 +76,7 @@ func main() {
 		UserService:     userService,
 		RoomUserService: roomUserService,
 		SessionService:  sessionService,
+		ChatService:     chatService,
 		Middlewares:     middlewares,
 	}
 
