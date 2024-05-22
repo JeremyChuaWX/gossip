@@ -7,8 +7,8 @@ import (
 )
 
 type config struct {
-	PostgresURL   string `env:"SERVER_POSTGRES_URL"`
-	RedisURL      string `env:"SERVER_REDIS_URL"`
+	PostgresURL   string `env:"POSTGRES_URL"`
+	RedisURL      string `env:"REDIS_URL"`
 	ServerAddress string `env:"SERVER_ADDRESS"`
 }
 
