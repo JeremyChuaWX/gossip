@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import readline
 
 import requests
@@ -29,6 +30,7 @@ async def websocket_repl(uri: str, session_id: str):
         while True:
             body = input("message ('q' to quit): ")
             if body.lower() == "q":
+                await ws.close()
                 break
             message = {
                 "roomId": ROOM_ID,
@@ -48,5 +50,13 @@ def main():
     asyncio.get_event_loop().run_until_complete(websocket_repl(WS_URL, session_id))
 
 
+def debug_logging():
+    logging.basicConfig(
+        format="%(message)%",
+        level=logging.DEBUG,
+    )
+
+
 if __name__ == "__main__":
+    debug_logging()
     main()
