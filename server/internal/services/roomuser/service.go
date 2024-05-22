@@ -17,7 +17,7 @@ func (s *Service) UserJoinRoom(
 	dto UserJoinRoomDTO,
 ) (models.RoomUser, error) {
 	sql := `
-	INSERT INTO roomusers (
+	INSERT INTO room_users (
 		user_id,
 		room_id
 	)
@@ -42,7 +42,7 @@ func (s *Service) UserLeaveRoom(
 	dto UserLeaveRoomDTO,
 ) (models.RoomUser, error) {
 	sql := `
-	DELETE FROM roomusers
+	DELETE FROM room_users
 	WHERE
 		1 = 1
 		AND user_id = $1
@@ -67,7 +67,7 @@ func (s *Service) FindRoomIdsByUserId(
 	SELECT
 		user_id,
 		room_id
-	FROM roomusers
+	FROM room_users
 	WHERE
 		user_id = $1
 	;
@@ -84,7 +84,7 @@ func (s *Service) FindRoomsByUserId(
 	SELECT
 		rooms.id,
 		rooms.name
-	FROM roomusers
+	FROM room_users
 		INNER JOIN users ON users.id = room_users.user_id
 	WHERE
 		user_id = $1
@@ -102,7 +102,7 @@ func (s *Service) FindUserIdsByRoomId(
 	SELECT
 		user_id,
 		room_id
-	FROM roomusers
+	FROM room_users
 	WHERE
 		room_id = $1
 	;
@@ -120,7 +120,7 @@ func (s *Service) FindUsersByRoomId(
 		users.id,
 		users.username,
 		users.password_hash
-	FROM roomusers
+	FROM room_users
 		INNER JOIN rooms ON rooms.id = room_users.room_id
 	WHERE
 		room_id = $1

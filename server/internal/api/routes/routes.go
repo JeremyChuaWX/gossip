@@ -150,7 +150,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		})
 	})
 
-	mux.Post("/me", func(w http.ResponseWriter, r *http.Request) {
+	mux.Get("/users", func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
 		user, err := router.UserService.FindOne(r.Context(), user.FindOneDTO{
 			UserId: userId,
@@ -170,7 +170,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		})
 	})
 
-	mux.Get("/rooms", func(w http.ResponseWriter, r *http.Request) {
+	mux.Get("/users/rooms", func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
 		user, err := router.UserService.FindOne(r.Context(), user.FindOneDTO{
 			UserId: userId,
@@ -191,7 +191,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		}
 		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
 			Success: true,
-			Message: "rooms found",
+			Message: "user rooms found",
 			Data: struct {
 				Rooms []models.Room `json:"rooms"`
 			}{
@@ -200,33 +200,85 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		})
 	})
 
-	mux.Post("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
+	mux.Post("/users/join-room", func(w http.ResponseWriter, r *http.Request) {
 		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
-		user, err := router.UserService.FindOne(r.Context(), user.FindOneDTO{
-			UserId: userId,
-		})
+		user, err := router.UserService.FindOne(
+			r.Context(),
+			user.FindOneDTO{
+				UserId: userId,
+			},
+		)
 		if err != nil {
 			httpjson.WriteError(w, http.StatusUnauthorized, err)
 			return
 		}
-		rooms, err := router.RoomUserService.FindRoomsByUserId(
+		body, err := httpjson.Read[struct {
+			RoomId string `json:"roomId"`
+		}](r)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		roomId, err := uuid.FromString(body.RoomId)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		_, err = router.RoomUserService.UserJoinRoom(
 			r.Context(),
-			roomuser.FindRoomIdsByUserIdDTO{
+			roomuser.UserJoinRoomDTO{
 				UserId: user.Id,
+				RoomId: roomId,
 			},
 		)
 		if err != nil {
-			httpjson.WriteError(w, http.StatusInternalServerError, err)
+			httpjson.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
 		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
 			Success: true,
-			Message: "rooms found",
-			Data: struct {
-				Rooms []models.Room `json:"rooms"`
-			}{
-				Rooms: rooms,
+			Message: "user joined room",
+		})
+	})
+
+	mux.Post("/users/leave-room", func(w http.ResponseWriter, r *http.Request) {
+		userId := r.Context().Value(api.USER_ID_CONTEXT_KEY).(uuid.UUID)
+		user, err := router.UserService.FindOne(
+			r.Context(),
+			user.FindOneDTO{
+				UserId: userId,
 			},
+		)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusUnauthorized, err)
+			return
+		}
+		body, err := httpjson.Read[struct {
+			RoomId string `json:"roomId"`
+		}](r)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		roomId, err := uuid.FromString(body.RoomId)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		_, err = router.RoomUserService.UserLeaveRoom(
+			r.Context(),
+			roomuser.UserLeaveRoomDTO{
+				UserId: user.Id,
+				RoomId: roomId,
+			},
+		)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
+			Success: true,
+			Message: "user left room",
 		})
 	})
 }
