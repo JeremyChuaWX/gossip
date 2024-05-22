@@ -85,9 +85,9 @@ func (s *Service) FindRoomsByUserId(
 		rooms.id,
 		rooms.name
 	FROM room_users
-		INNER JOIN users ON users.id = room_users.user_id
+		INNER JOIN rooms ON rooms.id = room_users.room_id
 	WHERE
-		user_id = $1
+		room_users.user_id = $1
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
@@ -121,9 +121,9 @@ func (s *Service) FindUsersByRoomId(
 		users.username,
 		users.password_hash
 	FROM room_users
-		INNER JOIN rooms ON rooms.id = room_users.room_id
+		INNER JOIN users ON users.id = room_users.user_id
 	WHERE
-		room_id = $1
+		room_users.room_id = $1
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
