@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/context"
+	"golang.org/x/sync/errgroup"
 )
 
 type Service struct {
@@ -46,44 +47,32 @@ func InitService(
 		chatUsers:       make(map[uuid.UUID]*chatUser),
 		chatRooms:       make(map[uuid.UUID]*chatRoom),
 	}
-
-	ctx := context.Background()
-	rooms, err := roomService.FindMany(ctx)
+	rooms, err := roomService.FindMany(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	errors := make(chan error, len(rooms))
-	chatRooms := make(chan *chatRoom, len(rooms))
+	group, _ := errgroup.WithContext(context.Background())
+	group.SetLimit(len(rooms))
 	for _, room := range rooms {
-		go func() {
+		group.Go(func() error {
 			roomUsers, err := roomUserService.FindUserIdsByRoomId(
-				ctx,
+				context.Background(),
 				roomuser.FindUserIdsByRoomIdDTO{
 					RoomId: room.Id,
 				},
 			)
 			if err != nil {
-				errors <- err
-				return
+				return err
 			}
-			chatRooms <- newChatRoom(s, &room, roomUsers)
-		}()
+			s.chatRooms[room.Id] = newChatRoom(s, &room, roomUsers)
+			return nil
+		})
 	}
-
-	counter := len(rooms)
-	for {
-		select {
-		case err = <-errors:
-			return nil, err
-		case chatRoom := <-chatRooms:
-			s.chatRooms[chatRoom.room.Id] = chatRoom
-			counter--
-		default:
-			if counter <= 0 {
-				return s, nil
-			}
-		}
+	err = group.Wait()
+	if err != nil {
+		return nil, err
 	}
+	return s, nil
 }
 
 func (s *Service) UserConnect(
