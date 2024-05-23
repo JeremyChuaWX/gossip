@@ -1,10 +1,8 @@
-import asyncio
-import json
-import logging
 import readline
 
+import rel
 import requests
-import websockets
+import websocket
 
 SESSION_ID_HEADER = "x-session-id"
 WS_URL = "ws://127.0.0.1:3000/users/connect"
@@ -22,41 +20,42 @@ def login(username: str) -> str:
     return body["data"]["sessionId"]
 
 
-async def websocket_repl(uri: str, session_id: str):
-    async with websockets.connect(
-        uri, extra_headers={SESSION_ID_HEADER: session_id}
-    ) as ws:
-        print(f"connected to {uri}")
-        while True:
-            body = input("message ('q' to quit): ")
-            if body.lower() == "q":
-                await ws.close()
-                break
-            message = {
-                "roomId": ROOM_ID,
-                "userId": USER_ID,
-                "body": body,
-            }
-            await ws.send(json.dumps(message))
-            print(f"sent: {body}")
-            response = await ws.recv()
-            print(f"received: {json.loads(response)}")
+def websocket_repl(uri: str, session_id: str, debug=False):
+    websocket.enableTrace(debug)
+    ws = websocket.WebSocketApp(
+        uri,
+        header={SESSION_ID_HEADER: session_id},
+        on_open=on_open,
+        on_message=on_message,
+        on_error=on_error,
+        on_close=on_close,
+    )
+    ws.run_forever(dispatcher=rel, reconnect=5)
+    rel.signal(2, rel.abort)
+    rel.dispatch()
+
+
+def on_message(ws, message):
+    print(message)
+
+
+def on_error(ws, error):
+    print(error)
+
+
+def on_close(ws, code, message):
+    print("closed")
+
+
+def on_open(ws):
+    print("opened")
 
 
 def main():
     username = input("username: ")
     session_id = login(username)
-    print(session_id)
-    asyncio.get_event_loop().run_until_complete(websocket_repl(WS_URL, session_id))
-
-
-def debug_logging():
-    logging.basicConfig(
-        format="%(message)%",
-        level=logging.DEBUG,
-    )
+    websocket_repl(WS_URL, session_id)
 
 
 if __name__ == "__main__":
-    debug_logging()
     main()
