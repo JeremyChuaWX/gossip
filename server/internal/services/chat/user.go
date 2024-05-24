@@ -39,7 +39,6 @@ func newChatUser(
 	u.registerHandlers()
 	go u.receiveEvents()
 	go u.receiveWebsocket()
-
 	return u
 }
 
