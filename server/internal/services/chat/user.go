@@ -33,15 +33,10 @@ func newChatUser(
 		roomIds:  make(map[uuid.UUID]bool),
 		conn:     conn,
 	}
-
 	for _, roomUser := range roomUsers {
 		u.roomIds[roomUser.RoomId] = true
 	}
-
-	u.handlers[MESSAGE] = (*chatUser).messageEventHandler
-	u.handlers[USER_JOIN_ROOM] = (*chatUser).userJoinRoomEventHandler
-	u.handlers[USER_LEAVE_ROOM] = (*chatUser).userLeaveRoomEventHandler
-
+	u.registerHandlers()
 	go u.receiveEvents()
 	go u.receiveWebsocket()
 
@@ -49,10 +44,6 @@ func newChatUser(
 }
 
 func (u *chatUser) receiveEvents() {
-	defer (func() {
-		close(u.ingress)
-		close(u.alive)
-	})()
 	for {
 		select {
 		case <-u.alive:
@@ -76,7 +67,6 @@ func (u *chatUser) receiveWebsocket() {
 		default:
 			var payload payload
 			if err := u.conn.ReadJSON(&payload); err != nil {
-				u.disconnect()
 				return
 			}
 			roomId, err := uuid.FromString(payload.RoomId)
@@ -103,17 +93,17 @@ func (u *chatUser) receiveWebsocket() {
 	}
 }
 
-func (u *chatUser) disconnect() error {
-	u.alive <- false
-	return u.conn.Close()
-}
-
 // handlers
+
+func (u *chatUser) registerHandlers() {
+	u.handlers[MESSAGE] = (*chatUser).messageEventHandler
+	u.handlers[USER_JOIN_ROOM] = (*chatUser).userJoinRoomEventHandler
+	u.handlers[USER_LEAVE_ROOM] = (*chatUser).userLeaveRoomEventHandler
+}
 
 func (u *chatUser) messageEventHandler(e event) {
 	event := e.(*messageEvent)
 	if err := u.conn.WriteJSON(event.payload); err != nil {
-		u.disconnect()
 		return
 	}
 }

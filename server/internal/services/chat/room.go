@@ -31,24 +31,15 @@ func newChatRoom(
 		room:     room,
 		userIds:  make(map[uuid.UUID]bool),
 	}
-
 	for _, roomUser := range roomUsers {
 		r.userIds[roomUser.UserId] = true
 	}
-
-	r.handlers[MESSAGE] = (*chatRoom).messageEventHandler
-	r.handlers[USER_JOIN_ROOM] = (*chatRoom).userJoinRoomEventHandler
-	r.handlers[USER_LEAVE_ROOM] = (*chatRoom).userLeaveRoomEventHandler
-
+	r.registerHandlers()
 	go r.receiveEvents()
 	return r
 }
 
 func (r *chatRoom) receiveEvents() {
-	defer (func() {
-		close(r.ingress)
-		close(r.alive)
-	})()
 	for {
 		select {
 		case <-r.alive:
@@ -64,11 +55,13 @@ func (r *chatRoom) receiveEvents() {
 	}
 }
 
-func (r *chatRoom) close() {
-	r.alive <- false
-}
-
 // handlers
+
+func (r *chatRoom) registerHandlers() {
+	r.handlers[MESSAGE] = (*chatRoom).messageEventHandler
+	r.handlers[USER_JOIN_ROOM] = (*chatRoom).userJoinRoomEventHandler
+	r.handlers[USER_LEAVE_ROOM] = (*chatRoom).userLeaveRoomEventHandler
+}
 
 func (r *chatRoom) messageEventHandler(e event) {
 	event := e.(*messageEvent)

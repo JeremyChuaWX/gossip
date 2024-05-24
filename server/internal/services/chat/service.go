@@ -18,6 +18,7 @@ import (
 )
 
 type Service struct {
+	ingress         chan event
 	wsUpgrader      *websocket.Upgrader
 	userService     *user.Service
 	roomService     *room.Service
@@ -34,6 +35,7 @@ func InitService(
 	messageService *message.Service,
 ) (*Service, error) {
 	s := &Service{
+		ingress: make(chan event),
 		wsUpgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -48,29 +50,7 @@ func InitService(
 		chatUsers:       make(map[uuid.UUID]*chatUser),
 		chatRooms:       make(map[uuid.UUID]*chatRoom),
 	}
-	rooms, err := roomService.FindMany(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	group, _ := errgroup.WithContext(context.Background())
-	group.SetLimit(len(rooms))
-	for _, room := range rooms {
-		group.Go(func() error {
-			roomUsers, err := roomUserService.FindUserIdsByRoomId(
-				context.Background(),
-				roomuser.FindUserIdsByRoomIdDTO{
-					RoomId: room.Id,
-				},
-			)
-			if err != nil {
-				return err
-			}
-			s.chatRooms[room.Id] = newChatRoom(s, &room, roomUsers)
-			return nil
-		})
-	}
-	err = group.Wait()
-	if err != nil {
+	if err := s.initRooms(); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -142,6 +122,31 @@ func (s *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
 	event := newUserLeaveRoomEvent(userId, roomId)
 	chatUser.ingress <- event
 	chatRoom.ingress <- event
+}
+
+func (s *Service) initRooms() error {
+	rooms, err := s.roomService.FindMany(context.Background())
+	if err != nil {
+		return err
+	}
+	group, _ := errgroup.WithContext(context.Background())
+	group.SetLimit(len(rooms))
+	for _, room := range rooms {
+		group.Go(func() error {
+			roomUsers, err := s.roomUserService.FindUserIdsByRoomId(
+				context.Background(),
+				roomuser.FindUserIdsByRoomIdDTO{
+					RoomId: room.Id,
+				},
+			)
+			if err != nil {
+				return err
+			}
+			s.chatRooms[room.Id] = newChatRoom(s, &room, roomUsers)
+			return nil
+		})
+	}
+	return group.Wait()
 }
 
 func (s *Service) upgradeConn(
