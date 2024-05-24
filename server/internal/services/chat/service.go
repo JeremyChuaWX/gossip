@@ -9,6 +9,7 @@ import (
 	"gossip/internal/services/user"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -94,7 +95,7 @@ func (s *Service) UserConnect(
 	if err != nil {
 		return err
 	}
-	conn, err := s.wsUpgrader.Upgrade(w, r, nil)
+	conn, err := s.upgradeConn(w, r)
 	if err != nil {
 		return err
 	}
@@ -103,12 +104,12 @@ func (s *Service) UserConnect(
 }
 
 func (s *Service) UserDisconnect(userId uuid.UUID) error {
-	chatUser, ok := s.chatUsers[userId]
+	_, ok := s.chatUsers[userId]
 	if !ok {
 		return errors.New("chat user not found")
 	}
 	delete(s.chatUsers, userId)
-	return chatUser.disconnect()
+	return nil
 }
 
 func (s *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
@@ -141,4 +142,20 @@ func (s *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
 	event := newUserLeaveRoomEvent(userId, roomId)
 	chatUser.ingress <- event
 	chatRoom.ingress <- event
+}
+
+func (s *Service) upgradeConn(
+	w http.ResponseWriter,
+	r *http.Request,
+) (*websocket.Conn, error) {
+	conn, err := s.wsUpgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, err
+	}
+	conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
+		return nil
+	})
+	return conn, nil
 }
