@@ -2,7 +2,7 @@ package chat
 
 import (
 	"gossip/internal/models"
-	"log"
+	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -51,7 +51,7 @@ func (u *chatUser) receiveEvents() {
 		case e := <-u.ingress:
 			handler, ok := u.handlers[e.name()]
 			if !ok {
-				log.Println("invalid event")
+				slog.Error("invalid event")
 				continue
 			}
 			handler(u, e)
@@ -71,21 +71,27 @@ func (u *chatUser) receiveWebsocket() {
 			}
 			roomId, err := uuid.FromString(payload.RoomId)
 			if err != nil {
-				log.Println("invalid room ID")
+				slog.Error("invalid room ID")
 				continue
 			}
 			room, ok := u.service.chatRooms[roomId]
 			if !ok {
-				log.Println("room not found")
+				slog.Error("room not found", "roomId", roomId.String())
 				continue
 			}
 			userId, err := uuid.FromString(payload.UserId)
 			if err != nil {
-				log.Println("invalid user ID")
+				slog.Error("invalid user ID")
 				continue
 			}
 			if userId != u.user.Id {
-				log.Println("invalid user ID")
+				slog.Error(
+					"wrong user",
+					"userId",
+					userId.String(),
+					"connUserId",
+					u.user.Id.String(),
+				)
 				continue
 			}
 			room.ingress <- newMessageEvent(roomId, userId, payload)
@@ -111,11 +117,11 @@ func (u *chatUser) messageEventHandler(e event) {
 func (u *chatUser) userJoinRoomEventHandler(e event) {
 	event := e.(*userJoinRoomEvent)
 	if u.user.Id != event.userId {
-		log.Println("wrong user")
+		slog.Error("wrong user")
 		return
 	}
 	if _, ok := u.roomIds[event.roomId]; ok {
-		log.Println("user already in room")
+		slog.Error("user already in room")
 		return
 	}
 	u.roomIds[event.roomId] = true
@@ -124,11 +130,11 @@ func (u *chatUser) userJoinRoomEventHandler(e event) {
 func (u *chatUser) userLeaveRoomEventHandler(e event) {
 	event := e.(*userJoinRoomEvent)
 	if u.user.Id != event.userId {
-		log.Println("wrong user")
+		slog.Error("wrong user")
 		return
 	}
 	if _, ok := u.roomIds[event.roomId]; !ok {
-		log.Println("user not in room")
+		slog.Error("user not in room")
 		return
 	}
 	delete(u.roomIds, event.roomId)

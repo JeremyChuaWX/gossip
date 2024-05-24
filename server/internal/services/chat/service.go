@@ -7,7 +7,7 @@ import (
 	"gossip/internal/services/room"
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/user"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -95,12 +95,12 @@ func (s *Service) UserDisconnect(userId uuid.UUID) error {
 func (s *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
-		log.Println("user not found")
+		slog.Error("user not found", "userId", userId.String())
 		return
 	}
 	chatRoom, ok := s.chatRooms[roomId]
 	if !ok {
-		log.Println("room not found")
+		slog.Error("room not found", "roomId", roomId.String())
 		return
 	}
 	event := newUserJoinRoomEvent(userId, roomId)
@@ -111,12 +111,12 @@ func (s *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
 func (s *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
 	chatUser, ok := s.chatUsers[userId]
 	if !ok {
-		log.Println("user not found")
+		slog.Error("user not found")
 		return
 	}
 	chatRoom, ok := s.chatRooms[roomId]
 	if !ok {
-		log.Println("room not found")
+		slog.Error("room not found")
 		return
 	}
 	event := newUserLeaveRoomEvent(userId, roomId)

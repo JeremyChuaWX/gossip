@@ -13,13 +13,14 @@ import (
 	"gossip/internal/services/roomuser"
 	"gossip/internal/services/session"
 	"gossip/internal/services/user"
-	"log"
+	"log/slog"
 )
 
 func main() {
 	config, err := config.Init()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -27,13 +28,15 @@ func main() {
 
 	pgPool, err := postgres.Init(ctx, config.PostgresURL)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 	defer pgPool.Close()
 
 	redis, err := redis.Init(ctx, config.RedisURL, "")
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 	defer redis.Close()
 
@@ -64,7 +67,8 @@ func main() {
 		messageService,
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 
 	middlewares := &middlewares.Middlewares{
@@ -80,6 +84,10 @@ func main() {
 		Middlewares:     middlewares,
 	}
 
-	log.Println("running server on address", config.ServerAddress)
-	log.Fatal(router.Start(config.ServerAddress))
+	slog.Info("server is running", "address", config.ServerAddress)
+	err = router.Start(config.ServerAddress)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
 }

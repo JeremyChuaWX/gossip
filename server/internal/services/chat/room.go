@@ -4,7 +4,7 @@ import (
 	"context"
 	"gossip/internal/models"
 	"gossip/internal/services/message"
-	"log"
+	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -47,7 +47,7 @@ func (r *chatRoom) receiveEvents() {
 		case e := <-r.ingress:
 			handler, ok := r.handlers[e.name()]
 			if !ok {
-				log.Println("invalid event")
+				slog.Error("invalid event")
 				continue
 			}
 			handler(r, e)
@@ -78,7 +78,7 @@ func (r *chatRoom) messageEventHandler(e event) {
 		}
 		user, ok := r.service.chatUsers[userId]
 		if !ok {
-			log.Printf("user %s not found", userId.String())
+			slog.Error("user not found", "userId", userId.String())
 		}
 		user.ingress <- event
 	}
@@ -87,11 +87,17 @@ func (r *chatRoom) messageEventHandler(e event) {
 func (r *chatRoom) userJoinRoomEventHandler(e event) {
 	event := e.(*userJoinRoomEvent)
 	if r.room.Id != event.roomId {
-		log.Println("wrong room")
+		slog.Error(
+			"wrong room",
+			"roomId",
+			r.room.Id.String(),
+			"eventRoomId",
+			event.roomId.String(),
+		)
 		return
 	}
 	if _, ok := r.userIds[event.userId]; ok {
-		log.Println("user already in room")
+		slog.Error("user already in room", "userId", event.userId.String())
 		return
 	}
 	r.userIds[event.userId] = true
@@ -100,11 +106,17 @@ func (r *chatRoom) userJoinRoomEventHandler(e event) {
 func (r *chatRoom) userLeaveRoomEventHandler(e event) {
 	event := e.(*userLeaveRoomEvent)
 	if r.room.Id != event.roomId {
-		log.Println("wrong room")
+		slog.Error(
+			"wrong room",
+			"roomId",
+			r.room.Id.String(),
+			"eventRoomId",
+			event.roomId.String(),
+		)
 		return
 	}
 	if _, ok := r.userIds[event.userId]; !ok {
-		log.Println("user not in room")
+		slog.Error("user not in room", "userId", event.userId.String())
 		return
 	}
 	delete(r.userIds, event.userId)
