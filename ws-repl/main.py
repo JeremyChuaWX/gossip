@@ -36,19 +36,19 @@ def websocket_repl(uri: str, session_id: str, debug=False):
 
 
 def on_message(ws, message):
-    print(message)
+    print("message:", message)
 
 
 def on_error(ws, error):
-    print(error)
+    print("error:", error)
 
 
 def on_close(ws, code, message):
-    print("closed")
+    print("connectionclosed")
 
 
 def on_open(ws):
-    print("opened")
+    print("connection opened")
 
 
 def main():
