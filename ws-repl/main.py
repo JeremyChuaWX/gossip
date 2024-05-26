@@ -2,7 +2,7 @@ import json
 import readline
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 import websocket
@@ -64,7 +64,7 @@ def run(ws: websocket.WebSocketApp):
                     "roomId": ROOM_ID,
                     "userId": USER_ID,
                     "body": message,
-                    "timestamp": str(datetime.now()),
+                    "timestamp": datetime.now(timezone.utc).astimezone().isoformat(),
                 }
             )
         )
