@@ -1,6 +1,8 @@
+import json
 import readline
+import threading
+import time
 
-import rel
 import requests
 import websocket
 
@@ -30,9 +32,7 @@ def websocket_repl(uri: str, session_id: str, debug=False):
         on_error=on_error,
         on_close=on_close,
     )
-    ws.run_forever(dispatcher=rel, reconnect=5)
-    rel.signal(2, rel.abort)
-    rel.dispatch()
+    ws.run_forever()
 
 
 def on_message(ws, message):
@@ -49,6 +49,17 @@ def on_close(ws, code, message):
 
 def on_open(ws):
     print("connection opened")
+    threading.Thread(target=run, args=(ws,)).start()
+
+
+def run(ws: websocket.WebSocketApp):
+    while True:
+        message = input("message:")
+        if message.lower() == "q":
+            break
+        ws.send(json.dumps({"body": message}))
+    time.sleep(1)
+    ws.close()
 
 
 def main():
