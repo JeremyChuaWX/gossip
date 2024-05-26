@@ -10,8 +10,8 @@ import websocket
 SESSION_ID_HEADER = "x-session-id"
 WS_URL = "ws://127.0.0.1:3000/users/connect"
 LOGIN_URL = "http://127.0.0.1:3000/login"
-USER_ID = "2150c411-4385-4e23-b919-e760181d8321"
-ROOM_ID = "7852da78-f7b0-4278-b9c8-5d64766f65cd"
+USER_ID = "ef7cd7f3-f406-4384-b508-a13fc4f6b370"
+ROOM_ID = "97bde354-70f6-4f38-a078-8c43c881af93"
 PASSWORD = "123"
 
 

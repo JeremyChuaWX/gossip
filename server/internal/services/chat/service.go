@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"gossip/internal/models"
 	messagePackage "gossip/internal/services/message"
 	roomPackage "gossip/internal/services/room"
@@ -49,6 +50,18 @@ func NewService(
 
 		users: make(map[uuid.UUID]*user),
 		rooms: make(map[uuid.UUID]*room),
+	}
+
+	roomModels, err := roomService.FindMany(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for _, roomModel := range roomModels {
+		room, err := newRoom(service, &roomModel)
+		if err != nil {
+			return nil, err
+		}
+		service.rooms[roomModel.Id] = room
 	}
 
 	service.registerEventHandlers()

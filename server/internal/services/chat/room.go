@@ -3,8 +3,8 @@ package chat
 import (
 	"context"
 	"gossip/internal/models"
-	roomPackage "gossip/internal/services/room"
 	roomuserPackage "gossip/internal/services/roomuser"
+	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -19,27 +19,20 @@ type room struct {
 	userIds map[uuid.UUID]bool
 }
 
-func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
+func newRoom(service *Service, roomModel *models.Room) (*room, error) {
 	room := &room{
+		model:    roomModel,
 		service:  service,
 		ingress:  make(chan event),
 		alive:    make(chan bool),
 		handlers: make(map[eventName]func(*room, event)),
-		userIds:  make(map[uuid.UUID]bool),
-	}
 
-	roomModel, err := service.roomService.FindOne(
-		context.Background(),
-		roomPackage.FindOneDTO{RoomId: roomId},
-	)
-	if err != nil {
-		return nil, err
+		userIds: make(map[uuid.UUID]bool),
 	}
-	room.model = &roomModel
 
 	roomuserModels, err := service.roomuserService.FindUserIdsByRoomId(
 		context.Background(),
-		roomuserPackage.FindUserIdsByRoomIdDTO{RoomId: roomId},
+		roomuserPackage.FindUserIdsByRoomIdDTO{RoomId: roomModel.Id},
 	)
 	if err != nil {
 		return nil, err
@@ -88,11 +81,13 @@ func (r *room) registerEventHandlers() {
 func (room *room) messageEventHandler(event event) {
 	messageEvent, ok := event.(*messageEvent)
 	if !ok {
+		slog.Error("error typecasting to message event", "event", event)
 		return
 	}
 	for userId := range room.userIds {
 		user, ok := room.service.users[userId]
 		if !ok {
+			slog.Error("user not found", "userId", userId)
 			continue
 		}
 		user.send <- messageEvent.payload

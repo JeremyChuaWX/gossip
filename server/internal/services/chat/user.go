@@ -2,6 +2,7 @@ package chat
 
 import (
 	"gossip/internal/models"
+	"log/slog"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -53,17 +54,18 @@ func (user *user) readPump() {
 	for {
 		var message message
 		if err := user.conn.ReadJSON(&message); err != nil {
+			slog.Error("error reading JSON", "message", message)
 			user.alive <- false
 			return
 		}
 		messageEvent, err := newMessageEvent(&message)
 		if err != nil {
-			// TODO: handle invalid message
+			slog.Error("error creating message event", "message", message)
 			continue
 		}
 		room, ok := user.service.rooms[messageEvent.roomId]
 		if !ok {
-			// TODO: handle room not found
+			slog.Error("room not found", "message", message)
 			continue
 		}
 		room.ingress <- messageEvent
@@ -78,8 +80,10 @@ func (user *user) writePump() {
 		case message, ok := <-user.send:
 			if !ok {
 				// TODO: handle user send channel closed
+				slog.Error("user send channel closed")
 			}
 			if err := user.conn.WriteJSON(message); err != nil {
+				slog.Error("error writing JSON", "message", message)
 				user.alive <- false
 				return
 			}
