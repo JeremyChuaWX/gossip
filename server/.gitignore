@@ -1,1 +1,3 @@
 .env
+/docker/pg_data/
+/docker/pg_admin/

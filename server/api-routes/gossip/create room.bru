@@ -1,0 +1,25 @@
+meta {
+  name: create room
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/rooms
+  body: json
+  auth: none
+}
+
+headers {
+  {{sessionIdHeader}}: {{sessionId}}
+}
+
+body:json {
+  {
+    "roomName": "{{roomName}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("roomId", res.body.data.room.id)
+}

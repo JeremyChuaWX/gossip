@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "gossip",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -4,57 +4,90 @@ import (
 	"context"
 	"gossip/internal/adapters/postgres"
 	"gossip/internal/adapters/redis"
-	"gossip/internal/domains/chat"
-	"gossip/internal/domains/session"
-	"gossip/internal/domains/user"
-	"gossip/internal/environment"
-	"gossip/internal/middlewares"
-	"gossip/internal/router"
-	"log"
+	"gossip/internal/api/middlewares"
+	"gossip/internal/api/routes"
+	"gossip/internal/config"
+	"gossip/internal/services/chat"
+	"gossip/internal/services/message"
+	"gossip/internal/services/room"
+	"gossip/internal/services/roomuser"
+	"gossip/internal/services/session"
+	"gossip/internal/services/user"
+	"log/slog"
 )
 
 func main() {
-	env, err := environment.Init()
+	config, err := config.Init()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	pgPool, err := postgres.Init(ctx, env.PostgresURL)
+	pgPool, err := postgres.Init(ctx, config.PostgresURL)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 	defer pgPool.Close()
 
-	redis, err := redis.Init(ctx, env.RedisURL, "")
+	redis, err := redis.Init(ctx, config.RedisURL, "")
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		return
 	}
 	defer redis.Close()
 
-	sessionRepository := &session.Repository{
+	sessionService := &session.Service{
 		Redis: redis,
 	}
 
-	userRepository := &user.Repository{
+	userService := &user.Service{
 		PgPool: pgPool,
 	}
 
-	chatService := chat.InitService()
+	roomService := &room.Service{
+		PgPool: pgPool,
+	}
+
+	roomUserService := &roomuser.Service{
+		PgPool: pgPool,
+	}
+
+	messageService := &message.Service{
+		PgPool: pgPool,
+	}
+
+	chatService, err := chat.InitService(
+		userService,
+		roomService,
+		roomUserService,
+		messageService,
+	)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
 
 	middlewares := &middlewares.Middlewares{
-		SessionRepository: sessionRepository,
+		SessionService: sessionService,
 	}
 
-	router := &router.Router{
-		UserRepository:    userRepository,
-		SessionRepository: sessionRepository,
-		ChatService:       chatService,
-		Middlewares:       middlewares,
+	router := &routes.Router{
+		RoomService:     roomService,
+		UserService:     userService,
+		RoomUserService: roomUserService,
+		SessionService:  sessionService,
+		ChatService:     chatService,
+		Middlewares:     middlewares,
 	}
 
-	log.Println("running server on address", env.ServerAddress)
-	log.Fatal(router.Start(env.ServerAddress))
+	slog.Info("server is running", "address", config.ServerAddress)
+	err = router.Start(config.ServerAddress)
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
 }
