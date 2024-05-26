@@ -45,7 +45,7 @@ func (s *Service) FindOne(
 		id = $1
 	;
 	`
-	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
 	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
@@ -77,7 +77,7 @@ func (s *Service) Update(
 		password_hash
 	;
 	`
-	rows, _ := s.PgPool.Query(ctx, sql, dto.Name, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.Name, dto.RoomId)
 	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
 
@@ -94,6 +94,6 @@ func (s *Service) Delete(
 		name
 	;
 	`
-	rows, _ := s.PgPool.Query(ctx, sql, dto.Id)
+	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
 	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
 }
