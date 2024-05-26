@@ -2,6 +2,7 @@ import json
 import readline
 import threading
 import time
+from datetime import datetime
 
 import requests
 import websocket
@@ -57,7 +58,16 @@ def run(ws: websocket.WebSocketApp):
         message = input("message:")
         if message.lower() == "q":
             break
-        ws.send(json.dumps({"body": message}))
+        ws.send(
+            json.dumps(
+                {
+                    "roomId": ROOM_ID,
+                    "userId": USER_ID,
+                    "body": message,
+                    "timestamp": str(datetime.now()),
+                }
+            )
+        )
     time.sleep(1)
     ws.close()
 
