@@ -1,12 +1,9 @@
 package chat
 
 import (
-	"context"
 	"gossip/internal/models"
-	userPackage "gossip/internal/services/user"
 	"time"
 
-	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
 
@@ -24,25 +21,18 @@ type user struct {
 func newUser(
 	service *Service,
 	conn *websocket.Conn,
-	userId uuid.UUID,
+	userModel *models.User,
 ) (*user, error) {
 	user := &user{
+		model:    userModel,
 		service:  service,
-		conn:     conn,
 		ingress:  make(chan event),
 		alive:    make(chan bool),
-		send:     make(chan *message),
 		handlers: make(map[eventName]func(*user, event)),
-	}
 
-	userModel, err := service.userService.FindOne(
-		context.Background(),
-		userPackage.FindOneDTO{UserId: userId},
-	)
-	if err != nil {
-		return nil, err
+		conn: conn,
+		send: make(chan *message),
 	}
-	user.model = &userModel
 
 	user.registerEventHandlers()
 

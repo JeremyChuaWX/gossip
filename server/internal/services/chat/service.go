@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"gossip/internal/models"
 	messagePackage "gossip/internal/services/message"
 	roomPackage "gossip/internal/services/room"
 	roomuserPackage "gossip/internal/services/roomuser"
@@ -60,13 +61,13 @@ func NewService(
 func (service *Service) UserConnect(
 	w http.ResponseWriter,
 	r *http.Request,
-	userId uuid.UUID,
+	userModel *models.User,
 ) error {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
-	user, err := newUser(service, conn, userId)
+	user, err := newUser(service, conn, userModel)
 	if err != nil {
 		return err
 	}
