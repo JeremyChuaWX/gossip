@@ -4,7 +4,7 @@ start:
 
 .PHONY: stop
 stop:
-	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env down --remove-orphans --volumes && docker image prune
+	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env down --remove-orphans --volumes && docker image prune --force
 
 .PHONY: clean
 clean:
