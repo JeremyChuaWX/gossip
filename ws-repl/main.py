@@ -1,3 +1,4 @@
+import argparse
 import json
 import readline
 import threading
@@ -30,15 +31,20 @@ def get_user_id(session_id: str):
     return body["data"]["user"]["id"]
 
 
-def websocket_repl(uri: str, session_id: str, user_id: str, debug=False):
-    websocket.enableTrace(debug)
+def websocket_repl(uri: str, session_id: str, user_id: str, args: any):
+    websocket.enableTrace(args.debug)
+    if args.display and not args.input:
+        handlers = {
+            "on_message": on_message,
+            "on_error": on_error,
+            "on_close": on_close,
+        }
+    if not args.display and args.input:
+        handlers = {
+            "on_open": on_open,
+        }
     ws = websocket.WebSocketApp(
-        uri,
-        header={SESSION_ID_HEADER: session_id, USER_ID_HEADER: user_id},
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
+        uri, header={SESSION_ID_HEADER: session_id, USER_ID_HEADER: user_id}, **handlers
     )
     ws.run_forever()
 
@@ -52,7 +58,7 @@ def on_error(ws, error):
 
 
 def on_close(ws, code, message):
-    print("connectionclosed")
+    print("connection closed")
 
 
 def on_open(ws):
@@ -79,11 +85,20 @@ def run(ws: websocket.WebSocketApp):
     ws.close()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--display", action="store_true")
+    parser.add_argument("--input", action="store_true")
+    parser.add_argument("--debug", action="store_true")
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     username = input("username: ")
     session_id = login(username)
     user_id = get_user_id(session_id)
-    websocket_repl(WS_URL, session_id, user_id)
+    websocket_repl(WS_URL, session_id, user_id, args)
 
 
 if __name__ == "__main__":
