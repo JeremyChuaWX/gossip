@@ -33,16 +33,18 @@ def get_user_id(session_id: str):
 
 def websocket_repl(uri: str, session_id: str, user_id: str, args: any):
     websocket.enableTrace(args.debug)
-    if args.display and not args.input:
+    if args.mode == "display":
         handlers = {
             "on_message": on_message,
             "on_error": on_error,
             "on_close": on_close,
         }
-    if not args.display and args.input:
+    elif args.mode == "input":
         handlers = {
             "on_open": on_open,
         }
+    else:
+        raise Exception("invalid mode")
     ws = websocket.WebSocketApp(
         uri, header={SESSION_ID_HEADER: session_id, USER_ID_HEADER: user_id}, **handlers
     )
@@ -87,9 +89,10 @@ def run(ws: websocket.WebSocketApp):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--display", action="store_true")
-    parser.add_argument("--input", action="store_true")
-    parser.add_argument("--debug", action="store_true")
+    # fmt: off
+    parser.add_argument("--mode", choices=("display", "input"), type=str)
+    parser.add_argument("--debug", default=False, type=bool)
+    # fmt: on
     return parser.parse_args()
 
 
