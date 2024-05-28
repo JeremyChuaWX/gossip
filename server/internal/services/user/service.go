@@ -32,7 +32,7 @@ func (s *Service) Create(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
-	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.User])
 }
 
 func (s *Service) FindOne(
@@ -50,7 +50,7 @@ func (s *Service) FindOne(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
-	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.User])
 }
 
 func (s *Service) FindOneByUsername(
@@ -68,7 +68,7 @@ func (s *Service) FindOneByUsername(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.Username)
-	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.User])
 }
 
 func (s *Service) Update(
@@ -88,8 +88,14 @@ func (s *Service) Update(
 		password_hash
 	;
 	`
-	rows, _ := s.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash, dto.UserId)
-	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
+	rows, _ := s.PgPool.Query(
+		ctx,
+		sql,
+		dto.Username,
+		dto.PasswordHash,
+		dto.UserId,
+	)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.User])
 }
 
 func (s *Service) Delete(
@@ -107,5 +113,5 @@ func (s *Service) Delete(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
-	return pgx.CollectExactlyOneRow[models.User](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.User])
 }

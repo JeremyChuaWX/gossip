@@ -37,7 +37,7 @@ func (s *Service) Save(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId, dto.Body)
-	return pgx.CollectExactlyOneRow[models.Message](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.Message])
 }
 
 func (s *Service) FindManyByRoomId(
@@ -57,5 +57,5 @@ func (s *Service) FindManyByRoomId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectRows[models.Message](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.Message])
 }

@@ -29,7 +29,7 @@ func (s *Service) Create(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.Name)
-	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.Room])
 }
 
 func (s *Service) FindOne(
@@ -46,7 +46,7 @@ func (s *Service) FindOne(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.Room])
 }
 
 func (s *Service) FindMany(ctx context.Context) ([]models.Room, error) {
@@ -58,7 +58,7 @@ func (s *Service) FindMany(ctx context.Context) ([]models.Room, error) {
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql)
-	return pgx.CollectRows[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.Room])
 }
 
 func (s *Service) Update(
@@ -78,7 +78,7 @@ func (s *Service) Update(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.Name, dto.RoomId)
-	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.Room])
 }
 
 func (s *Service) Delete(
@@ -95,5 +95,5 @@ func (s *Service) Delete(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectExactlyOneRow[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.Room])
 }
