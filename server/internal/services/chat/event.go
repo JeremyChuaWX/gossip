@@ -57,3 +57,25 @@ type userDisconnectEvent struct {
 func (event *userDisconnectEvent) name() eventName {
 	return USER_DISCONNECT_EVENT
 }
+
+const USER_JOIN_ROOM_EVENT eventName = "USER_JOIN_ROOM_EVENT"
+
+type userJoinRoomEvent struct {
+	roomId uuid.UUID
+	userId uuid.UUID
+}
+
+func (event *userJoinRoomEvent) name() eventName {
+	return USER_JOIN_ROOM_EVENT
+}
+
+const USER_LEAVE_ROOM_EVENT eventName = "USER_LEAVE_ROOM_EVENT"
+
+type userLeaveRoomEvent struct {
+	roomId uuid.UUID
+	userId uuid.UUID
+}
+
+func (event *userLeaveRoomEvent) name() eventName {
+	return USER_LEAVE_ROOM_EVENT
+}

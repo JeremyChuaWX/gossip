@@ -76,6 +76,8 @@ func (room *room) disconnect() {
 
 func (r *room) registerEventHandlers() {
 	r.handlers[MESSAGE_EVENT] = (*room).messageEventHandler
+	r.handlers[USER_JOIN_ROOM_EVENT] = (*room).userJoinRoomEventHandler
+	r.handlers[USER_LEAVE_ROOM_EVENT] = (*room).userLeaveRoomEventHandler
 }
 
 func (room *room) messageEventHandler(event event) {
@@ -92,4 +94,22 @@ func (room *room) messageEventHandler(event event) {
 		}
 		user.send <- messageEvent.payload
 	}
+}
+
+func (room *room) userJoinRoomEventHandler(event event) {
+	userJoinRoomEvent, ok := event.(*userJoinRoomEvent)
+	if !ok {
+		slog.Error("error typecasting to user join room event", "event", event)
+		return
+	}
+	room.userIds[userJoinRoomEvent.userId] = true
+}
+
+func (room *room) userLeaveRoomEventHandler(event event) {
+	userLeaveRoomEvent, ok := event.(*userLeaveRoomEvent)
+	if !ok {
+		slog.Error("error typecasting to user leave room event", "event", event)
+		return
+	}
+	delete(room.userIds, userLeaveRoomEvent.userId)
 }
