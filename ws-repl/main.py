@@ -35,13 +35,16 @@ def websocket_repl(uri: str, session_id: str, user_id: str, args: any):
     websocket.enableTrace(args.debug)
     if args.mode == "display":
         handlers = {
+            "on_open": on_open_display,
             "on_message": on_message,
             "on_error": on_error,
             "on_close": on_close,
         }
     elif args.mode == "input":
         handlers = {
-            "on_open": on_open,
+            "on_open": on_open_input,
+            "on_error": on_error,
+            "on_close": on_close,
         }
     else:
         raise Exception("invalid mode")
@@ -63,8 +66,12 @@ def on_close(ws, code, message):
     print("connection closed")
 
 
-def on_open(ws):
-    print("connection opened")
+def on_open_display(ws):
+    print("connection opened (display)")
+
+
+def on_open_input(ws):
+    print("connection opened (input)")
     threading.Thread(target=run, args=(ws,)).start()
 
 
