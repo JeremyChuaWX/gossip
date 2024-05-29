@@ -9,11 +9,10 @@ import (
 )
 
 type user struct {
-	model    *models.User
-	service  *Service
-	ingress  chan event
-	alive    chan bool
-	handlers map[eventName]func(*user, event)
+	model   *models.User
+	service *Service
+	ingress chan event
+	alive   chan bool
 
 	conn *websocket.Conn
 	send chan *message
@@ -25,17 +24,14 @@ func newUser(
 	userModel *models.User,
 ) (*user, error) {
 	user := &user{
-		model:    userModel,
-		service:  service,
-		ingress:  make(chan event),
-		alive:    make(chan bool),
-		handlers: make(map[eventName]func(*user, event)),
+		model:   userModel,
+		service: service,
+		ingress: make(chan event),
+		alive:   make(chan bool),
 
 		conn: conn,
 		send: make(chan *message),
 	}
-
-	user.registerEventHandlers()
 
 	go user.receiveEvents()
 	go user.readPump()
@@ -108,21 +104,21 @@ func (user *user) receiveEvents() {
 			if !ok {
 				return
 			}
-			handler, ok := user.handlers[event.name()]
-			if !ok {
-				continue
-			}
-			handler(user, event)
+			user.eventHandler(event)
 		}
 	}
 }
 
 func (user *user) disconnect() {
 	user.conn.Close()
-	user.service.ingress <- &userDisconnectEvent{userId: user.model.Id}
+	user.service.ingress <- userDisconnectEvent{userId: user.model.Id}
 }
 
 // event management
 
-func (u *user) registerEventHandlers() {
+func (user *user) eventHandler(event event) {
+	switch event := event.(type) {
+	default:
+		slog.Error("invalid event", "event", event)
+	}
 }

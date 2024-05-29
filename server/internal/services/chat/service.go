@@ -7,6 +7,7 @@ import (
 	roomPackage "gossip/internal/services/room"
 	roomuserPackage "gossip/internal/services/roomuser"
 	userPackage "gossip/internal/services/user"
+	"log/slog"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
@@ -19,9 +20,8 @@ var upgrader = websocket.Upgrader{
 }
 
 type Service struct {
-	ingress  chan event
-	alive    chan bool
-	handlers map[eventName]func(*Service, event)
+	ingress chan event
+	alive   chan bool
 
 	userService     *userPackage.Service
 	roomService     *roomPackage.Service
@@ -39,9 +39,8 @@ func NewService(
 	messageService *messagePackage.Service,
 ) (*Service, error) {
 	service := &Service{
-		ingress:  make(chan event),
-		alive:    make(chan bool),
-		handlers: make(map[eventName]func(*Service, event)),
+		ingress: make(chan event),
+		alive:   make(chan bool),
 
 		userService:     userService,
 		roomService:     roomService,
@@ -64,8 +63,6 @@ func NewService(
 		service.rooms[roomModel.Id] = room
 	}
 
-	service.registerEventHandlers()
-
 	go service.receiveEvents()
 
 	return service, nil
@@ -84,7 +81,7 @@ func (service *Service) UserConnect(
 	if err != nil {
 		return err
 	}
-	service.ingress <- &userConnectEvent{user: user}
+	service.ingress <- userConnectEvent{user: user}
 	return nil
 }
 
@@ -99,11 +96,7 @@ func (service *Service) receiveEvents() {
 			if !ok {
 				return
 			}
-			handler, ok := service.handlers[event.name()]
-			if !ok {
-				continue
-			}
-			handler(service, event)
+			service.eventHandler(event)
 		}
 	}
 }
@@ -113,23 +106,21 @@ func (service *Service) disconnect() {
 
 // event management
 
-func (s *Service) registerEventHandlers() {
-	s.handlers[USER_CONNECT_EVENT] = (*Service).userConnectEventHandler
-	s.handlers[USER_DISCONNECT_EVENT] = (*Service).userDisconnectEventHandler
+func (s *Service) eventHandler(event event) {
+	switch event := event.(type) {
+	case userConnectEvent:
+		s.userConnectEventHandler(event)
+	case userDisconnectEvent:
+		s.userDisconnectEventHandler(event)
+	default:
+		slog.Error("invalid event", "event", event)
+	}
 }
 
-func (service *Service) userConnectEventHandler(event event) {
-	userConnectEvent, ok := event.(*userConnectEvent)
-	if !ok {
-		return
-	}
-	service.users[userConnectEvent.user.model.Id] = userConnectEvent.user
+func (service *Service) userConnectEventHandler(event userConnectEvent) {
+	service.users[event.user.model.Id] = event.user
 }
 
-func (service *Service) userDisconnectEventHandler(event event) {
-	userDisconnectEvent, ok := event.(*userDisconnectEvent)
-	if !ok {
-		return
-	}
-	delete(service.users, userDisconnectEvent.userId)
+func (service *Service) userDisconnectEventHandler(event userDisconnectEvent) {
+	delete(service.users, event.userId)
 }

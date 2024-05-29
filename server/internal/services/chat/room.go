@@ -10,22 +10,20 @@ import (
 )
 
 type room struct {
-	model    *models.Room
-	service  *Service
-	ingress  chan event
-	alive    chan bool
-	handlers map[eventName]func(*room, event)
+	model   *models.Room
+	service *Service
+	ingress chan event
+	alive   chan bool
 
 	userIds map[uuid.UUID]bool
 }
 
 func newRoom(service *Service, roomModel *models.Room) (*room, error) {
 	room := &room{
-		model:    roomModel,
-		service:  service,
-		ingress:  make(chan event),
-		alive:    make(chan bool),
-		handlers: make(map[eventName]func(*room, event)),
+		model:   roomModel,
+		service: service,
+		ingress: make(chan event),
+		alive:   make(chan bool),
 
 		userIds: make(map[uuid.UUID]bool),
 	}
@@ -40,8 +38,6 @@ func newRoom(service *Service, roomModel *models.Room) (*room, error) {
 	for _, roomuserModel := range roomuserModels {
 		room.userIds[roomuserModel.UserId] = true
 	}
-
-	room.registerEventHandlers()
 
 	go room.receiveEvents()
 
@@ -60,11 +56,7 @@ func (room *room) receiveEvents() {
 			if !ok {
 				return
 			}
-			handler, ok := room.handlers[event.name()]
-			if !ok {
-				continue
-			}
-			handler(room, event)
+			room.eventHandler(event)
 		}
 	}
 }
@@ -74,42 +66,34 @@ func (room *room) disconnect() {
 
 // event management
 
-func (r *room) registerEventHandlers() {
-	r.handlers[MESSAGE_EVENT] = (*room).messageEventHandler
-	r.handlers[USER_JOIN_ROOM_EVENT] = (*room).userJoinRoomEventHandler
-	r.handlers[USER_LEAVE_ROOM_EVENT] = (*room).userLeaveRoomEventHandler
+func (room *room) eventHandler(event event) {
+	switch event := event.(type) {
+	case messageEvent:
+		room.messageEventHandler(event)
+	case userJoinRoomEvent:
+		room.userJoinRoomEventHandler(event)
+	case userLeaveRoomEvent:
+		room.userLeaveRoomEventHandler(event)
+	default:
+		slog.Error("invalid event", "event", event)
+	}
 }
 
-func (room *room) messageEventHandler(event event) {
-	messageEvent, ok := event.(*messageEvent)
-	if !ok {
-		slog.Error("error typecasting to message event", "event", event)
-		return
-	}
+func (room *room) messageEventHandler(event messageEvent) {
 	for userId := range room.userIds {
 		user, ok := room.service.users[userId]
 		if !ok {
 			slog.Error("user not found", "userId", userId)
 			continue
 		}
-		user.send <- messageEvent.payload
+		user.send <- event.payload
 	}
 }
 
-func (room *room) userJoinRoomEventHandler(event event) {
-	userJoinRoomEvent, ok := event.(*userJoinRoomEvent)
-	if !ok {
-		slog.Error("error typecasting to user join room event", "event", event)
-		return
-	}
-	room.userIds[userJoinRoomEvent.userId] = true
+func (room *room) userJoinRoomEventHandler(event userJoinRoomEvent) {
+	room.userIds[event.userId] = true
 }
 
-func (room *room) userLeaveRoomEventHandler(event event) {
-	userLeaveRoomEvent, ok := event.(*userLeaveRoomEvent)
-	if !ok {
-		slog.Error("error typecasting to user leave room event", "event", event)
-		return
-	}
-	delete(room.userIds, userLeaveRoomEvent.userId)
+func (room *room) userLeaveRoomEventHandler(event userLeaveRoomEvent) {
+	delete(room.userIds, event.userId)
 }
