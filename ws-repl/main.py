@@ -55,7 +55,9 @@ def websocket_repl(uri: str, session_id: str, user_id: str, args: any):
 
 
 def on_message(ws, message):
-    print("message:", message)
+    print(
+        f"{message["userId"]} [{message["roomId"]}] ({message["timestamp"]}): {message["body"]}"
+    )
 
 
 def on_error(ws, error):
