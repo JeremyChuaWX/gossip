@@ -233,3 +233,118 @@ func (r *Repository) UserSessionDelete(
 	_, err := r.PgPool.Query(ctx, sql, dto.SessionId)
 	return err
 }
+
+type RoomCreateParams struct {
+	Name string
+}
+
+type RoomCreateResult struct {
+	RoomId uuid.UUID `db:"id"`
+}
+
+func (r *Repository) RoomCreate(
+	ctx context.Context,
+	dto RoomCreateParams,
+) (RoomCreateResult, error) {
+	sql := `
+	INSERT INTO rooms (
+		name
+	)
+	VALUES (
+		$1
+	)
+	RETURNING
+		id
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.Name)
+	return pgx.CollectExactlyOneRow(
+		rows,
+		pgx.RowToStructByName[RoomCreateResult],
+	)
+}
+
+type RoomFindOneParams struct {
+	RoomId uuid.UUID
+}
+
+type RoomFindOneResult struct {
+	Name string `db:"name"`
+}
+
+func (r *Repository) RoomFindOne(
+	ctx context.Context,
+	dto RoomFindOneParams,
+) (RoomFindOneResult, error) {
+	sql := `
+	SELECT
+		name
+	FROM rooms
+	WHERE
+		id = $1
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	return pgx.CollectExactlyOneRow(
+		rows,
+		pgx.RowToStructByName[RoomFindOneResult],
+	)
+}
+
+type RoomFindManyResult struct {
+	RoomId uuid.UUID `db:"id"`
+	Name   string    `db:"name"`
+}
+
+func (r *Repository) RoomFindMany(
+	ctx context.Context,
+) ([]RoomFindManyResult, error) {
+	sql := `
+	SELECT
+		id,
+		name
+	FROM rooms
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[RoomFindManyResult])
+}
+
+type RoomUpdateParams struct {
+	RoomId uuid.UUID
+	Name   *string
+}
+
+func (r *Repository) RoomUpdate(
+	ctx context.Context,
+	dto RoomUpdateParams,
+) error {
+	sql := `
+	UPDATE rooms
+	SET
+		name = COALESCE($1, name)
+	WHERE
+		id = $2
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.Name, dto.RoomId)
+	return err
+}
+
+type RoomDeleteParams struct {
+	RoomId uuid.UUID
+}
+
+func (r *Repository) RoomDelete(
+	ctx context.Context,
+	dto RoomDeleteParams,
+) error {
+	sql := `
+	DELETE FROM rooms
+	WHERE
+		id = $1
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	return err
+}
