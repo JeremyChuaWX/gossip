@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"gossip/internal/adapters/postgres"
-	"gossip/internal/adapters/redis"
 	"gossip/internal/api/middlewares"
 	"gossip/internal/api/routes"
 	"gossip/internal/config"
@@ -33,17 +32,6 @@ func main() {
 	}
 	defer pgPool.Close()
 
-	redis, err := redis.Init(ctx, config.RedisURL, "")
-	if err != nil {
-		slog.Error(err.Error())
-		return
-	}
-	defer redis.Close()
-
-	sessionService := &session.Service{
-		Redis: redis,
-	}
-
 	userService := &user.Service{
 		PgPool: pgPool,
 	}
@@ -72,14 +60,12 @@ func main() {
 	}
 
 	middlewares := &middlewares.Middlewares{
-		SessionService: sessionService,
 	}
 
 	router := &routes.Router{
 		RoomService:     roomService,
 		UserService:     userService,
 		RoomUserService: roomUserService,
-		SessionService:  sessionService,
 		ChatService:     chatService,
 		Middlewares:     middlewares,
 	}
