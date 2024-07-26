@@ -7,7 +7,7 @@ type CreateDTO struct {
 }
 
 type FindOneDTO struct {
-	Id uuid.UUID
+	RoomId uuid.UUID
 }
 
 type FindOneByUsernameDTO struct {
@@ -15,10 +15,10 @@ type FindOneByUsernameDTO struct {
 }
 
 type UpdateDTO struct {
-	Id   uuid.UUID
+	RoomId   uuid.UUID
 	Name *string
 }
 
 type DeleteDTO struct {
-	Id uuid.UUID
+	RoomId uuid.UUID
 }

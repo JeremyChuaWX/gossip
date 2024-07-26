@@ -1,81 +1,47 @@
 package chat
 
-import "github.com/gofrs/uuid/v5"
-
-type eventName string
-
-const (
-	MESSAGE         eventName = "MESSAGE"
-	USER_JOIN_ROOM  eventName = "USER_JOIN_ROOM"
-	USER_LEAVE_ROOM eventName = "USER_LEAVE_ROOM"
+import (
+	"github.com/gofrs/uuid/v5"
 )
 
-type event interface {
-	name() eventName
-}
-
-// message event
-
-type payload struct {
-	RoomId string `json:"roomId"`
-	UserId string `json:"userId"`
-	Body   string `json:"body"`
-}
+type event interface{}
 
 type messageEvent struct {
+	payload *message
 	roomId  uuid.UUID
 	userId  uuid.UUID
-	payload payload
 }
 
-func (e *messageEvent) name() eventName {
-	return MESSAGE
-}
-
-func newMessageEvent(
-	roomId uuid.UUID,
-	userId uuid.UUID,
-	payload payload,
-) event {
-	return &messageEvent{
+func newMessageEvent(message *message) (messageEvent, error) {
+	roomId, err := uuid.FromString(message.RoomId)
+	if err != nil {
+		return messageEvent{}, err
+	}
+	userId, err := uuid.FromString(message.UserId)
+	if err != nil {
+		return messageEvent{}, err
+	}
+	return messageEvent{
+		payload: message,
 		roomId:  roomId,
 		userId:  userId,
-		payload: payload,
-	}
+	}, nil
 }
 
-// user join room
+type userConnectEvent struct {
+	user *user
+}
+
+type userDisconnectEvent struct {
+	userId uuid.UUID
+}
 
 type userJoinRoomEvent struct {
-	userId uuid.UUID
 	roomId uuid.UUID
+	userId uuid.UUID
 }
-
-func (e *userJoinRoomEvent) name() eventName {
-	return USER_JOIN_ROOM
-}
-
-func newUserJoinRoomEvent(userId uuid.UUID, roomId uuid.UUID) event {
-	return &userJoinRoomEvent{
-		userId: userId,
-		roomId: roomId,
-	}
-}
-
-// user leave room
 
 type userLeaveRoomEvent struct {
-	userId uuid.UUID
 	roomId uuid.UUID
-}
-
-func (e *userLeaveRoomEvent) name() eventName {
-	return USER_LEAVE_ROOM
-}
-
-func newUserLeaveRoomEvent(userId uuid.UUID, roomId uuid.UUID) event {
-	return &userLeaveRoomEvent{
-		userId: userId,
-		roomId: roomId,
-	}
+	userId uuid.UUID
 }

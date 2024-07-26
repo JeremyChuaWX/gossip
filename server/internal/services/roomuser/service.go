@@ -31,9 +31,9 @@ func (s *Service) UserJoinRoom(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
-	return pgx.CollectExactlyOneRow[models.RoomUser](
+	return pgx.CollectExactlyOneRow(
 		rows,
-		pgx.RowToStructByName,
+		pgx.RowToStructByName[models.RoomUser],
 	)
 }
 
@@ -53,9 +53,9 @@ func (s *Service) UserLeaveRoom(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
-	return pgx.CollectExactlyOneRow[models.RoomUser](
+	return pgx.CollectExactlyOneRow(
 		rows,
-		pgx.RowToStructByName,
+		pgx.RowToStructByName[models.RoomUser],
 	)
 }
 
@@ -73,7 +73,7 @@ func (s *Service) FindRoomIdsByUserId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
-	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.RoomUser])
 }
 
 func (s *Service) FindRoomsByUserId(
@@ -91,7 +91,7 @@ func (s *Service) FindRoomsByUserId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.UserId)
-	return pgx.CollectRows[models.Room](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.Room])
 }
 
 func (s *Service) FindUserIdsByRoomId(
@@ -108,7 +108,7 @@ func (s *Service) FindUserIdsByRoomId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectRows[models.RoomUser](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.RoomUser])
 }
 
 func (s *Service) FindUsersByRoomId(
@@ -127,5 +127,5 @@ func (s *Service) FindUsersByRoomId(
 	;
 	`
 	rows, _ := s.PgPool.Query(ctx, sql, dto.RoomId)
-	return pgx.CollectRows[models.User](rows, pgx.RowToStructByName)
+	return pgx.CollectRows(rows, pgx.RowToStructByName[models.User])
 }

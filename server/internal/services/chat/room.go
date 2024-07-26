@@ -3,121 +3,97 @@ package chat
 import (
 	"context"
 	"gossip/internal/models"
-	"gossip/internal/services/message"
+	roomuserPackage "gossip/internal/services/roomuser"
 	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 )
 
-type chatRoom struct {
-	service  *Service
-	alive    chan bool
-	ingress  chan event
-	handlers map[eventName]func(*chatRoom, event)
-	room     *models.Room
-	userIds  map[uuid.UUID]bool
+type room struct {
+	model   *models.Room
+	service *Service
+	ingress chan event
+	alive   chan bool
+
+	userIds map[uuid.UUID]bool
 }
 
-func newChatRoom(
-	service *Service,
-	room *models.Room,
-	roomUsers []models.RoomUser,
-) *chatRoom {
-	r := &chatRoom{
-		service:  service,
-		alive:    make(chan bool),
-		ingress:  make(chan event),
-		handlers: make(map[eventName]func(*chatRoom, event)),
-		room:     room,
-		userIds:  make(map[uuid.UUID]bool),
+func newRoom(service *Service, roomModel *models.Room) (*room, error) {
+	room := &room{
+		model:   roomModel,
+		service: service,
+		ingress: make(chan event),
+		alive:   make(chan bool),
+
+		userIds: make(map[uuid.UUID]bool),
 	}
-	for _, roomUser := range roomUsers {
-		r.userIds[roomUser.UserId] = true
+
+	roomuserModels, err := service.roomuserService.FindUserIdsByRoomId(
+		context.Background(),
+		roomuserPackage.FindUserIdsByRoomIdDTO{RoomId: roomModel.Id},
+	)
+	if err != nil {
+		return nil, err
 	}
-	r.registerHandlers()
-	go r.receiveEvents()
-	return r
+	for _, roomuserModel := range roomuserModels {
+		room.userIds[roomuserModel.UserId] = true
+	}
+
+	go room.receiveEvents()
+
+	return room, nil
 }
 
-func (r *chatRoom) receiveEvents() {
+// actor methods
+
+func (room *room) receiveEvents() {
+	defer room.disconnect()
 	for {
 		select {
-		case <-r.alive:
+		case <-room.alive:
 			return
-		case e := <-r.ingress:
-			handler, ok := r.handlers[e.name()]
+		case event, ok := <-room.ingress:
 			if !ok {
-				slog.Error("invalid event")
-				continue
+				return
 			}
-			handler(r, e)
+			room.eventHandler(event)
 		}
 	}
 }
 
-// handlers
-
-func (r *chatRoom) registerHandlers() {
-	r.handlers[MESSAGE] = (*chatRoom).messageEventHandler
-	r.handlers[USER_JOIN_ROOM] = (*chatRoom).userJoinRoomEventHandler
-	r.handlers[USER_LEAVE_ROOM] = (*chatRoom).userLeaveRoomEventHandler
+func (room *room) disconnect() {
 }
 
-func (r *chatRoom) messageEventHandler(e event) {
-	event := e.(*messageEvent)
-	ctx := context.Background()
-	r.service.messageService.Save(ctx, message.SaveDto{
-		UserId: event.userId,
-		RoomId: event.roomId,
-		Body:   event.payload.Body,
-	})
-	for userId := range r.userIds {
-		// NOTE: skip the sender
-		if userId == event.userId {
+// event management
+
+func (room *room) eventHandler(event event) {
+	switch event := event.(type) {
+	case messageEvent:
+		room.messageEventHandler(event)
+	case userJoinRoomEvent:
+		room.userJoinRoomEventHandler(event)
+	case userLeaveRoomEvent:
+		room.userLeaveRoomEventHandler(event)
+	default:
+		slog.Error("invalid event", "event", event)
+	}
+}
+
+func (room *room) messageEventHandler(event messageEvent) {
+	for userId := range room.userIds {
+		user, ok := room.service.users[userId]
+		if !ok {
+			slog.Error("user not found", "userId", userId)
 			continue
 		}
-		user, ok := r.service.chatUsers[userId]
-		if !ok {
-			slog.Error("user not found", "userId", userId.String())
-		}
-		user.ingress <- event
+		user.send <- event.payload
 	}
 }
 
-func (r *chatRoom) userJoinRoomEventHandler(e event) {
-	event := e.(*userJoinRoomEvent)
-	if r.room.Id != event.roomId {
-		slog.Error(
-			"wrong room",
-			"roomId",
-			r.room.Id.String(),
-			"eventRoomId",
-			event.roomId.String(),
-		)
-		return
-	}
-	if _, ok := r.userIds[event.userId]; ok {
-		slog.Error("user already in room", "userId", event.userId.String())
-		return
-	}
-	r.userIds[event.userId] = true
+func (room *room) userJoinRoomEventHandler(event userJoinRoomEvent) {
+	room.userIds[event.userId] = true
 }
 
-func (r *chatRoom) userLeaveRoomEventHandler(e event) {
-	event := e.(*userLeaveRoomEvent)
-	if r.room.Id != event.roomId {
-		slog.Error(
-			"wrong room",
-			"roomId",
-			r.room.Id.String(),
-			"eventRoomId",
-			event.roomId.String(),
-		)
-		return
-	}
-	if _, ok := r.userIds[event.userId]; !ok {
-		slog.Error("user not in room", "userId", event.userId.String())
-		return
-	}
-	delete(r.userIds, event.userId)
+func (room *room) userLeaveRoomEventHandler(event userLeaveRoomEvent) {
+	delete(room.userIds, event.userId)
 }

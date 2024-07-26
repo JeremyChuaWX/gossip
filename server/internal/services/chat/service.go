@@ -1,166 +1,126 @@
 package chat
 
 import (
-	"errors"
+	"context"
 	"gossip/internal/models"
-	"gossip/internal/services/message"
-	"gossip/internal/services/room"
-	"gossip/internal/services/roomuser"
-	"gossip/internal/services/user"
+	messagePackage "gossip/internal/services/message"
+	roomPackage "gossip/internal/services/room"
+	roomuserPackage "gossip/internal/services/roomuser"
+	userPackage "gossip/internal/services/user"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	"golang.org/x/net/context"
-	"golang.org/x/sync/errgroup"
 )
 
-type Service struct {
-	ingress         chan event
-	wsUpgrader      *websocket.Upgrader
-	userService     *user.Service
-	roomService     *room.Service
-	roomUserService *roomuser.Service
-	messageService  *message.Service
-	chatUsers       map[uuid.UUID]*chatUser
-	chatRooms       map[uuid.UUID]*chatRoom
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  BUFFER_SIZE,
+	WriteBufferSize: BUFFER_SIZE,
 }
 
-func InitService(
-	userService *user.Service,
-	roomService *room.Service,
-	roomUserService *roomuser.Service,
-	messageService *message.Service,
+type Service struct {
+	ingress chan event
+	alive   chan bool
+
+	userService     *userPackage.Service
+	roomService     *roomPackage.Service
+	roomuserService *roomuserPackage.Service
+	messageService  *messagePackage.Service
+
+	users map[uuid.UUID]*user
+	rooms map[uuid.UUID]*room
+}
+
+func NewService(
+	userService *userPackage.Service,
+	roomService *roomPackage.Service,
+	roomuserService *roomuserPackage.Service,
+	messageService *messagePackage.Service,
 ) (*Service, error) {
-	s := &Service{
+	service := &Service{
 		ingress: make(chan event),
-		wsUpgrader: &websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		},
+		alive:   make(chan bool),
+
 		userService:     userService,
 		roomService:     roomService,
-		roomUserService: roomUserService,
+		roomuserService: roomuserService,
 		messageService:  messageService,
-		chatUsers:       make(map[uuid.UUID]*chatUser),
-		chatRooms:       make(map[uuid.UUID]*chatRoom),
+
+		users: make(map[uuid.UUID]*user),
+		rooms: make(map[uuid.UUID]*room),
 	}
-	if err := s.initRooms(); err != nil {
+
+	roomModels, err := roomService.FindMany(context.Background())
+	if err != nil {
 		return nil, err
 	}
-	return s, nil
+	for _, roomModel := range roomModels {
+		room, err := newRoom(service, &roomModel)
+		if err != nil {
+			return nil, err
+		}
+		service.rooms[roomModel.Id] = room
+	}
+
+	go service.receiveEvents()
+
+	return service, nil
 }
 
-func (s *Service) UserConnect(
-	ctx context.Context,
-	user *models.User,
+func (service *Service) UserConnect(
 	w http.ResponseWriter,
 	r *http.Request,
+	userModel *models.User,
 ) error {
-	_, ok := s.chatUsers[user.Id]
-	if ok {
-		return errors.New("chat user already connected")
-	}
-	roomIds, err := s.roomUserService.FindRoomIdsByUserId(
-		ctx,
-		roomuser.FindRoomIdsByUserIdDTO{
-			UserId: user.Id,
-		},
-	)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
-	conn, err := s.upgradeConn(w, r)
+	user, err := newUser(service, conn, userModel)
 	if err != nil {
 		return err
 	}
-	s.chatUsers[user.Id] = newChatUser(s, user, roomIds, conn)
+	service.ingress <- userConnectEvent{user: user}
 	return nil
 }
 
-func (s *Service) UserDisconnect(userId uuid.UUID) error {
-	_, ok := s.chatUsers[userId]
-	if !ok {
-		return errors.New("chat user not found")
-	}
-	delete(s.chatUsers, userId)
-	return nil
-}
+// actor methods
 
-func (s *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
-	chatUser, ok := s.chatUsers[userId]
-	if !ok {
-		slog.Error("user not found", "userId", userId.String())
-		return
-	}
-	chatRoom, ok := s.chatRooms[roomId]
-	if !ok {
-		slog.Error("room not found", "roomId", roomId.String())
-		return
-	}
-	event := newUserJoinRoomEvent(userId, roomId)
-	chatUser.ingress <- event
-	chatRoom.ingress <- event
-}
-
-func (s *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
-	chatUser, ok := s.chatUsers[userId]
-	if !ok {
-		slog.Error("user not found")
-		return
-	}
-	chatRoom, ok := s.chatRooms[roomId]
-	if !ok {
-		slog.Error("room not found")
-		return
-	}
-	event := newUserLeaveRoomEvent(userId, roomId)
-	chatUser.ingress <- event
-	chatRoom.ingress <- event
-}
-
-func (s *Service) initRooms() error {
-	rooms, err := s.roomService.FindMany(context.Background())
-	if err != nil {
-		return err
-	}
-	group, _ := errgroup.WithContext(context.Background())
-	group.SetLimit(len(rooms))
-	for _, room := range rooms {
-		group.Go(func() error {
-			roomUsers, err := s.roomUserService.FindUserIdsByRoomId(
-				context.Background(),
-				roomuser.FindUserIdsByRoomIdDTO{
-					RoomId: room.Id,
-				},
-			)
-			if err != nil {
-				return err
+func (service *Service) receiveEvents() {
+	for {
+		select {
+		case <-service.alive:
+			return
+		case event, ok := <-service.ingress:
+			if !ok {
+				return
 			}
-			s.chatRooms[room.Id] = newChatRoom(s, &room, roomUsers)
-			return nil
-		})
+			service.eventHandler(event)
+		}
 	}
-	return group.Wait()
 }
 
-func (s *Service) upgradeConn(
-	w http.ResponseWriter,
-	r *http.Request,
-) (*websocket.Conn, error) {
-	conn, err := s.wsUpgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return nil, err
+func (service *Service) disconnect() {
+}
+
+// event management
+
+func (s *Service) eventHandler(event event) {
+	switch event := event.(type) {
+	case userConnectEvent:
+		s.userConnectEventHandler(event)
+	case userDisconnectEvent:
+		s.userDisconnectEventHandler(event)
+	default:
+		slog.Error("invalid event", "event", event)
 	}
-	conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-	conn.SetPongHandler(func(string) error {
-		conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-		return nil
-	})
-	return conn, nil
+}
+
+func (service *Service) userConnectEventHandler(event userConnectEvent) {
+	service.users[event.user.model.Id] = event.user
+}
+
+func (service *Service) userDisconnectEventHandler(event userDisconnectEvent) {
+	delete(service.users, event.userId)
 }

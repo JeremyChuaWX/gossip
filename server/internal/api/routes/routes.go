@@ -294,7 +294,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			httpjson.WriteError(w, http.StatusUnauthorized, err)
 			return
 		}
-		err = router.ChatService.UserConnect(r.Context(), &user, w, r)
+		err = router.ChatService.UserConnect(w, r, &user)
 		if err != nil {
 			httpjson.WriteError(w, http.StatusInternalServerError, err)
 			return

@@ -60,7 +60,7 @@ func main() {
 		PgPool: pgPool,
 	}
 
-	chatService, err := chat.InitService(
+	chatService, err := chat.NewService(
 		userService,
 		roomService,
 		roomUserService,
