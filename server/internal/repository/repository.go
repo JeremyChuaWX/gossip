@@ -80,7 +80,8 @@ type UserFindOneByUsernameParams struct {
 }
 
 type UserFindOneByUsernameResult struct {
-	UserId uuid.UUID `db:"id"`
+	UserId       uuid.UUID `db:"id"`
+	PasswordHash string    `db:"password_hash"`
 }
 
 func (r *Repository) UserFindOneByUsername(
@@ -90,6 +91,7 @@ func (r *Repository) UserFindOneByUsername(
 	sql := `
 	SELECT
 		id,
+		password_hash
 	FROM users
 	WHERE
 		username = $1
@@ -212,4 +214,22 @@ func (r *Repository) UserSessionFindOne(
 		rows,
 		pgx.RowToStructByName[UserSessionFindOneResult],
 	)
+}
+
+type UserSessionDeleteParams struct {
+	SessionId uuid.UUID
+}
+
+func (r *Repository) UserSessionDelete(
+	ctx context.Context,
+	dto UserSessionDeleteParams,
+) error {
+	sql := `
+	DELETE FROM user_sessions
+	WHERE
+		id = $1
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.SessionId)
+	return err
 }
