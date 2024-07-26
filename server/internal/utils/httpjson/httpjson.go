@@ -17,7 +17,7 @@ func Read[T any](r *http.Request) (T, error) {
 	return res, err
 }
 
-func Write(w http.ResponseWriter, status int, value any) {
+func Write(w http.ResponseWriter, status int, value BaseResponse) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(value); err != nil {
