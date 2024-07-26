@@ -1,12 +1,4 @@
 services:
-  redis:
-    container_name: redis
-    env_file: ./docker.env
-    image: redis/redis-stack
-    ports:
-      - "6379:6379"
-      - "8001:8001"
-
   postgres:
     command: ["postgres", "-c", "log_statement=all"]
     container_name: postgres
