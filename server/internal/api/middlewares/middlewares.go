@@ -4,15 +4,17 @@ import (
 	"context"
 	"errors"
 	"gossip/internal/api"
-	"gossip/internal/services/session"
 	"gossip/internal/utils/httpjson"
 	"net/http"
+
+	"github.com/gofrs/uuid/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 var invalidSessionIdError = errors.New("invalid session ID")
 
 type Middlewares struct {
-	SessionService *session.Service
+	Redis *redis.Client
 }
 
 func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
@@ -26,9 +28,22 @@ func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 			)
 			return
 		}
-		userId, err := m.SessionService.Get(r.Context(), sessionId)
+		userIdString, err := m.Redis.Get(r.Context(), sessionId).Result()
 		if err != nil {
-			httpjson.WriteError(w, http.StatusUnauthorized, err)
+			httpjson.WriteError(
+				w,
+				http.StatusUnauthorized,
+				invalidSessionIdError,
+			)
+			return
+		}
+		userId, err := uuid.FromString(userIdString)
+		if err != nil {
+			httpjson.WriteError(
+				w,
+				http.StatusUnauthorized,
+				invalidSessionIdError,
+			)
 			return
 		}
 		nextReq := r.WithContext(
