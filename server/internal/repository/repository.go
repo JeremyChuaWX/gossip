@@ -241,7 +241,7 @@ func (r *Repository) UserSessionCreate(
 ) (UserSessionCreateResult, error) {
 	sql := `
 	INSERT INTO user_sessions (
-		user_id
+		user_id,
 		expires_on
 	)
 	VALUES (
