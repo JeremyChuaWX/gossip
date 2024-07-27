@@ -242,16 +242,19 @@ func (r *Repository) UserSessionCreate(
 	sql := `
 	INSERT INTO user_sessions (
 		user_id
+		expires_on
 	)
 	VALUES (
-		$1
+		$1,
+		$2
 	)
 	RETURNING
 		id,
 		expires_on
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId)
+	expiresOn := time.Now().Add(SESSION_DURATION)
+	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId, expiresOn)
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[UserSessionCreateResult],
