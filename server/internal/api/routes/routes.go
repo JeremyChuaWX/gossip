@@ -67,9 +67,9 @@ func (router *Router) registerRoutes(mux chi.Router) {
 			Success: true,
 			Message: "signed up",
 			Data: struct {
-				UserId uuid.UUID `json:"userId"`
+				User any `json:"user"`
 			}{
-				UserId: user.UserId,
+				User: user,
 			},
 		})
 	})
@@ -108,11 +108,9 @@ func (router *Router) registerRoutes(mux chi.Router) {
 			Success: true,
 			Message: "logged in",
 			Data: struct {
-				SessionId uuid.UUID `json:"sessionId"`
-				ExpiresOn time.Time `json:"expiresOn"`
+				Session any `json:"session"`
 			}{
-				SessionId: session.SessionId,
-				ExpiresOn: session.ExpiresOn,
+				Session: session,
 			},
 		})
 	})
@@ -147,11 +145,9 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			Success: true,
 			Message: "logged in user",
 			Data: struct {
-				UserId   uuid.UUID `json:"userId"`
-				Username string    `json:"username"`
+				User any `json:"user"`
 			}{
-				UserId:   userSession.UserId,
-				Username: userSession.Username,
+				User: userSession,
 			},
 		})
 	})
@@ -211,7 +207,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			Success: true,
 			Message: "room created",
 			Data: struct {
-				Room any
+				Room any `json:"room"`
 			}{
 				Room: room,
 			},
