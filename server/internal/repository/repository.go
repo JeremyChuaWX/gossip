@@ -453,3 +453,65 @@ func (r *Repository) RoomDelete(
 	_, err := r.PgPool.Query(ctx, sql, dto.RoomId)
 	return err
 }
+
+type MessageSaveParams struct {
+	UserId uuid.UUID
+	RoomId uuid.UUID
+	Body   string
+}
+
+func (r *Repository) MessageSave(
+	ctx context.Context,
+	dto MessageSaveParams,
+) error {
+	sql := `
+	INSERT INTO messages (
+		user_id,
+		room_id,
+		body
+	)
+	VALUES (
+		$1,
+		$2,
+		$3
+	)
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId, dto.Body)
+	return err
+}
+
+type MessagesFindManyByRoomIdParams struct {
+	RoomId uuid.UUID
+}
+
+type MessagesFindManyByRoomIdResult struct {
+	MessageId uuid.UUID `db:"id" json:"messageId"`
+	UserId    uuid.UUID `db:"user_id" json:"userId"`
+	RoomId    uuid.UUID `db:"room_id" json:"roomId"`
+	Body      string    `db:"body" json:"body"`
+	Timestamp time.Time `db:"timestamp" json:"timestamp"`
+}
+
+func (r *Repository) MessagesFindManyByRoomId(
+	ctx context.Context,
+	dto MessagesFindManyByRoomIdParams,
+) ([]MessagesFindManyByRoomIdResult, error) {
+	sql := `
+	SELECT 
+		id,
+		user_id,
+		room_id,
+		body,
+		timestamp
+	FROM messages
+	WHERE
+		room_id = $1
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	return pgx.CollectRows(
+		rows,
+		pgx.RowToStructByName[MessagesFindManyByRoomIdResult],
+	)
+}
