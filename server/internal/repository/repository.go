@@ -19,7 +19,7 @@ type UserCreateParams struct {
 }
 
 type UserCreateResult struct {
-	UserId uuid.UUID `db:"id"`
+	UserId uuid.UUID `db:"id" json:"userId"`
 }
 
 func (r *Repository) UserCreate(
@@ -51,8 +51,8 @@ type UserFindOneParams struct {
 }
 
 type UserFindOneResult struct {
-	Username     string `db:"username"`
-	PasswordHash string `db:"password_hash"`
+	Username     string `db:"username" json:"username"`
+	PasswordHash string `db:"password_hash" json:"-"`
 }
 
 func (r *Repository) UserFindOne(
@@ -80,8 +80,8 @@ type UserFindOneByUsernameParams struct {
 }
 
 type UserFindOneByUsernameResult struct {
-	UserId       uuid.UUID `db:"id"`
-	PasswordHash string    `db:"password_hash"`
+	UserId       uuid.UUID `db:"id" json:"userId"`
+	PasswordHash string    `db:"password_hash" json:"-"`
 }
 
 func (r *Repository) UserFindOneByUsername(
@@ -109,8 +109,8 @@ type UsersFindManyByRoomIdParams struct {
 }
 
 type UsersFindManyByRoomIdResult struct {
-	UserId   uuid.UUID `db:"id"`
-	Username string    `db:"username"`
+	UserId   uuid.UUID `db:"id" json:"userId"`
+	Username string    `db:"username" json:"username"`
 }
 
 func (r *Repository) UsersFindManyByRoomId(
@@ -231,8 +231,8 @@ type UserSessionCreateParams struct {
 }
 
 type UserSessionCreateResult struct {
-	SessionId uuid.UUID `db:"id"`
-	ExpiresOn time.Time `db:"expires_on"`
+	SessionId uuid.UUID `db:"id" json:"sessionId"`
+	ExpiresOn time.Time `db:"expires_on" json:"expiresOn"`
 }
 
 func (r *Repository) UserSessionCreate(
@@ -263,9 +263,9 @@ type UserSessionFindOneParams struct {
 }
 
 type UserSessionFindOneResult struct {
-	UserId    uuid.UUID `db:"user_id"`
-	Username  string    `db:"username"`
-	ExpiresOn time.Time `db:"expires_on"`
+	UserId    uuid.UUID `db:"user_id" json:"userId"`
+	Username  string    `db:"username" json:"username"`
+	ExpiresOn time.Time `db:"expires_on" json:"expiresOn"`
 }
 
 func (r *Repository) UserSessionFindOne(
@@ -314,7 +314,7 @@ type RoomCreateParams struct {
 }
 
 type RoomCreateResult struct {
-	RoomId uuid.UUID `db:"id"`
+	RoomId uuid.UUID `db:"id" json:"roomId"`
 }
 
 func (r *Repository) RoomCreate(
@@ -344,7 +344,7 @@ type RoomFindOneParams struct {
 }
 
 type RoomFindOneResult struct {
-	Name string `db:"name"`
+	Name string `db:"name" json:"name"`
 }
 
 func (r *Repository) RoomFindOne(
@@ -367,8 +367,8 @@ func (r *Repository) RoomFindOne(
 }
 
 type RoomFindManyResult struct {
-	RoomId uuid.UUID `db:"id"`
-	Name   string    `db:"name"`
+	RoomId uuid.UUID `db:"id" json:"roomId"`
+	Name   string    `db:"name" json:"name"`
 }
 
 func (r *Repository) RoomFindMany(
@@ -390,8 +390,8 @@ type RoomFindManyByUserIdParams struct {
 }
 
 type RoomFindManyByUserIdResult struct {
-	RoomId uuid.UUID `db:"id"`
-	Name   string    `db:"name"`
+	RoomId uuid.UUID `db:"id" json:"roomId"`
+	Name   string    `db:"name" json:"name"`
 }
 
 func (r *Repository) RoomFindManyByUserId(
