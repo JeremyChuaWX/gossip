@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS messages (
     room_id UUID REFERENCES rooms(id),
     user_id UUID REFERENCES users(id),
     body TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 )
 
 CREATE TABLE IF NOT EXISTS user_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id),
-    expires_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    expires_on TIMESTAMP WITH TIME ZONE
 )
