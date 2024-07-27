@@ -282,7 +282,12 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 
 	mux.Get("/rooms/connect", func(w http.ResponseWriter, r *http.Request) {
 		userSession := api.UserSessionFromContext(r.Context())
-		err = router.ChatService.UserConnect(w, r, &user)
+		err := router.ChatService.UserConnect(
+			w,
+			r,
+			userSession.UserId,
+			userSession.Username,
+		)
 		if err != nil {
 			httpjson.WriteError(w, http.StatusInternalServerError, err)
 			return
