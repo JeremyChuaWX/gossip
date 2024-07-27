@@ -8,6 +8,7 @@ import (
 	"gossip/internal/utils/httpjson"
 	"gossip/internal/utils/password"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -108,8 +109,10 @@ func (router *Router) registerRoutes(mux chi.Router) {
 			Message: "logged in",
 			Data: struct {
 				SessionId uuid.UUID `json:"sessionId"`
+				ExpiresOn time.Time `json:"expiresOn"`
 			}{
 				SessionId: session.SessionId,
+				ExpiresOn: session.ExpiresOn,
 			},
 		})
 	})
@@ -155,10 +158,10 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 
 	mux.Get("/rooms", func(w http.ResponseWriter, r *http.Request) {
 		userSession := api.UserSessionFromContext(r.Context())
-		rooms, err := router.RoomUserService.FindRoomsByUserId(
+		rooms, err := router.Repository.RoomFindManyByUserId(
 			r.Context(),
-			roomuser.FindRoomIdsByUserIdDTO{
-				UserId: user.Id,
+			repository.RoomFindManyByUserIdParams{
+				UserId: userSession.UserId,
 			},
 		)
 		if err != nil {
@@ -169,7 +172,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			Success: true,
 			Message: "user rooms found",
 			Data: struct {
-				Rooms []models.Room `json:"rooms"`
+				Rooms any
 			}{
 				Rooms: rooms,
 			},
@@ -177,17 +180,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value(api.USER_SESSION_CONTEXT_KEY).(uuid.UUID)
-		_, err := router.UserService.FindOne(
-			r.Context(),
-			user.FindOneDTO{
-				UserId: userId,
-			},
-		)
-		if err != nil {
-			httpjson.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
+		userSession := api.UserSessionFromContext(r.Context())
 		body, err := httpjson.Read[struct {
 			RoomName string `json:"roomName"`
 		}](r)
@@ -195,9 +188,21 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			httpjson.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
-		room, err := router.RoomService.Create(r.Context(), room.CreateDTO{
-			Name: body.RoomName,
-		})
+		room, err := router.Repository.RoomCreate(
+			r.Context(),
+			repository.RoomCreateParams{Name: body.RoomName},
+		)
+		if err != nil {
+			httpjson.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
+		err = router.Repository.UserJoinRoom(
+			r.Context(),
+			repository.UserJoinRoomParams{
+				UserId: userSession.UserId,
+				RoomId: room.RoomId,
+			},
+		)
 		if err != nil {
 			httpjson.WriteError(w, http.StatusInternalServerError, err)
 			return
@@ -206,7 +211,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			Success: true,
 			Message: "room created",
 			Data: struct {
-				Room models.Room `json:"room"`
+				Room any
 			}{
 				Room: room,
 			},
@@ -214,17 +219,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/join", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value(api.USER_SESSION_CONTEXT_KEY).(uuid.UUID)
-		user, err := router.UserService.FindOne(
-			r.Context(),
-			user.FindOneDTO{
-				UserId: userId,
-			},
-		)
-		if err != nil {
-			httpjson.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
+		userSession := api.UserSessionFromContext(r.Context())
 		body, err := httpjson.Read[struct {
 			RoomId string `json:"roomId"`
 		}](r)
@@ -237,15 +232,15 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			httpjson.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
-		_, err = router.RoomUserService.UserJoinRoom(
+		err = router.Repository.UserJoinRoom(
 			r.Context(),
-			roomuser.UserJoinRoomDTO{
-				UserId: user.Id,
+			repository.UserJoinRoomParams{
+				UserId: userSession.UserId,
 				RoomId: roomId,
 			},
 		)
 		if err != nil {
-			httpjson.WriteError(w, http.StatusBadRequest, err)
+			httpjson.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
@@ -255,17 +250,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/leave", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value(api.USER_SESSION_CONTEXT_KEY).(uuid.UUID)
-		user, err := router.UserService.FindOne(
-			r.Context(),
-			user.FindOneDTO{
-				UserId: userId,
-			},
-		)
-		if err != nil {
-			httpjson.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
+		userSession := api.UserSessionFromContext(r.Context())
 		body, err := httpjson.Read[struct {
 			RoomId string `json:"roomId"`
 		}](r)
@@ -278,15 +263,15 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			httpjson.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
-		_, err = router.RoomUserService.UserLeaveRoom(
+		err = router.Repository.UserLeaveRoom(
 			r.Context(),
-			roomuser.UserLeaveRoomDTO{
-				UserId: user.Id,
+			repository.UserLeaveRoomParams{
+				UserId: userSession.UserId,
 				RoomId: roomId,
 			},
 		)
 		if err != nil {
-			httpjson.WriteError(w, http.StatusBadRequest, err)
+			httpjson.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
 		httpjson.Write(w, http.StatusOK, httpjson.BaseResponse{
@@ -296,17 +281,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 	})
 
 	mux.Get("/rooms/connect", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value(api.USER_SESSION_CONTEXT_KEY).(uuid.UUID)
-		user, err := router.UserService.FindOne(
-			r.Context(),
-			user.FindOneDTO{
-				UserId: userId,
-			},
-		)
-		if err != nil {
-			httpjson.WriteError(w, http.StatusUnauthorized, err)
-			return
-		}
+		userSession := api.UserSessionFromContext(r.Context())
 		err = router.ChatService.UserConnect(w, r, &user)
 		if err != nil {
 			httpjson.WriteError(w, http.StatusInternalServerError, err)
