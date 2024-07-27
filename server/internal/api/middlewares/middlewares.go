@@ -6,6 +6,7 @@ import (
 	"gossip/internal/api"
 	"gossip/internal/repository"
 	"gossip/internal/utils/httpjson"
+	"log/slog"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
@@ -21,6 +22,7 @@ func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionIdHeaderValue := r.Header.Get(api.SESSION_ID_HEADER)
 		if sessionIdHeaderValue == "" {
+			slog.Error("empty session ID header")
 			httpjson.WriteError(
 				w,
 				http.StatusUnauthorized,
@@ -30,6 +32,7 @@ func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 		}
 		sessionId, err := uuid.FromString(sessionIdHeaderValue)
 		if err != nil {
+			slog.Error("invalid session ID", "sessionId", sessionId)
 			httpjson.WriteError(
 				w,
 				http.StatusUnauthorized,
@@ -42,6 +45,7 @@ func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 			repository.UserSessionFindOneParams{SessionId: sessionId},
 		)
 		if err != nil {
+			slog.Error("session ID not found", "sessionId", sessionId)
 			httpjson.WriteError(
 				w,
 				http.StatusUnauthorized,
