@@ -1,18 +1,19 @@
 package chat
 
 import (
-	"gossip/internal/models"
 	"log/slog"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
 
 type user struct {
-	model   *models.User
-	service *Service
-	ingress chan event
-	alive   chan bool
+	userId   uuid.UUID
+	username string
+	service  *Service
+	ingress  chan event
+	alive    chan bool
 
 	conn *websocket.Conn
 	send chan *message
@@ -21,22 +22,22 @@ type user struct {
 func newUser(
 	service *Service,
 	conn *websocket.Conn,
-	userModel *models.User,
+	userId uuid.UUID,
+	username string,
 ) (*user, error) {
 	user := &user{
-		model:   userModel,
-		service: service,
-		ingress: make(chan event),
-		alive:   make(chan bool),
+		userId:   userId,
+		username: username,
+		service:  service,
+		ingress:  make(chan event),
+		alive:    make(chan bool),
 
 		conn: conn,
 		send: make(chan *message),
 	}
-
 	go user.receiveEvents()
 	go user.readPump()
 	go user.writePump()
-
 	return user, nil
 }
 
@@ -111,7 +112,7 @@ func (user *user) receiveEvents() {
 
 func (user *user) disconnect() {
 	user.conn.Close()
-	user.service.ingress <- userDisconnectEvent{userId: user.model.Id}
+	user.service.ingress <- userDisconnectEvent{userId: user.userId}
 }
 
 // event management

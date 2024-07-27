@@ -2,15 +2,13 @@ package chat
 
 import (
 	"context"
-	"gossip/internal/models"
-	roomuserPackage "gossip/internal/services/roomuser"
+	"gossip/internal/repository"
 	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 )
 
 type room struct {
-	model   *models.Room
 	service *Service
 	ingress chan event
 	alive   chan bool
@@ -18,29 +16,25 @@ type room struct {
 	userIds map[uuid.UUID]bool
 }
 
-func newRoom(service *Service, roomModel *models.Room) (*room, error) {
+func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	room := &room{
-		model:   roomModel,
 		service: service,
 		ingress: make(chan event),
 		alive:   make(chan bool),
 
 		userIds: make(map[uuid.UUID]bool),
 	}
-
-	roomuserModels, err := service.roomuserService.FindUserIdsByRoomId(
+	results, err := service.repository.UsersFindManyByRoomId(
 		context.Background(),
-		roomuserPackage.FindUserIdsByRoomIdDTO{RoomId: roomModel.Id},
+		repository.UsersFindManyByRoomIdParams{RoomId: roomId},
 	)
 	if err != nil {
 		return nil, err
 	}
-	for _, roomuserModel := range roomuserModels {
-		room.userIds[roomuserModel.UserId] = true
+	for _, result := range results {
+		room.userIds[result.UserId] = true
 	}
-
 	go room.receiveEvents()
-
 	return room, nil
 }
 
