@@ -104,6 +104,36 @@ func (r *Repository) UserFindOneByUsername(
 	)
 }
 
+type UsersFindManyByRoomIdParams struct {
+	RoomId uuid.UUID
+}
+
+type UsersFindManyByRoomIdResult struct {
+	UserId   uuid.UUID `db:"id"`
+	Username string    `db:"username"`
+}
+
+func (r *Repository) UsersFindManyByRoomId(
+	ctx context.Context,
+	dto UsersFindManyByRoomIdParams,
+) ([]UsersFindManyByRoomIdResult, error) {
+	sql := `
+	SELECT
+		users.id,
+		users.username
+	FROM room_users
+		INNER JOIN users ON users.id = room_users.user_id
+	WHERE
+		room_users.room_id = $1
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	return pgx.CollectRows(
+		rows,
+		pgx.RowToStructByName[UsersFindManyByRoomIdResult],
+	)
+}
+
 type UserUpdateParams struct {
 	UserId       uuid.UUID
 	Username     *string
@@ -148,6 +178,51 @@ func (r *Repository) UserDelete(
 	;
 	`
 	_, err := r.PgPool.Query(ctx, sql, dto.UserId)
+	return err
+}
+
+type UserJoinRoomParams struct {
+	UserId uuid.UUID
+	RoomId uuid.UUID
+}
+
+func (r *Repository) UserJoinRoom(
+	ctx context.Context,
+	dto UserJoinRoomParams,
+) error {
+	sql := `
+	INSERT INTO room_users (
+		user_id,
+		room_id
+	)
+	VALUES (
+		$1,
+		$2
+	)
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	return err
+}
+
+type UserLeaveRoomParams struct {
+	UserId uuid.UUID
+	RoomId uuid.UUID
+}
+
+func (r *Repository) UserLeaveRoom(
+	ctx context.Context,
+	dto UserLeaveRoomParams,
+) error {
+	sql := `
+	DELETE FROM room_users
+	WHERE
+		1 = 1
+		AND user_id = $1
+		AND room_id = $2
+	;
+	`
+	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
 	return err
 }
 
@@ -308,6 +383,36 @@ func (r *Repository) RoomFindMany(
 	`
 	rows, _ := r.PgPool.Query(ctx, sql)
 	return pgx.CollectRows(rows, pgx.RowToStructByName[RoomFindManyResult])
+}
+
+type RoomFindManyByUserIdParams struct {
+	UserId uuid.UUID
+}
+
+type RoomFindManyByUserIdResult struct {
+	RoomId uuid.UUID `db:"id"`
+	Name   string    `db:"name"`
+}
+
+func (r *Repository) RoomFindManyByUserId(
+	ctx context.Context,
+	dto RoomFindManyByUserIdParams,
+) ([]RoomFindManyByUserIdResult, error) {
+	sql := `
+	SELECT
+		rooms.id,
+		rooms.name
+	FROM room_users
+		INNER JOIN rooms ON rooms.id = room_users.room_id
+	WHERE
+		room_users.user_id = $1
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId)
+	return pgx.CollectRows(
+		rows,
+		pgx.RowToStructByName[RoomFindManyByUserIdResult],
+	)
 }
 
 type RoomUpdateParams struct {
