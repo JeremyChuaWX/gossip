@@ -266,6 +266,7 @@ type UserSessionFindOneParams struct {
 }
 
 type UserSessionFindOneResult struct {
+	SessionId uuid.UUID `db:"id" json:"sessionId"`
 	UserId    uuid.UUID `db:"user_id" json:"userId"`
 	Username  string    `db:"username" json:"username"`
 	ExpiresOn time.Time `db:"expires_on" json:"expiresOn"`
