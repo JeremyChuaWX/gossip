@@ -14,7 +14,7 @@ import (
 var invalidSessionIdError = errors.New("invalid session ID")
 
 type Middlewares struct {
-	repository repository.Repository
+	Repository *repository.Repository
 }
 
 func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
@@ -37,7 +37,7 @@ func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
 			)
 			return
 		}
-		res, err := m.repository.UserSessionFindOne(
+		res, err := m.Repository.UserSessionFindOne(
 			r.Context(),
 			repository.UserSessionFindOneParams{SessionId: sessionId},
 		)
