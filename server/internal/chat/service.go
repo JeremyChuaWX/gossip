@@ -48,9 +48,10 @@ func (service *Service) initRooms() {
 	for _, result := range results {
 		room, err := newRoom(service, result.RoomId)
 		if err != nil {
-			slog.Error("error creating room", "roomId", result.RoomId)
+			slog.Error("error initing room", "roomId", result.RoomId)
 		}
 		service.rooms[result.RoomId] = room
+		slog.Info("inited room", "roomId", result.RoomId)
 	}
 }
 

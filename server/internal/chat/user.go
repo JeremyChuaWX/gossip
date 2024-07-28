@@ -55,6 +55,15 @@ func (user *user) readPump() {
 			user.alive <- false
 			return
 		}
+		slog.Info(
+			"readPump message",
+			"userId",
+			message.UserId,
+			"roomId",
+			message.RoomId,
+			"body",
+			message.Body,
+		)
 		messageEvent, err := newMessageEvent(&message)
 		if err != nil {
 			slog.Error("error creating message event", "message", message)
@@ -78,7 +87,18 @@ func (user *user) writePump() {
 			if !ok {
 				// TODO: handle user send channel closed
 				slog.Error("user send channel closed")
+				user.alive <- false
+				return
 			}
+			slog.Info(
+				"writePump message",
+				"userId",
+				message.UserId,
+				"roomId",
+				message.RoomId,
+				"body",
+				message.Body,
+			)
 			if err := user.conn.WriteJSON(message); err != nil {
 				slog.Error("error writing JSON", "message", message)
 				user.alive <- false
