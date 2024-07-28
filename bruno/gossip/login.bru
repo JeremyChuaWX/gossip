@@ -18,5 +18,5 @@ body:json {
 }
 
 script:post-response {
-  bru.setEnvVar("sessionId", res.body.data.sessionId);
+  bru.setEnvVar("sessionId", res.body.data.session.id);
 }
