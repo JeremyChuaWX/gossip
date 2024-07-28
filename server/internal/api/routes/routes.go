@@ -208,6 +208,7 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			api.ErrorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+		router.ChatService.RoomCreate(room.RoomId)
 		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
 			Success: true,
 			Message: "room created",

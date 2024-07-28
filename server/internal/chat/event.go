@@ -29,7 +29,7 @@ func newMessageEvent(message *message) (messageEvent, error) {
 }
 
 type roomCreatedEvent struct {
-	room *room
+	roomId uuid.UUID
 }
 
 type userConnectedEvent struct {

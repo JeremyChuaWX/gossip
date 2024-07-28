@@ -36,6 +36,26 @@ func NewService(repository *repository.Repository) (*Service, error) {
 	return service, nil
 }
 
+func (service *Service) initRooms() {
+	results, err := service.repository.RoomFindMany(context.Background())
+	if err != nil {
+		slog.Error("error finding rooms", "error", err.Error())
+	}
+	if len(results) < 1 {
+		slog.Error("no rooms found")
+		return
+	}
+	for _, result := range results {
+		room, err := newRoom(service, result.RoomId)
+		if err != nil {
+			slog.Error("error creating room", "roomId", result.RoomId)
+		}
+		service.rooms[result.RoomId] = room
+	}
+}
+
+// API methods
+
 func (service *Service) UserConnect(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -54,22 +74,8 @@ func (service *Service) UserConnect(
 	return nil
 }
 
-func (service *Service) initRooms() {
-	results, err := service.repository.RoomFindMany(context.Background())
-	if err != nil {
-		slog.Error("error finding rooms", "error", err.Error())
-	}
-	if len(results) < 1 {
-		slog.Error("no rooms found")
-		return
-	}
-	for _, result := range results {
-		room, err := newRoom(service, result.RoomId)
-		if err != nil {
-			slog.Error("error creating room", "roomId", result.RoomId)
-		}
-		service.rooms[result.RoomId] = room
-	}
+func (service *Service) RoomCreate(roomId uuid.UUID) {
+	service.ingress <- roomCreatedEvent{roomId: roomId}
 }
 
 // actor methods
@@ -95,6 +101,8 @@ func (service *Service) disconnect() {
 
 func (s *Service) eventHandler(event event) {
 	switch event := event.(type) {
+	case roomCreatedEvent:
+		s.roomCreatedEventHandler(event)
 	case userConnectedEvent:
 		s.userConnectedEventHandler(event)
 	case userDisconnectedEvent:
@@ -102,6 +110,14 @@ func (s *Service) eventHandler(event event) {
 	default:
 		slog.Error("invalid event", "event", event)
 	}
+}
+
+func (service *Service) roomCreatedEventHandler(event roomCreatedEvent) {
+	room, err := newRoom(service, event.roomId)
+	if err != nil {
+		slog.Error("error creating room", "roomId", event.roomId)
+	}
+	service.rooms[event.roomId] = room
 }
 
 func (service *Service) userConnectedEventHandler(event userConnectedEvent) {
