@@ -180,6 +180,68 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		})
 	})
 
+	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
+		roomIdParam := chi.URLParam(r, "roomId")
+		roomId, err := uuid.FromString(roomIdParam)
+		if err != nil {
+			api.ErrorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		userSession := api.UserSessionFromContext(r.Context())
+		isMember, err := router.Repository.UserCheckRoomMembership(
+			r.Context(),
+			repository.UserCheckRoomMembershipParams{
+				UserId: userSession.UserId,
+				RoomId: roomId,
+			},
+		)
+		if err != nil {
+			api.ErrorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		if !isMember {
+			api.WriteJSON(w, http.StatusForbidden, api.BaseResponse{
+				Success: true,
+				Message: "user not in room",
+			})
+			return
+		}
+		room, err := router.Repository.RoomFindOne(
+			r.Context(),
+			repository.RoomFindOneParams{RoomId: roomId},
+		)
+		if err != nil {
+			api.ErrorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		messages, err := router.Repository.MessagesFindManyByRoomId(
+			r.Context(),
+			repository.MessagesFindManyByRoomIdParams{RoomId: roomId},
+		)
+		if err != nil {
+			api.ErrorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		formattedMessages := []map[string]any{}
+		for _, message := range messages {
+			formattedMessages = append(formattedMessages, map[string]any{
+				"id":        message.MessageId,
+				"userId":    message.UserId,
+				"username":  message.Username,
+				"body":      message.Body,
+				"timestamp": message.Timestamp,
+			})
+		}
+		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
+			Success: true,
+			Message: "room messages found",
+			Data: map[string]any{
+				"name":     room.Name,
+				"messages": formattedMessages,
+			},
+		})
+	})
+
 	mux.Post("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
 		userSession := api.UserSessionFromContext(r.Context())
 		body, err := api.ReadJSON[struct {

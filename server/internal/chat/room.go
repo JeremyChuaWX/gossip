@@ -74,6 +74,16 @@ func (room *room) eventHandler(event event) {
 }
 
 func (room *room) messageEventHandler(event messageEvent) {
+	if err := room.service.repository.MessageSave(
+		context.Background(),
+		repository.MessageSaveParams{
+			UserId: event.userId,
+			RoomId: event.roomId,
+			Body:   event.payload.Body,
+		},
+	); err != nil {
+		slog.Error("error saving message", "message", event.payload)
+	}
 	for userId := range room.userIds {
 		user, ok := room.service.users[userId]
 		if !ok {

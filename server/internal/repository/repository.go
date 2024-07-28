@@ -181,6 +181,37 @@ func (r *Repository) UserDelete(
 	return err
 }
 
+type UserCheckRoomMembershipParams struct {
+	UserId uuid.UUID
+	RoomId uuid.UUID
+}
+
+type UserCheckRoomMembershipResult struct {
+	Membership int `db:"membership"`
+}
+
+func (r *Repository) UserCheckRoomMembership(
+	ctx context.Context,
+	dto UserCheckRoomMembershipParams,
+) (bool, error) {
+	sql := `
+	SELECT
+		COUNT(user_id) as membership
+	FROM room_users
+	WHERE
+		1 = 1
+		AND user_id = $1
+		AND room_id = $2
+	;
+	`
+	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	result, err := pgx.CollectExactlyOneRow(
+		rows,
+		pgx.RowToStructByName[UserCheckRoomMembershipResult],
+	)
+	return result.Membership > 0, err
+}
+
 type UserJoinRoomParams struct {
 	UserId uuid.UUID
 	RoomId uuid.UUID
@@ -493,6 +524,7 @@ type MessagesFindManyByRoomIdResult struct {
 	MessageId uuid.UUID `db:"id" json:"messageId"`
 	UserId    uuid.UUID `db:"user_id" json:"userId"`
 	RoomId    uuid.UUID `db:"room_id" json:"roomId"`
+	Username  string    `db:"username" json:"username"`
 	Body      string    `db:"body" json:"body"`
 	Timestamp time.Time `db:"timestamp" json:"timestamp"`
 }
@@ -502,15 +534,19 @@ func (r *Repository) MessagesFindManyByRoomId(
 	dto MessagesFindManyByRoomIdParams,
 ) ([]MessagesFindManyByRoomIdResult, error) {
 	sql := `
-	SELECT 
-		id,
-		user_id,
-		room_id,
-		body,
-		timestamp
+	SELECT
+		messages.id,
+		messages.user_id,
+		messages.room_id,
+		users.username,
+		messages.body,
+		messages.timestamp
 	FROM messages
+		INNER JOIN users ON users.id = messages.user_id
 	WHERE
 		room_id = $1
+	ORDER BY
+		messages.timestamp ASC
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
