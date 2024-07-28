@@ -127,10 +127,10 @@ func (user *user) writePump() {
 // actor methods
 
 func (user *user) receiveEvents() {
-	defer user.disconnect()
 	for {
 		select {
 		case <-user.alive:
+			user.disconnect()
 			return
 		case event, ok := <-user.ingress:
 			if !ok {

@@ -41,10 +41,10 @@ func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 // actor methods
 
 func (room *room) receiveEvents() {
-	defer room.disconnect()
 	for {
 		select {
 		case <-room.alive:
+			room.disconnect()
 			return
 		case event, ok := <-room.ingress:
 			if !ok {

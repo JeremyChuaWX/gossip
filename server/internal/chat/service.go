@@ -82,10 +82,10 @@ func (service *Service) RoomCreate(roomId uuid.UUID) {
 // actor methods
 
 func (service *Service) receiveEvents() {
-	defer service.disconnect()
 	for {
 		select {
 		case <-service.alive:
+			service.disconnect()
 			return
 		case event, ok := <-service.ingress:
 			if !ok {
