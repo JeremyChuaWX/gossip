@@ -85,7 +85,6 @@ func (user *user) writePump() {
 		select {
 		case message, ok := <-user.send:
 			if !ok {
-				// TODO: handle user send channel closed
 				slog.Error("user send channel closed")
 				user.alive <- false
 				return
