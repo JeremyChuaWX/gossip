@@ -545,6 +545,8 @@ func (r *Repository) MessagesFindManyByRoomId(
 		INNER JOIN users ON users.id = messages.user_id
 	WHERE
 		room_id = $1
+	ORDER BY
+		messages.timestamp ASC
 	;
 	`
 	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
