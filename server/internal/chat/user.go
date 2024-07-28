@@ -51,7 +51,13 @@ func (user *user) readPump() {
 	for {
 		var message message
 		if err := user.conn.ReadJSON(&message); err != nil {
-			slog.Error("error reading JSON", "message", message)
+			slog.Error(
+				"error reading JSON",
+				"error",
+				err.Error(),
+				"message",
+				message,
+			)
 			user.alive <- false
 			return
 		}
@@ -99,7 +105,13 @@ func (user *user) writePump() {
 				message.Body,
 			)
 			if err := user.conn.WriteJSON(message); err != nil {
-				slog.Error("error writing JSON", "message", message)
+				slog.Error(
+					"error writing JSON",
+					"error",
+					err.Error(),
+					"message",
+					message,
+				)
 				user.alive <- false
 				return
 			}
