@@ -31,17 +31,7 @@ func NewService(repository *repository.Repository) (*Service, error) {
 		users:      make(map[uuid.UUID]*user),
 		rooms:      make(map[uuid.UUID]*room),
 	}
-	results, err := service.repository.RoomFindMany(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	for _, result := range results {
-		room, err := newRoom(service, result.RoomId)
-		if err != nil {
-			return nil, err
-		}
-		service.rooms[result.RoomId] = room
-	}
+	service.initRooms()
 	go service.receiveEvents()
 	return service, nil
 }
@@ -62,6 +52,24 @@ func (service *Service) UserConnect(
 	}
 	service.ingress <- userConnectedEvent{user: user}
 	return nil
+}
+
+func (service *Service) initRooms() {
+	results, err := service.repository.RoomFindMany(context.Background())
+	if err != nil {
+		slog.Error("error finding rooms", "error", err.Error())
+	}
+	if len(results) < 1 {
+		slog.Error("no rooms found")
+		return
+	}
+	for _, result := range results {
+		room, err := newRoom(service, result.RoomId)
+		if err != nil {
+			slog.Error("error creating room", "roomId", result.RoomId)
+		}
+		service.rooms[result.RoomId] = room
+	}
 }
 
 // actor methods
