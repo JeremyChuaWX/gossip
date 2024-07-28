@@ -60,7 +60,7 @@ func (service *Service) UserConnect(
 	if err != nil {
 		return err
 	}
-	service.ingress <- userConnectEvent{user: user}
+	service.ingress <- userConnectedEvent{user: user}
 	return nil
 }
 
@@ -87,19 +87,21 @@ func (service *Service) disconnect() {
 
 func (s *Service) eventHandler(event event) {
 	switch event := event.(type) {
-	case userConnectEvent:
-		s.userConnectEventHandler(event)
-	case userDisconnectEvent:
-		s.userDisconnectEventHandler(event)
+	case userConnectedEvent:
+		s.userConnectedEventHandler(event)
+	case userDisconnectedEvent:
+		s.userDisconnectedEventHandler(event)
 	default:
 		slog.Error("invalid event", "event", event)
 	}
 }
 
-func (service *Service) userConnectEventHandler(event userConnectEvent) {
+func (service *Service) userConnectedEventHandler(event userConnectedEvent) {
 	service.users[event.user.userId] = event.user
 }
 
-func (service *Service) userDisconnectEventHandler(event userDisconnectEvent) {
+func (service *Service) userDisconnectedEventHandler(
+	event userDisconnectedEvent,
+) {
 	delete(service.users, event.userId)
 }

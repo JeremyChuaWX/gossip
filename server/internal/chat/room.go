@@ -64,10 +64,10 @@ func (room *room) eventHandler(event event) {
 	switch event := event.(type) {
 	case messageEvent:
 		room.messageEventHandler(event)
-	case userJoinRoomEvent:
-		room.userJoinRoomEventHandler(event)
-	case userLeaveRoomEvent:
-		room.userLeaveRoomEventHandler(event)
+	case userJoinedRoomEvent:
+		room.userJoinedRoomEventHandler(event)
+	case userLeftRoomEvent:
+		room.userLeftRoomEventHandler(event)
 	default:
 		slog.Error("invalid event", "event", event)
 	}
@@ -84,10 +84,10 @@ func (room *room) messageEventHandler(event messageEvent) {
 	}
 }
 
-func (room *room) userJoinRoomEventHandler(event userJoinRoomEvent) {
+func (room *room) userJoinedRoomEventHandler(event userJoinedRoomEvent) {
 	room.userIds[event.userId] = true
 }
 
-func (room *room) userLeaveRoomEventHandler(event userLeaveRoomEvent) {
+func (room *room) userLeftRoomEventHandler(event userLeftRoomEvent) {
 	delete(room.userIds, event.userId)
 }

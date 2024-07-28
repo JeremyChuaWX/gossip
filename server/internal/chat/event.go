@@ -28,20 +28,24 @@ func newMessageEvent(message *message) (messageEvent, error) {
 	}, nil
 }
 
-type userConnectEvent struct {
+type roomCreatedEvent struct {
+	room *room
+}
+
+type userConnectedEvent struct {
 	user *user
 }
 
-type userDisconnectEvent struct {
+type userDisconnectedEvent struct {
 	userId uuid.UUID
 }
 
-type userJoinRoomEvent struct {
+type userJoinedRoomEvent struct {
 	roomId uuid.UUID
 	userId uuid.UUID
 }
 
-type userLeaveRoomEvent struct {
+type userLeftRoomEvent struct {
 	roomId uuid.UUID
 	userId uuid.UUID
 }

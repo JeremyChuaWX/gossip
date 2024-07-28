@@ -112,7 +112,7 @@ func (user *user) receiveEvents() {
 
 func (user *user) disconnect() {
 	user.conn.Close()
-	user.service.ingress <- userDisconnectEvent{userId: user.userId}
+	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
 }
 
 // event management
