@@ -2,15 +2,13 @@ package chat
 
 import (
 	"context"
-	"gossip/internal/models"
-	roomuserPackage "gossip/internal/services/roomuser"
+	"gossip/internal/repository"
 	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
 )
 
 type room struct {
-	model   *models.Room
 	service *Service
 	ingress chan event
 	alive   chan bool
@@ -18,39 +16,35 @@ type room struct {
 	userIds map[uuid.UUID]bool
 }
 
-func newRoom(service *Service, roomModel *models.Room) (*room, error) {
+func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	room := &room{
-		model:   roomModel,
 		service: service,
 		ingress: make(chan event),
 		alive:   make(chan bool),
 
 		userIds: make(map[uuid.UUID]bool),
 	}
-
-	roomuserModels, err := service.roomuserService.FindUserIdsByRoomId(
+	results, err := service.repository.UsersFindManyByRoomId(
 		context.Background(),
-		roomuserPackage.FindUserIdsByRoomIdDTO{RoomId: roomModel.Id},
+		repository.UsersFindManyByRoomIdParams{RoomId: roomId},
 	)
 	if err != nil {
 		return nil, err
 	}
-	for _, roomuserModel := range roomuserModels {
-		room.userIds[roomuserModel.UserId] = true
+	for _, result := range results {
+		room.userIds[result.UserId] = true
 	}
-
 	go room.receiveEvents()
-
 	return room, nil
 }
 
 // actor methods
 
 func (room *room) receiveEvents() {
-	defer room.disconnect()
 	for {
 		select {
 		case <-room.alive:
+			room.disconnect()
 			return
 		case event, ok := <-room.ingress:
 			if !ok {
@@ -70,10 +64,10 @@ func (room *room) eventHandler(event event) {
 	switch event := event.(type) {
 	case messageEvent:
 		room.messageEventHandler(event)
-	case userJoinRoomEvent:
-		room.userJoinRoomEventHandler(event)
-	case userLeaveRoomEvent:
-		room.userLeaveRoomEventHandler(event)
+	case userJoinedRoomEvent:
+		room.userJoinedRoomEventHandler(event)
+	case userLeftRoomEvent:
+		room.userLeftRoomEventHandler(event)
 	default:
 		slog.Error("invalid event", "event", event)
 	}
@@ -90,10 +84,10 @@ func (room *room) messageEventHandler(event messageEvent) {
 	}
 }
 
-func (room *room) userJoinRoomEventHandler(event userJoinRoomEvent) {
+func (room *room) userJoinedRoomEventHandler(event userJoinedRoomEvent) {
 	room.userIds[event.userId] = true
 }
 
-func (room *room) userLeaveRoomEventHandler(event userLeaveRoomEvent) {
+func (room *room) userLeftRoomEventHandler(event userLeftRoomEvent) {
 	delete(room.userIds, event.userId)
 }

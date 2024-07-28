@@ -1,18 +1,19 @@
 package chat
 
 import (
-	"gossip/internal/models"
 	"log/slog"
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 )
 
 type user struct {
-	model   *models.User
-	service *Service
-	ingress chan event
-	alive   chan bool
+	userId   uuid.UUID
+	username string
+	service  *Service
+	ingress  chan event
+	alive    chan bool
 
 	conn *websocket.Conn
 	send chan *message
@@ -21,22 +22,22 @@ type user struct {
 func newUser(
 	service *Service,
 	conn *websocket.Conn,
-	userModel *models.User,
+	userId uuid.UUID,
+	username string,
 ) (*user, error) {
 	user := &user{
-		model:   userModel,
-		service: service,
-		ingress: make(chan event),
-		alive:   make(chan bool),
+		userId:   userId,
+		username: username,
+		service:  service,
+		ingress:  make(chan event),
+		alive:    make(chan bool),
 
 		conn: conn,
 		send: make(chan *message),
 	}
-
 	go user.receiveEvents()
 	go user.readPump()
 	go user.writePump()
-
 	return user, nil
 }
 
@@ -50,10 +51,25 @@ func (user *user) readPump() {
 	for {
 		var message message
 		if err := user.conn.ReadJSON(&message); err != nil {
-			slog.Error("error reading JSON", "message", message)
+			slog.Error(
+				"error reading JSON",
+				"error",
+				err.Error(),
+				"message",
+				message,
+			)
 			user.alive <- false
 			return
 		}
+		slog.Info(
+			"readPump message",
+			"userId",
+			message.UserId,
+			"roomId",
+			message.RoomId,
+			"body",
+			message.Body,
+		)
 		messageEvent, err := newMessageEvent(&message)
 		if err != nil {
 			slog.Error("error creating message event", "message", message)
@@ -75,11 +91,27 @@ func (user *user) writePump() {
 		select {
 		case message, ok := <-user.send:
 			if !ok {
-				// TODO: handle user send channel closed
 				slog.Error("user send channel closed")
+				user.alive <- false
+				return
 			}
+			slog.Info(
+				"writePump message",
+				"userId",
+				message.UserId,
+				"roomId",
+				message.RoomId,
+				"body",
+				message.Body,
+			)
 			if err := user.conn.WriteJSON(message); err != nil {
-				slog.Error("error writing JSON", "message", message)
+				slog.Error(
+					"error writing JSON",
+					"error",
+					err.Error(),
+					"message",
+					message,
+				)
 				user.alive <- false
 				return
 			}
@@ -95,10 +127,10 @@ func (user *user) writePump() {
 // actor methods
 
 func (user *user) receiveEvents() {
-	defer user.disconnect()
 	for {
 		select {
 		case <-user.alive:
+			user.disconnect()
 			return
 		case event, ok := <-user.ingress:
 			if !ok {
@@ -111,7 +143,7 @@ func (user *user) receiveEvents() {
 
 func (user *user) disconnect() {
 	user.conn.Close()
-	user.service.ingress <- userDisconnectEvent{userId: user.model.Id}
+	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
 }
 
 // event management

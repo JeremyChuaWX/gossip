@@ -1,12 +1,4 @@
 services:
-  redis:
-    container_name: redis
-    env_file: ./docker.env
-    image: redis/redis-stack
-    ports:
-      - "6379:6379"
-      - "8001:8001"
-
   postgres:
     command: ["postgres", "-c", "log_statement=all"]
     container_name: postgres
@@ -57,6 +49,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      postgres.migrate:
+        condition: service_completed_successfully
     env_file: ../.env
     ports:
       - "3000:3000"

@@ -10,10 +10,10 @@ import websocket
 
 SESSION_ID_HEADER = "x-session-id"
 USER_ID_HEADER = "x-user-id"
-WS_URL = "ws://127.0.0.1:3000/users/connect"
+WS_URL = "ws://127.0.0.1:3000/rooms/connect"
 LOGIN_URL = "http://127.0.0.1:3000/login"
 DETAILS_URL = "http://127.0.0.1:3000/users"
-ROOM_ID = "97bde354-70f6-4f38-a078-8c43c881af93"
+ROOM_ID = "ea9d3187-558c-42c1-8499-b06629c7576a"
 PASSWORD = "123"
 
 
@@ -22,7 +22,7 @@ def login(username: str) -> str:
         LOGIN_URL, json={"username": username, "password": PASSWORD}
     )
     body = response.json()
-    return body["data"]["sessionId"]
+    return body["data"]["session"]["id"]
 
 
 def get_user_id(session_id: str):
@@ -55,6 +55,7 @@ def websocket_repl(uri: str, session_id: str, user_id: str, args: any):
 
 
 def on_message(ws, message):
+    message = json.loads(message)
     print(
         f"{message["userId"]} [{message["roomId"]}] ({message["timestamp"]}): {message["body"]}"
     )
