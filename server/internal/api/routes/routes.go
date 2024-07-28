@@ -105,10 +105,11 @@ func (router *Router) registerRoutes(mux chi.Router) {
 		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
 			Success: true,
 			Message: "logged in",
-			Data: struct {
-				Session any `json:"session"`
-			}{
-				Session: session,
+			Data: map[string]any{
+				"session": map[string]any{
+					"id":        session.SessionId,
+					"expiresOn": session.ExpiresOn,
+				},
 			},
 		})
 	})
@@ -142,10 +143,11 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
 			Success: true,
 			Message: "logged in user",
-			Data: struct {
-				User any `json:"user"`
-			}{
-				User: userSession,
+			Data: map[string]any{
+				"user": map[string]any{
+					"id":       userSession.UserId,
+					"username": userSession.Username,
+				},
 			},
 		})
 	})
@@ -162,13 +164,18 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 			api.ErrorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+		formattedRooms := []map[string]any{}
+		for _, room := range rooms {
+			formattedRooms = append(formattedRooms, map[string]any{
+				"id":   room.RoomId,
+				"name": room.Name,
+			})
+		}
 		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
 			Success: true,
 			Message: "user rooms found",
-			Data: struct {
-				Rooms any
-			}{
-				Rooms: rooms,
+			Data: map[string]any{
+				"rooms": formattedRooms,
 			},
 		})
 	})
@@ -204,10 +211,10 @@ func (router *Router) registerAuthedRoutes(mux chi.Router) {
 		api.WriteJSON(w, http.StatusOK, api.BaseResponse{
 			Success: true,
 			Message: "room created",
-			Data: struct {
-				Room any `json:"room"`
-			}{
-				Room: room,
+			Data: map[string]any{
+				"room": map[string]any{
+					"id": room.RoomId,
+				},
 			},
 		})
 	})
