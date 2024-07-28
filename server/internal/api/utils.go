@@ -49,8 +49,7 @@ func ReadJSON[T any](r *http.Request) (T, error) {
 func WriteJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(status)
-	err := json.NewEncoder(w).Encode(data)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
 		slog.Error("error writing JSON body", "error", err.Error())
 	}
 }
