@@ -81,6 +81,7 @@ func (service *Service) RoomCreate(roomId uuid.UUID) {
 // actor methods
 
 func (service *Service) receiveEvents() {
+	defer service.disconnect()
 	for {
 		select {
 		case <-service.alive:
