@@ -4,49 +4,36 @@ import (
 	"context"
 	"encoding/json"
 	"gossip/internal/repository"
-	"log"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/gofrs/uuid/v5"
 )
 
-func SessionIdFromHeader(header http.Header) (uuid.UUID, error) {
+func sessionIdFromHeader(header http.Header) (uuid.UUID, error) {
 	sessionId := header.Get(SESSION_ID_HEADER)
 	return uuid.FromString(sessionId)
 }
 
-func UserSessionFromContext(
+func userSessionFromContext(
 	ctx context.Context,
 ) repository.UserSessionFindOneResult {
 	return ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.UserSessionFindOneResult)
 }
 
-func WalkRoutes(
-	method string,
-	route string,
-	handler http.Handler,
-	middlewares ...func(http.Handler) http.Handler,
-) error {
-	route = strings.Replace(route, "/*/", "/", -1)
-	log.Printf("%s %s\n", method, route)
-	return nil
-}
-
-type BaseResponse struct {
+type baseResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 }
 
-func ReadJSON[T any](r *http.Request) (T, error) {
+func readJSON[T any](r *http.Request) (T, error) {
 	var res T
 	err := json.NewDecoder(r.Body).Decode(&res)
 	return res, err
 }
 
-func WriteJSON(w http.ResponseWriter, status int, data any) {
+func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
@@ -54,10 +41,10 @@ func WriteJSON(w http.ResponseWriter, status int, data any) {
 	}
 }
 
-func ErrorToJSON(w http.ResponseWriter, status int, err error) {
+func errorToJSON(w http.ResponseWriter, status int, err error) {
 	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(status)
-	encodingErr := json.NewEncoder(w).Encode(BaseResponse{
+	encodingErr := json.NewEncoder(w).Encode(baseResponse{
 		Success: false,
 		Message: err.Error(),
 	})

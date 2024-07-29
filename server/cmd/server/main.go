@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"gossip/internal/adapters/postgres"
-	"gossip/internal/api/middlewares"
-	"gossip/internal/api/routes"
+	"gossip/internal/api"
 	"gossip/internal/chat"
 	"gossip/internal/config"
 	"gossip/internal/repository"
+	"log"
 	"log/slog"
+	"net/http"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -38,20 +43,40 @@ func main() {
 		return
 	}
 
-	middlewares := &middlewares.Middlewares{
-		Repository: repository,
-	}
-
-	router := &routes.Router{
+	api := &api.Api{
 		Repository:  repository,
 		ChatService: chatService,
-		Middlewares: middlewares,
+	}
+
+	// web := &web.Web{}
+
+	router := chi.NewMux()
+
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+
+	router.Mount("/api", api.InitRouter())
+	// router.Mount("/", web.InitRouter())
+
+	if err := chi.Walk(router, walkRoutes); err != nil {
+		slog.Error("error walking router")
+		return
 	}
 
 	slog.Info("server is running", "address", config.ServerAddress)
-	err = router.Start(config.ServerAddress)
-	if err != nil {
+	if err := http.ListenAndServe(config.ServerAddress, router); err != nil {
 		slog.Error(err.Error())
 		return
 	}
+}
+
+func walkRoutes(
+	method string,
+	route string,
+	handler http.Handler,
+	middlewares ...func(http.Handler) http.Handler,
+) error {
+	route = strings.Replace(route, "/*/", "/", -1)
+	log.Printf("%s %s\n", method, route)
+	return nil
 }
