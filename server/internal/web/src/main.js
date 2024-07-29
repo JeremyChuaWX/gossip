@@ -2,15 +2,15 @@
 
 const SERVER_URL = "127.0.0.1:3000";
 
-let sessionId = "";
-
 let loginForm = document.getElementById("login-form");
 loginForm.onsubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(loginForm);
     const username = formData.get("username");
     const password = formData.get("password");
-    login(username, password);
+    // login(username, password);
+    console.log({ username, password });
+    window.location.replace(`${SERVER_URL}/home`);
 };
 
 /**
