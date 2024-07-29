@@ -1,9 +1,8 @@
-package middlewares
+package api
 
 import (
 	"context"
 	"errors"
-	"gossip/internal/api"
 	"gossip/internal/repository"
 	"log/slog"
 	"net/http"
@@ -13,51 +12,31 @@ import (
 
 var invalidSessionIdError = errors.New("invalid session ID")
 
-type Middlewares struct {
-	Repository *repository.Repository
-}
-
-func (m *Middlewares) AuthMiddleware(next http.Handler) http.Handler {
+func (api *Api) authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sessionIdHeaderValue := r.Header.Get(api.SESSION_ID_HEADER)
+		sessionIdHeaderValue := r.Header.Get(SESSION_ID_HEADER)
 		if sessionIdHeaderValue == "" {
 			slog.Error("empty session ID header")
-			api.ErrorToJSON(
-				w,
-				http.StatusUnauthorized,
-				invalidSessionIdError,
-			)
+			errorToJSON(w, http.StatusUnauthorized, invalidSessionIdError)
 			return
 		}
 		sessionId, err := uuid.FromString(sessionIdHeaderValue)
 		if err != nil {
 			slog.Error("invalid session ID", "sessionId", sessionId)
-			api.ErrorToJSON(
-				w,
-				http.StatusUnauthorized,
-				invalidSessionIdError,
-			)
+			errorToJSON(w, http.StatusUnauthorized, invalidSessionIdError)
 			return
 		}
-		res, err := m.Repository.UserSessionFindOne(
+		res, err := api.Repository.UserSessionFindOne(
 			r.Context(),
 			repository.UserSessionFindOneParams{SessionId: sessionId},
 		)
 		if err != nil {
 			slog.Error("session ID not found", "sessionId", sessionId)
-			api.ErrorToJSON(
-				w,
-				http.StatusUnauthorized,
-				invalidSessionIdError,
-			)
+			errorToJSON(w, http.StatusUnauthorized, invalidSessionIdError)
 			return
 		}
 		nextReq := r.WithContext(
-			context.WithValue(
-				r.Context(),
-				api.USER_SESSION_CONTEXT_KEY,
-				res,
-			),
+			context.WithValue(r.Context(), USER_SESSION_CONTEXT_KEY, res),
 		)
 		next.ServeHTTP(w, nextReq)
 	})
