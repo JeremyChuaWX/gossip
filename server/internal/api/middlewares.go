@@ -22,7 +22,11 @@ func (api *Api) authMiddleware(next http.Handler) http.Handler {
 		}
 		sessionId, err := uuid.FromString(sessionIdHeaderValue)
 		if err != nil {
-			slog.Error("invalid session ID", "sessionId", sessionId)
+			slog.Error(
+				"invalid session ID",
+				"sessionIdHeaderValue",
+				sessionIdHeaderValue,
+			)
 			errorToJSON(w, http.StatusUnauthorized, invalidSessionIdError)
 			return
 		}
