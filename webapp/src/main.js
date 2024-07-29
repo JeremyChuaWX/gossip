@@ -1,6 +1,6 @@
 "use strict";
 
-let SERVER_URL = "127.0.0.1:3000";
+const SERVER_URL = "127.0.0.1:3000";
 
 let sessionId = "";
 
@@ -28,6 +28,6 @@ async function login(username, password) {
             password: password,
         },
     });
-    res = await res.json();
-    sessionId = res.session.id;
+    const data = await res.json();
+    sessionId = data.session.id;
 }
