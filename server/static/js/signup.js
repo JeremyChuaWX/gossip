@@ -1,26 +1,26 @@
 "use strict";
 
-let loginForm = document.getElementById("login-form");
-loginForm.onsubmit = async (event) => {
+let signupForm = document.getElementById("signup-form");
+signupForm.onsubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(loginForm);
+    const formData = new FormData(signupForm);
     const username = formData.get("username");
     const password = formData.get("password");
     try {
-        await login(username, password);
+        await signup(username, password);
     } catch {
-        alert("Error logging in");
+        alert("Error signing up");
         return;
     }
-    window.location.replace("/home");
+    window.location.replace("/login");
 };
 
 /**
  * @param {string} username
  * @param {string} password
  */
-async function login(username, password) {
-    await fetch("/login", {
+async function signup(username, password) {
+    await fetch("/signup", {
         method: "POST",
         headers: {
             "content-type": "application/json",

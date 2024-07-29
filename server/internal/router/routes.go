@@ -3,6 +3,8 @@ package router
 import (
 	"gossip/internal/repository"
 	"gossip/internal/utils/password"
+	"html/template"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -110,6 +112,28 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	mux.Use(router.authMiddleware)
 
 	mux.Get("/home", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/home.html")
+		userSession := userSessionFromContext(r.Context())
+		rooms, err := router.Repository.RoomFindManyByUserId(
+			r.Context(),
+			repository.RoomFindManyByUserIdParams{UserId: userSession.UserId},
+		)
+		if err != nil {
+			slog.Error(
+				"error finding rooms for user",
+				"userSession",
+				userSession,
+			)
+			return
+		}
+		t, err := template.ParseFiles("pages/home.html")
+		if err != nil {
+			slog.Error("error parsing home.html")
+			return
+		}
+		err = t.Execute(w, rooms)
+		if err != nil {
+			slog.Error("error executing home.html template")
+			return
+		}
 	})
 }
