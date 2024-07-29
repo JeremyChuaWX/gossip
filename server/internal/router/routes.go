@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid/v5"
 )
 
 func (router *Router) routeGroup(mux chi.Router) {
@@ -133,6 +134,55 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		err = t.Execute(w, rooms)
 		if err != nil {
 			slog.Error("error executing home.html template")
+			return
+		}
+	})
+
+	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		roomIdParamValue := chi.URLParam(r, "roomId")
+		if roomIdParamValue == "" {
+			slog.Error("invalid room ID")
+			return
+		}
+		roomId, err := uuid.FromString(roomIdParamValue)
+		if err != nil {
+			slog.Error("invalid room ID", "roomIdParamValue", roomIdParamValue)
+			return
+		}
+		isMember, err := router.Repository.UserCheckRoomMembership(
+			r.Context(),
+			repository.UserCheckRoomMembershipParams{
+				UserId: userSession.UserId,
+				RoomId: roomId,
+			},
+		)
+		if err != nil || !isMember {
+			slog.Error(
+				"user not in room",
+				"userId",
+				userSession.UserId,
+				"roomId",
+				roomId,
+			)
+			return
+		}
+		room, err := router.Repository.RoomFindOne(
+			r.Context(),
+			repository.RoomFindOneParams{RoomId: roomId},
+		)
+		if err != nil {
+			slog.Error("error finding room", "roomId", roomId)
+			return
+		}
+		t, err := template.ParseFiles("pages/room.html")
+		if err != nil {
+			slog.Error("error parsing room.html")
+			return
+		}
+		err = t.Execute(w, room)
+		if err != nil {
+			slog.Error("error executing room.html template")
 			return
 		}
 	})
