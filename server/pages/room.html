@@ -20,23 +20,41 @@
                     <h1 class="text-2xl font-bold capitalize">{{ .Name }}</h1>
                 </div>
 
-                <!-- messages -->
-                <div class="flex flex-col gap-2"></div>
+                <div
+                    class="flex flex-col flex-1 gap-4 p-4 rounded-lg border-2 border-stone-700"
+                >
+                    <!-- messages -->
+                    <div
+                        class="flex overflow-y-scroll flex-col flex-1 gap-2"
+                        id="messages"
+                    ></div>
 
-                <!-- input -->
-                <form id="message-box">
-                    <input
-                        class="py-1 px-2 rounded-md bg-stone-100 text-stone-800"
-                        type="text"
-                        name="body"
-                    />
-                    <input
-                        class="p-2 font-bold rounded-lg bg-stone-800"
-                        type="submit"
-                        value="Send"
-                    />
-                </form>
+                    <!-- input -->
+                    <form class="flex gap-2" id="message-box">
+                        <input
+                            class="flex-1 py-1 px-2 rounded-md bg-stone-100 text-stone-800"
+                            type="text"
+                            name="body"
+                        />
+                        <input
+                            class="py-1 px-2 font-bold rounded-lg bg-stone-800"
+                            type="submit"
+                            value="Send"
+                        />
+                    </form>
+                </div>
             </div>
         </div>
     </body>
 </html>
+
+<template id="message-template">
+    <div
+        class="flex flex-col gap-1 py-1 px-2 w-max-1/2 w-fit"
+        id="message-template-message"
+    >
+        <p class="font-bold" id="message-template-username"></p>
+        <p class="text-wrap" id="message-template-body"></p>
+        <span class="text-stone-600" id="message-template-timestamp"></span>
+    </div>
+</template>
