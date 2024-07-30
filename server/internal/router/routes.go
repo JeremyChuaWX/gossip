@@ -112,6 +112,20 @@ func (router *Router) routeGroup(mux chi.Router) {
 func (router *Router) authedRouteGroup(mux chi.Router) {
 	mux.Use(router.authMiddleware)
 
+	mux.Get("/connect", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		err := router.ChatService.UserConnect(
+			w,
+			r,
+			userSession.UserId,
+			userSession.Username,
+		)
+		if err != nil {
+			slog.Error("error creating WS connection")
+			return
+		}
+	})
+
 	mux.Get("/home", func(w http.ResponseWriter, r *http.Request) {
 		userSession := userSessionFromContext(r.Context())
 		rooms, err := router.Repository.RoomFindManyByUserId(
