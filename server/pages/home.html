@@ -14,18 +14,23 @@
             </div>
 
             <!-- rooms -->
-            <div>
-                <h1>Rooms</h1>
-                <ul>
+            <div class="flex flex-col w-2/3 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold capitalize">Rooms</h1>
+                </div>
+
+                <div class="flex flex-col gap-2">
                     {{if eq (len .) 0}}
-                    <li>No Rooms</li>
+                    <p class="italic text-stone-600 text-center">No rooms</p>
                     {{end}}
                     {{range .}}
-                    <div>
-                        <a href="/rooms/{{.RoomId}}">{{.Name}}</a>
-                    </div>
+                    <a href="/rooms/{{.RoomId}}" >
+                        <div class="rounded-lg bg-stone-700 p-4">
+                            <h1 class="font-bold capitalize">{{.Name}}</h1>
+                        </div>
+                    </a>
                     {{end}}
-                </ul>
+                </div>
             </div>
         </div>
     </body>
