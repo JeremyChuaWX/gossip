@@ -1,6 +1,6 @@
 "use strict";
 
-let signupForm = document.getElementById("signup-form");
+const signupForm = document.getElementById("signup-form");
 signupForm.onsubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(signupForm);

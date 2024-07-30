@@ -17,7 +17,7 @@ ws.onclose = (event) => {
     console.log("onclose", event);
 };
 
-let messageBox = document.getElementById("message-box");
+const messageBox = document.getElementById("message-box");
 messageBox.onsubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(messageBox);
