@@ -37,7 +37,7 @@ ws.onmessage = (event) => {
     {
     messageElement.querySelector("#message-template-username").textContent = message.username;
     messageElement.querySelector("#message-template-body").textContent = message.body;
-    messageElement.querySelector("#message-template-timestamp").textContent = message.timestamp;
+    messageElement.querySelector("#message-template-timestamp").textContent = new Date(message.timestamp).toLocaleString();
     }
     messages.appendChild(messageElement);
 };
