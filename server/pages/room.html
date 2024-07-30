@@ -5,8 +5,10 @@
         <link href="/static/css/output.css" rel="stylesheet" />
         <script src="/static/js/room.js" defer></script>
     </head>
-    <body class="bg-stone-900 text-stone-200">
-        <div class="flex flex-col flex-wrap gap-8 items-center p-2">
+    <body class="flex flex-col h-screen bg-stone-900 text-stone-200">
+        <div
+            class="flex overflow-hidden flex-col flex-grow gap-8 items-center p-2 h-full"
+        >
             <!-- header -->
             <div
                 class="flex justify-center items-center p-4 w-full rounded-lg bg-stone-800"
@@ -15,19 +17,31 @@
             </div>
 
             <!-- room -->
-            <div class="flex flex-col gap-4 w-2/3">
+            <div
+                class="flex overflow-hidden flex-col flex-grow gap-4 w-2/3 h-full"
+            >
                 <div>
-                    <h1 class="text-2xl font-bold capitalize">{{ .Name }}</h1>
+                    <h1 class="text-2xl font-bold capitalize">{{ .name }}</h1>
                 </div>
 
                 <div
-                    class="flex flex-col flex-1 gap-4 p-4 rounded-lg border-2 border-stone-700"
+                    class="flex overflow-hidden flex-col flex-grow gap-4 p-4 rounded-lg border-2 border-stone-700"
                 >
                     <!-- messages -->
                     <div
-                        class="flex overflow-y-scroll flex-col flex-1 gap-2"
+                        class="flex overflow-y-auto flex-col flex-1 gap-2"
                         id="messages"
-                    ></div>
+                    >
+                        {{if ne (len .messages) 0}} {{range .messages}}
+                        <div
+                            class="flex flex-col gap-1 py-1 px-2 max-w-1/2 w-fit"
+                        >
+                            <p class="font-bold">{{.Username}}</p>
+                            <p class="break-words">{{.Body}}</p>
+                            <span class="text-stone-600">{{.Timestamp}}</span>
+                        </div>
+                        {{end}} {{end}}
+                    </div>
 
                     <!-- input -->
                     <form class="flex gap-2" id="message-box">
@@ -50,11 +64,11 @@
 
 <template id="message-template">
     <div
-        class="flex flex-col gap-1 py-1 px-2 w-max-1/2 w-fit"
+        class="flex flex-col gap-1 py-1 px-2 max-w-1/2 w-fit"
         id="message-template-message"
     >
         <p class="font-bold" id="message-template-username"></p>
-        <p class="text-wrap" id="message-template-body"></p>
+        <p class="break-words" id="message-template-body"></p>
         <span class="text-stone-600" id="message-template-timestamp"></span>
     </div>
 </template>
