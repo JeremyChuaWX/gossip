@@ -62,7 +62,11 @@ func (user *user) readPump() {
 			return
 		}
 		slog.Info("readPump message", "message", message)
-		messageEvent, err := newMessageEvent(&message)
+		messageEvent, err := newMessageEvent(
+			user.userId,
+			user.username,
+			&message,
+		)
 		if err != nil {
 			slog.Error("error creating message event", "message", message)
 			continue
