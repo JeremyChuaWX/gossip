@@ -142,12 +142,12 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		}
 		t, err := template.ParseFiles("pages/home.html")
 		if err != nil {
-			slog.Error("error parsing home.html")
+			slog.Error("error parsing home.html", "error", err)
 			return
 		}
 		err = t.Execute(w, rooms)
 		if err != nil {
-			slog.Error("error executing home.html template")
+			slog.Error("error executing home.html template", "error", err)
 			return
 		}
 	})
@@ -189,14 +189,24 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 			slog.Error("error finding room", "roomId", roomId)
 			return
 		}
+		messages, err := router.Repository.MessagesFindManyByRoomId(
+			r.Context(),
+			repository.MessagesFindManyByRoomIdParams{RoomId: roomId},
+		)
+		if err != nil {
+			slog.Error("error room messages", "roomId", roomId)
+		}
 		t, err := template.ParseFiles("pages/room.html")
 		if err != nil {
-			slog.Error("error parsing room.html")
+			slog.Error("error parsing room.html", "error", err)
 			return
 		}
-		err = t.Execute(w, room)
+		err = t.Execute(w, map[string]any{
+			"name":     room.Name,
+			"messages": messages,
+		})
 		if err != nil {
-			slog.Error("error executing room.html template")
+			slog.Error("error executing room.html template", "error", err)
 			return
 		}
 	})
