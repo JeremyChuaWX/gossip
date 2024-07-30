@@ -152,6 +152,85 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		}
 	})
 
+	mux.Get("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "pages/create-room.html")
+	})
+
+	mux.Post("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		body, err := readJSON[struct {
+			RoomName string `json:"roomName"`
+		}](r)
+		if err != nil {
+			slog.Error("invalid body for create room", "error", err)
+			errorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		room, err := router.Repository.RoomCreate(
+			r.Context(),
+			repository.RoomCreateParams{Name: body.RoomName},
+		)
+		if err != nil {
+			slog.Error("error creating room", "error", err)
+			errorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		err = router.Repository.UserJoinRoom(
+			r.Context(),
+			repository.UserJoinRoomParams{
+				UserId: userSession.UserId,
+				RoomId: room.RoomId,
+			},
+		)
+		if err != nil {
+			slog.Error("error joining room", "error", err)
+			errorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, baseResponse{
+			Success: true,
+			Message: "room created",
+		})
+	})
+
+	mux.Get("/rooms/join", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "pages/join-room.html")
+	})
+
+	mux.Post("/rooms/join", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		body, err := readJSON[struct {
+			RoomId string `json:"roomId"`
+		}](r)
+		if err != nil {
+			slog.Error("invalid body for create room", "error", err)
+			errorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		roomId, err := uuid.FromString(body.RoomId)
+		if err != nil {
+			slog.Error("invalid room ID", "body", body)
+			errorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		err = router.Repository.UserJoinRoom(
+			r.Context(),
+			repository.UserJoinRoomParams{
+				UserId: userSession.UserId,
+				RoomId: roomId,
+			},
+		)
+		if err != nil {
+			slog.Error("error joining room", "error", err)
+			errorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, baseResponse{
+			Success: true,
+			Message: "room joined",
+		})
+	})
+
 	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
 		userSession := userSessionFromContext(r.Context())
 		roomIdParamValue := chi.URLParam(r, "roomId")

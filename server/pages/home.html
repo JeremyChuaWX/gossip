@@ -14,18 +14,32 @@
             </div>
 
             <!-- rooms -->
-            <div class="flex flex-col w-2/3 gap-4">
-                <div>
+            <div class="flex flex-col gap-4 w-2/3">
+                <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold capitalize">Rooms</h1>
+                    <div class="flex gap-2 items-center">
+                        <a
+                            class="p-2 font-bold rounded-lg bg-stone-800"
+                            href="/rooms/create"
+                        >
+                            Create Room
+                        </a>
+                        <a
+                            class="p-2 font-bold rounded-lg bg-stone-800"
+                            href="/rooms/join"
+                        >
+                            Join Room
+                        </a>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-2">
                     {{if eq (len .) 0}}
-                    <p class="italic text-stone-600 text-center">No rooms</p>
+                    <p class="italic text-center text-stone-600">No rooms</p>
                     {{end}}
                     {{range .}}
-                    <a href="/rooms/{{.RoomId}}" >
-                        <div class="rounded-lg bg-stone-700 p-4">
+                    <a href="/rooms/{{.RoomId}}">
+                        <div class="p-4 rounded-lg bg-stone-700">
                             <h1 class="font-bold capitalize">{{.Name}}</h1>
                         </div>
                     </a>

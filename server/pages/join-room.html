@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="/static/css/output.css" rel="stylesheet" />
+        <script src="/static/js/join-room.js" defer></script>
+    </head>
+    <body class="bg-stone-900 text-stone-200">
+        <div class="flex flex-col gap-8 items-center p-2">
+            <!-- header -->
+            <div
+                class="flex justify-center items-center p-4 w-full rounded-lg bg-stone-800"
+            >
+                <h1 class="text-3xl font-bold capitalize">Gossip</h1>
+            </div>
+
+            <!-- join room -->
+            <form
+                class="flex flex-col p-8 w-1/3 rounded-lg bg-stone-700"
+                id="join-room-form"
+            >
+                <div class="flex flex-col gap-8">
+                    <div class="flex flex-col gap-2">
+                        <h1 class="text-3xl font-bold capitalize">Join Room</h1>
+                        <div class="flex flex-col gap-1">
+                            <label class="font-semibold" for="room-id"
+                                >Room ID</label
+                            >
+                            <input
+                                class="py-1 px-2 rounded-md bg-stone-100 text-stone-800"
+                                type="text"
+                                name="room-id"
+                            />
+                        </div>
+                    </div>
+                    <input
+                        class="p-2 text-xl font-bold rounded-lg bg-stone-800"
+                        type="submit"
+                        value="Join Room"
+                    />
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
