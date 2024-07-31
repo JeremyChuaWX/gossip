@@ -3,15 +3,24 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link href="/static/css/output.css" rel="stylesheet" />
-        <script src="/static/js/create-room.js" defer></script>
+        <script type="module" src="/static/js/create-room.js" defer></script>
     </head>
     <body class="bg-stone-900 text-stone-200">
         <div class="flex flex-col gap-8 items-center p-2">
             <!-- header -->
             <div
-                class="flex justify-center items-center p-4 w-full rounded-lg bg-stone-800"
+                class="flex justify-between items-center p-4 w-full rounded-lg bg-stone-800"
             >
-                <h1 class="text-3xl font-bold capitalize">Gossip</h1>
+                <div class="flex-1"></div>
+                <a class="text-3xl font-bold capitalize" href="/">Gossip</a>
+                <div class="flex flex-1 justify-end">
+                    <button
+                        class="py-2 px-3 font-bold rounded-lg hover:bg-red-800"
+                        id="logout-button"
+                    >
+                        Log Out
+                    </button>
+                </div>
             </div>
 
             <!-- create room -->

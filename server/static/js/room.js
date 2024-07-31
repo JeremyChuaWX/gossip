@@ -9,6 +9,10 @@
  * @property {string} timestamp
  */
 
+import { registerLogoutButton } from "./functions.js";
+
+registerLogoutButton();
+
 const roomId = document.URL.split("/").pop();
 
 const leaveRoomButton = document.getElementById("leave-room-button");

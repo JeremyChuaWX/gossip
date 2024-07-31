@@ -1,19 +1,5 @@
 "use strict";
 
-const logoutButton = document.getElementById("logout-button");
-logoutButton.onclick = async (event) => {
-    event.preventDefault();
-    try {
-        await logout();
-    } catch {
-        alert("Error logging out");
-        return;
-    }
-    window.location.replace("/");
-};
+import { registerLogoutButton } from "./functions.js";
 
-async function logout() {
-    await fetch("/api/logout", {
-        method: "POST",
-    });
-}
+registerLogoutButton();

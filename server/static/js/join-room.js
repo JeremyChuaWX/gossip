@@ -1,5 +1,9 @@
 "use strict";
 
+import { registerLogoutButton } from "./functions.js";
+
+registerLogoutButton();
+
 const joinRoomForm = document.getElementById("join-room-form");
 joinRoomForm.onsubmit = async (event) => {
     event.preventDefault();
