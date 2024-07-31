@@ -10,7 +10,7 @@
  */
 
 const messageBox = document.getElementById("message-box");
-messageBox.onsubmit = async (event) => {
+messageBox.onsubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(messageBox);
     const body = formData.get("body");
