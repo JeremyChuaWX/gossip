@@ -26,7 +26,7 @@ signupForm.onsubmit = async (event) => {
  * @param {string} password
  */
 async function signup(username, password) {
-    await fetch("/signup", {
+    await fetch("/api/signup", {
         method: "POST",
         headers: {
             "content-type": "application/json",

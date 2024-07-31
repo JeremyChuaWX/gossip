@@ -30,7 +30,7 @@ const messages = document.getElementById("messages");
 
 const messageTemplate = document.getElementById("message-template");
 
-const ws = new WebSocket("/connect");
+const ws = new WebSocket("/api/connect");
 ws.onopen = (event) => {
     console.log("onopen", event);
 };
@@ -59,7 +59,7 @@ async function leaveRoom() {
         console.error("invalid roomId", roomId);
         return;
     }
-    await fetch("/rooms/leave", {
+    await fetch("/api/rooms/leave", {
         method: "POST",
         headers: {
             "content-type": "application/json",

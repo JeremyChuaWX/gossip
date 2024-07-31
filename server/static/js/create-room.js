@@ -18,7 +18,7 @@ createRoomForm.onsubmit = async (event) => {
  * @param {string} roomName
  */
 async function createRoom(roomName) {
-    await fetch("/rooms/create", {
+    await fetch("/api/rooms/create", {
         method: "POST",
         headers: {
             "content-type": "application/json",

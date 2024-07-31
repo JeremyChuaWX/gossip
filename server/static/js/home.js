@@ -13,7 +13,7 @@ logoutButton.onclick = async (event) => {
 };
 
 async function logout() {
-    await fetch("/logout", {
+    await fetch("/api/logout", {
         method: "POST",
     });
 }

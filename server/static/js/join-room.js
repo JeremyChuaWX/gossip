@@ -18,7 +18,7 @@ joinRoomForm.onsubmit = async (event) => {
  * @param {string} roomId
  */
 async function joinRoom(roomId) {
-    await fetch("/rooms/join", {
+    await fetch("/api/rooms/join", {
         method: "POST",
         headers: {
             "content-type": "application/json",

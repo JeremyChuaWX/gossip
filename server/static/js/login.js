@@ -26,7 +26,7 @@ loginForm.onsubmit = async (event) => {
  * @param {string} password
  */
 async function login(username, password) {
-    await fetch("/login", {
+    await fetch("/api/login", {
         method: "POST",
         headers: {
             "content-type": "application/json",
