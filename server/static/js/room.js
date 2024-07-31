@@ -9,6 +9,14 @@
  * @property {string} timestamp
  */
 
+const roomId = document.URL.split("/").pop();
+
+const leaveRoomButton = document.getElementById("leave-room-button");
+leaveRoomButton.onclick = async (event) => {
+    event.preventDefault();
+    await leaveRoom();
+};
+
 const messageBox = document.getElementById("message-box");
 messageBox.onsubmit = (event) => {
     event.preventDefault();
@@ -21,8 +29,6 @@ messageBox.onsubmit = (event) => {
 const messages = document.getElementById("messages");
 
 const messageTemplate = document.getElementById("message-template");
-
-const roomId = document.URL.split("/").pop();
 
 const ws = new WebSocket("/connect");
 ws.onopen = (event) => {
@@ -47,6 +53,24 @@ ws.onerror = (event) => {
 ws.onclose = (event) => {
     console.log("onclose", event);
 };
+
+async function leaveRoom() {
+    if (!roomId) {
+        console.error("invalid roomId", roomId);
+        return;
+    }
+    await fetch("/rooms/leave", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify({
+            roomId: roomId,
+        }),
+    });
+    ws.close();
+    window.location.replace("/home");
+}
 
 /**
  * @param {string} body

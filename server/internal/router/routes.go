@@ -232,6 +232,40 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		})
 	})
 
+	mux.Post("/rooms/leave", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		body, err := readJSON[struct {
+			RoomId string `json:"roomId"`
+		}](r)
+		if err != nil {
+			slog.Error("invalid body for create room", "error", err)
+			errorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		roomId, err := uuid.FromString(body.RoomId)
+		if err != nil {
+			slog.Error("invalid room ID", "body", body)
+			errorToJSON(w, http.StatusBadRequest, err)
+			return
+		}
+		err = router.Repository.UserLeaveRoom(
+			r.Context(),
+			repository.UserLeaveRoomParams{
+				UserId: userSession.UserId,
+				RoomId: roomId,
+			},
+		)
+		if err != nil {
+			slog.Error("error leaving room", "error", err)
+			errorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, baseResponse{
+			Success: true,
+			Message: "room left",
+		})
+	})
+
 	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
 		userSession := userSessionFromContext(r.Context())
 		roomIdParamValue := chi.URLParam(r, "roomId")
