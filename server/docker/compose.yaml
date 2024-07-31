@@ -11,6 +11,7 @@ services:
     image: postgres:alpine
     ports:
       - "5432:5432"
+    profiles: [development]
     volumes:
       - ./pg_data:/var/lib/postgresql/data
 
@@ -23,6 +24,7 @@ services:
     entrypoint: ["migrate", "-database", "$POSTGRES_URL", "-path", "/migrations"]
     env_file: ./docker.env
     image: migrate/migrate
+    profiles: [development]
     volumes:
       - ../migrations:/migrations
 
@@ -40,6 +42,7 @@ services:
     image: dpage/pgadmin4
     ports:
       - "5050:80"
+    profiles: [development]
     volumes:
       - ./pg_admin:/var/lib/pgadmin
 
@@ -54,6 +57,7 @@ services:
     env_file: ../.env
     ports:
       - "3000:3000"
+    profiles: [server]
 
 configs:
   pgpass:
