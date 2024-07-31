@@ -113,6 +113,30 @@ func (router *Router) routeGroup(mux chi.Router) {
 func (router *Router) authedRouteGroup(mux chi.Router) {
 	mux.Use(router.authMiddleware)
 
+	mux.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+		userSession := userSessionFromContext(r.Context())
+		err := router.Repository.UserSessionDelete(
+			r.Context(),
+			repository.UserSessionDeleteParams{
+				SessionId: userSession.SessionId,
+			},
+		)
+		if err != nil {
+			slog.Error("error deleting session", "userSession", userSession)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     SESSION_ID_COOKIE,
+			MaxAge:   0,
+			Secure:   true,
+			HttpOnly: true,
+		})
+		writeJSON(w, http.StatusOK, baseResponse{
+			Success: true,
+			Message: "logged out",
+		})
+	})
+
 	mux.Get("/connect", func(w http.ResponseWriter, r *http.Request) {
 		userSession := userSessionFromContext(r.Context())
 		err := router.ChatService.UserConnect(
