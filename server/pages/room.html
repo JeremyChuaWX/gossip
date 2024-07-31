@@ -44,7 +44,11 @@
                         >
                             <p class="font-bold">{{.Username}}</p>
                             <p class="break-words">{{.Body}}</p>
-                            <span class="text-stone-600">{{.Timestamp}}</span>
+                            <p class="text-stone-600">
+                                <script>
+                                    document.write(new Date({{.Timestamp}}).toLocaleString())
+                                </script>
+                            </p>
                         </div>
                         {{end}} {{end}}
                     </div>
