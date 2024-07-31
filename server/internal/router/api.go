@@ -123,7 +123,8 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			},
 		)
 		if err != nil {
-			slog.Error("error deleting session", "userSession", session)
+			slog.Error("error deleting session", "session", session)
+			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
@@ -149,6 +150,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 		if err != nil {
 			slog.Error("error creating WS connection")
 			errorToJSON(w, http.StatusInternalServerError, err)
+			return
 		}
 	})
 
@@ -158,7 +160,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			RoomName string `json:"roomName"`
 		}](r)
 		if err != nil {
-			slog.Error("invalid body for create room", "error", err)
+			slog.Error("error parsing body")
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
@@ -167,7 +169,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			repository.RoomCreateParams{Name: body.RoomName},
 		)
 		if err != nil {
-			slog.Error("error creating room", "error", err)
+			slog.Error("error creating room")
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -179,7 +181,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			},
 		)
 		if err != nil {
-			slog.Error("error joining room", "error", err)
+			slog.Error("error joining room")
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -195,13 +197,13 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			RoomId string `json:"roomId"`
 		}](r)
 		if err != nil {
-			slog.Error("invalid body for create room", "error", err)
+			slog.Error("error parsing body")
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
 		roomId, err := uuid.FromString(body.RoomId)
 		if err != nil {
-			slog.Error("invalid room ID", "body", body)
+			slog.Error("error parsing roomId", "body.RoomId", body.RoomId)
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
@@ -213,7 +215,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			},
 		)
 		if err != nil {
-			slog.Error("error joining room", "error", err)
+			slog.Error("error joining room")
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -229,13 +231,13 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			RoomId string `json:"roomId"`
 		}](r)
 		if err != nil {
-			slog.Error("invalid body for create room", "error", err)
+			slog.Error("error parsing body")
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
 		roomId, err := uuid.FromString(body.RoomId)
 		if err != nil {
-			slog.Error("invalid room ID", "body", body)
+			slog.Error("error parsing roomId", "body.RoomId", body.RoomId)
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
@@ -247,7 +249,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			},
 		)
 		if err != nil {
-			slog.Error("error leaving room", "error", err)
+			slog.Error("error leaving room")
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
