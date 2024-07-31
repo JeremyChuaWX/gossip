@@ -76,11 +76,13 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 		t, err := template.ParseFiles("pages/home.html")
 		if err != nil {
 			slog.Error("error parsing home.html", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		err = t.Execute(w, rooms)
 		if err != nil {
 			slog.Error("error executing home.html template", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	})
@@ -103,6 +105,7 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 		roomId, err := uuid.FromString(roomIdParamValue)
 		if err != nil {
 			slog.Error("invalid room ID", "roomIdParamValue", roomIdParamValue)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		isMember, err := router.Repository.UserCheckRoomMembership(
@@ -120,6 +123,7 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 				"roomId",
 				roomId,
 			)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		room, err := router.Repository.RoomFindOne(
@@ -128,6 +132,7 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 		)
 		if err != nil {
 			slog.Error("error finding room", "roomId", roomId)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		messages, err := router.Repository.MessagesFindManyByRoomId(
@@ -140,6 +145,7 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 		t, err := template.ParseFiles("pages/room.html")
 		if err != nil {
 			slog.Error("error parsing room.html", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		err = t.Execute(w, map[string]any{
@@ -148,6 +154,7 @@ func (router *Router) webAuthedRouteGroup(mux chi.Router) {
 		})
 		if err != nil {
 			slog.Error("error executing room.html template", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	})
