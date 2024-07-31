@@ -13,11 +13,26 @@ import (
 
 func (router *Router) routeGroup(mux chi.Router) {
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/index.html")
+		_, err := sessionFromContext(r.Context())
+		if err != nil {
+			http.ServeFile(w, r, "pages/index.html")
+			return
+		}
+		http.Redirect(w, r, "/home", http.StatusFound)
 	})
 
 	mux.Get("/signup", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/signup.html")
+		_, err := sessionFromContext(r.Context())
+		if err != nil {
+			http.ServeFile(w, r, "pages/signup.html")
+			return
+		}
+		prev := r.URL.Query().Get("prev")
+		if prev != "" {
+			http.Redirect(w, r, prev, http.StatusFound)
+			return
+		}
+		http.Redirect(w, r, "/home", http.StatusFound)
 	})
 
 	mux.Post("/signup", func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +72,17 @@ func (router *Router) routeGroup(mux chi.Router) {
 	})
 
 	mux.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/login.html")
+		_, err := sessionFromContext(r.Context())
+		if err != nil {
+			http.ServeFile(w, r, "pages/login.html")
+			return
+		}
+		prev := r.URL.Query().Get("prev")
+		if prev != "" {
+			http.Redirect(w, r, prev, http.StatusFound)
+			return
+		}
+		http.Redirect(w, r, "/home", http.StatusFound)
 	})
 
 	mux.Post("/login", func(w http.ResponseWriter, r *http.Request) {
@@ -114,15 +139,15 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	mux.Use(router.authMiddleware)
 
 	mux.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		err := router.Repository.UserSessionDelete(
 			r.Context(),
 			repository.UserSessionDeleteParams{
-				SessionId: userSession.SessionId,
+				SessionId: session.SessionId,
 			},
 		)
 		if err != nil {
-			slog.Error("error deleting session", "userSession", userSession)
+			slog.Error("error deleting session", "userSession", session)
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
@@ -138,12 +163,12 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Get("/connect", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		err := router.ChatService.UserConnect(
 			w,
 			r,
-			userSession.UserId,
-			userSession.Username,
+			session.UserId,
+			session.Username,
 		)
 		if err != nil {
 			slog.Error("error creating WS connection")
@@ -152,16 +177,16 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Get("/home", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		rooms, err := router.Repository.RoomFindManyByUserId(
 			r.Context(),
-			repository.RoomFindManyByUserIdParams{UserId: userSession.UserId},
+			repository.RoomFindManyByUserIdParams{UserId: session.UserId},
 		)
 		if err != nil {
 			slog.Error(
 				"error finding rooms for user",
 				"userSession",
-				userSession,
+				session,
 			)
 			return
 		}
@@ -182,7 +207,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		body, err := readJSON[struct {
 			RoomName string `json:"roomName"`
 		}](r)
@@ -203,7 +228,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		err = router.Repository.UserJoinRoom(
 			r.Context(),
 			repository.UserJoinRoomParams{
-				UserId: userSession.UserId,
+				UserId: session.UserId,
 				RoomId: room.RoomId,
 			},
 		)
@@ -223,7 +248,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/join", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		body, err := readJSON[struct {
 			RoomId string `json:"roomId"`
 		}](r)
@@ -241,7 +266,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		err = router.Repository.UserJoinRoom(
 			r.Context(),
 			repository.UserJoinRoomParams{
-				UserId: userSession.UserId,
+				UserId: session.UserId,
 				RoomId: roomId,
 			},
 		)
@@ -257,7 +282,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Post("/rooms/leave", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		body, err := readJSON[struct {
 			RoomId string `json:"roomId"`
 		}](r)
@@ -275,7 +300,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		err = router.Repository.UserLeaveRoom(
 			r.Context(),
 			repository.UserLeaveRoomParams{
-				UserId: userSession.UserId,
+				UserId: session.UserId,
 				RoomId: roomId,
 			},
 		)
@@ -291,7 +316,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
-		userSession := userSessionFromContext(r.Context())
+		session := sessionFromContextSafe(r.Context())
 		roomIdParamValue := chi.URLParam(r, "roomId")
 		if roomIdParamValue == "" {
 			slog.Error("invalid room ID")
@@ -305,7 +330,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 		isMember, err := router.Repository.UserCheckRoomMembership(
 			r.Context(),
 			repository.UserCheckRoomMembershipParams{
-				UserId: userSession.UserId,
+				UserId: session.UserId,
 				RoomId: roomId,
 			},
 		)
@@ -313,7 +338,7 @@ func (router *Router) authedRouteGroup(mux chi.Router) {
 			slog.Error(
 				"user not in room",
 				"userId",
-				userSession.UserId,
+				session.UserId,
 				"roomId",
 				roomId,
 			)

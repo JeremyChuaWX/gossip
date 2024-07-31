@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"gossip/internal/repository"
 	"log"
 	"log/slog"
@@ -21,7 +22,20 @@ func walkRoutes(
 	return nil
 }
 
-func userSessionFromContext(
+var invalidSessionError = errors.New("invalid session")
+
+func sessionFromContext(
+	ctx context.Context,
+) (repository.UserSessionFindOneResult, error) {
+	session, ok := ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.UserSessionFindOneResult)
+	if !ok {
+		return session, invalidSessionError
+	} else {
+		return session, nil
+	}
+}
+
+func sessionFromContextSafe(
 	ctx context.Context,
 ) repository.UserSessionFindOneResult {
 	return ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.UserSessionFindOneResult)

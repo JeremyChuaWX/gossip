@@ -19,6 +19,7 @@ func (router *Router) Init() (*chi.Mux, error) {
 
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Recoverer)
+	mux.Use(router.sessionMiddleware)
 
 	mux.Group(router.routeGroup)
 	mux.Group(router.authedRouteGroup)
