@@ -12,7 +12,13 @@ loginForm.onsubmit = async (event) => {
         alert("Error logging in");
         return;
     }
-    window.location.replace("/home");
+    const urlParams = new URLSearchParams(window.location.search);
+    const prev = urlParams.get("prev");
+    if (prev) {
+        window.location.replace(prev);
+    } else {
+        window.location.replace("/home");
+    }
 };
 
 /**

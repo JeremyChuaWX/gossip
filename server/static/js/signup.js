@@ -12,7 +12,13 @@ signupForm.onsubmit = async (event) => {
         alert("Error signing up");
         return;
     }
-    window.location.replace("/login");
+    const urlParams = new URLSearchParams(window.location.search);
+    const prev = urlParams.get("prev");
+    if (prev) {
+        window.location.replace(`/login?prev=${prev}`);
+    } else {
+        window.location.replace("/login");
+    }
 };
 
 /**
