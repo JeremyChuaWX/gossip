@@ -28,9 +28,9 @@ func (router *Router) sessionMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		res, err := router.Repository.UserSessionFindOne(
+		res, err := router.Repository.SessionFindOne(
 			r.Context(),
-			repository.UserSessionFindOneParams{SessionId: sessionId},
+			repository.SessionFindOneParams{SessionId: sessionId},
 		)
 		if err != nil {
 			slog.Error("session ID not found", "sessionId", sessionId)

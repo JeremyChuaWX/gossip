@@ -24,11 +24,13 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 			Password string `json:"password"`
 		}](r)
 		if err != nil {
+			slog.Error("error parsing body")
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
 		passwordHash, err := password.Hash(body.Password)
 		if err != nil {
+			slog.Error("error hashing password", "body.Password", body.Password)
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
@@ -40,6 +42,7 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 			},
 		)
 		if err != nil {
+			slog.Error("error creating user")
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -60,6 +63,7 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 			Password string `json:"password"`
 		}](r)
 		if err != nil {
+			slog.Error("error parsing body")
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
@@ -68,19 +72,22 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 			repository.UserFindOneByUsernameParams{Username: body.Username},
 		)
 		if err != nil {
+			slog.Error("error finding user", "body.Username", body.Username)
 			errorToJSON(w, http.StatusUnauthorized, err)
 			return
 		}
 		err = password.Verify(body.Password, user.PasswordHash)
 		if err != nil {
+			slog.Error("error verifying password")
 			errorToJSON(w, http.StatusUnauthorized, err)
 			return
 		}
-		session, err := router.Repository.UserSessionCreate(
+		session, err := router.Repository.SessionCreate(
 			r.Context(),
-			repository.UserSessionCreateParams{UserId: user.UserId},
+			repository.SessionCreateParams{UserId: user.UserId},
 		)
 		if err != nil {
+			slog.Error("error creating session", "userId", user.UserId)
 			errorToJSON(w, http.StatusUnauthorized, err)
 			return
 		}
@@ -109,9 +116,9 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 
 	mux.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
 		session := sessionFromContextSafe(r.Context())
-		err := router.Repository.UserSessionDelete(
+		err := router.Repository.SessionDelete(
 			r.Context(),
-			repository.UserSessionDeleteParams{
+			repository.SessionDeleteParams{
 				SessionId: session.SessionId,
 			},
 		)

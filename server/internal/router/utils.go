@@ -26,8 +26,8 @@ var invalidSessionError = errors.New("invalid session")
 
 func sessionFromContext(
 	ctx context.Context,
-) (repository.UserSessionFindOneResult, error) {
-	session, ok := ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.UserSessionFindOneResult)
+) (repository.SessionFindOneResult, error) {
+	session, ok := ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.SessionFindOneResult)
 	if !ok {
 		return session, invalidSessionError
 	} else {
@@ -37,8 +37,8 @@ func sessionFromContext(
 
 func sessionFromContextSafe(
 	ctx context.Context,
-) repository.UserSessionFindOneResult {
-	return ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.UserSessionFindOneResult)
+) repository.SessionFindOneResult {
+	return ctx.Value(USER_SESSION_CONTEXT_KEY).(repository.SessionFindOneResult)
 }
 
 type baseResponse struct {
