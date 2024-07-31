@@ -57,7 +57,7 @@ func (router *Router) webRouteGroup(mux chi.Router) {
 }
 
 func (router *Router) webAuthedRouteGroup(mux chi.Router) {
-	mux.Use(router.authMiddleware)
+	mux.Use(router.webAuthMiddleware)
 
 	mux.Get("/home", func(w http.ResponseWriter, r *http.Request) {
 		session := sessionFromContextSafe(r.Context())

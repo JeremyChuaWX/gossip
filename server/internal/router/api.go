@@ -5,6 +5,7 @@ import (
 	"gossip/internal/utils/password"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -95,9 +96,10 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 			Name:     SESSION_ID_COOKIE,
 			Value:    session.SessionId.String(),
 			Path:     "/",
-			Expires:  session.ExpiresOn,
+			MaxAge:   int(time.Until(session.ExpiresOn).Seconds()),
 			Secure:   true,
 			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
 		})
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,
@@ -113,7 +115,7 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 }
 
 func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
-	mux.Use(router.authMiddleware)
+	mux.Use(router.apiAuthMiddleware)
 
 	mux.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
 		session := sessionFromContextSafe(r.Context())
@@ -130,9 +132,11 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 		}
 		http.SetCookie(w, &http.Cookie{
 			Name:     SESSION_ID_COOKIE,
-			MaxAge:   0,
+			Path:     "/",
+			MaxAge:   -1,
 			Secure:   true,
 			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
 		})
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,

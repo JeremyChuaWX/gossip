@@ -44,12 +44,23 @@ func (router *Router) sessionMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (router *Router) authMiddleware(next http.Handler) http.Handler {
+func (router *Router) webAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := sessionFromContext(r.Context())
 		if err != nil {
 			url := fmt.Sprintf("/login?prev=%s", r.URL.Path)
 			http.Redirect(w, r, url, http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (router *Router) apiAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := sessionFromContext(r.Context())
+		if err != nil {
+			errorToJSON(w, http.StatusUnauthorized, err)
 			return
 		}
 		next.ServeHTTP(w, r)
