@@ -94,6 +94,7 @@ func (router *Router) apiRouteGroup(mux chi.Router) {
 		http.SetCookie(w, &http.Cookie{
 			Name:     SESSION_ID_COOKIE,
 			Value:    session.SessionId.String(),
+			Path:     "/",
 			Expires:  session.ExpiresOn,
 			Secure:   true,
 			HttpOnly: true,
