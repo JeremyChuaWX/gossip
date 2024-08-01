@@ -190,6 +190,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+		router.ChatService.RoomCreate(room.RoomId)
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,
 			Message: "room created",
