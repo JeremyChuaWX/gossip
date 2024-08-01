@@ -1,5 +1,13 @@
 "use strict";
 
+const urlParams = new URLSearchParams(window.location.search);
+const prev = urlParams.get("prev");
+
+const loginLink = document.getElementById("login-link");
+if (prev) {
+    loginLink.href = `/login?prev=${prev}`;
+}
+
 const signupForm = document.getElementById("signup-form");
 signupForm.onsubmit = async (event) => {
     event.preventDefault();
@@ -12,8 +20,6 @@ signupForm.onsubmit = async (event) => {
         alert("Error signing up");
         return;
     }
-    const urlParams = new URLSearchParams(window.location.search);
-    const prev = urlParams.get("prev");
     if (prev) {
         window.location.replace(`/login?prev=${prev}`);
     } else {
