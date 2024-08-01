@@ -50,6 +50,7 @@ ws.onmessage = (event) => {
     messageElement.querySelector("#message-template-timestamp").textContent = new Date(message.timestamp).toLocaleString();
     }
     messages.appendChild(messageElement);
+    messages.scrollTop = messages.scrollHeight;
 };
 ws.onerror = (event) => {
     console.log("onerror", event);
