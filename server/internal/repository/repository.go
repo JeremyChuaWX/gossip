@@ -257,19 +257,19 @@ func (r *Repository) UserLeaveRoom(
 	return err
 }
 
-type UserSessionCreateParams struct {
+type SessionCreateParams struct {
 	UserId uuid.UUID
 }
 
-type UserSessionCreateResult struct {
+type SessionCreateResult struct {
 	SessionId uuid.UUID `db:"id" json:"sessionId"`
 	ExpiresOn time.Time `db:"expires_on" json:"expiresOn"`
 }
 
-func (r *Repository) UserSessionCreate(
+func (r *Repository) SessionCreate(
 	ctx context.Context,
-	dto UserSessionCreateParams,
-) (UserSessionCreateResult, error) {
+	dto SessionCreateParams,
+) (SessionCreateResult, error) {
 	sql := `
 	INSERT INTO user_sessions (
 		user_id,
@@ -288,25 +288,25 @@ func (r *Repository) UserSessionCreate(
 	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId, expiresOn)
 	return pgx.CollectExactlyOneRow(
 		rows,
-		pgx.RowToStructByName[UserSessionCreateResult],
+		pgx.RowToStructByName[SessionCreateResult],
 	)
 }
 
-type UserSessionFindOneParams struct {
+type SessionFindOneParams struct {
 	SessionId uuid.UUID
 }
 
-type UserSessionFindOneResult struct {
+type SessionFindOneResult struct {
 	SessionId uuid.UUID `db:"id" json:"sessionId"`
 	UserId    uuid.UUID `db:"user_id" json:"userId"`
 	Username  string    `db:"username" json:"username"`
 	ExpiresOn time.Time `db:"expires_on" json:"expiresOn"`
 }
 
-func (r *Repository) UserSessionFindOne(
+func (r *Repository) SessionFindOne(
 	ctx context.Context,
-	dto UserSessionFindOneParams,
-) (UserSessionFindOneResult, error) {
+	dto SessionFindOneParams,
+) (SessionFindOneResult, error) {
 	sql := `
 	SELECT
 		user_sessions.id,
@@ -322,17 +322,17 @@ func (r *Repository) UserSessionFindOne(
 	rows, _ := r.PgPool.Query(ctx, sql, dto.SessionId)
 	return pgx.CollectExactlyOneRow(
 		rows,
-		pgx.RowToStructByName[UserSessionFindOneResult],
+		pgx.RowToStructByName[SessionFindOneResult],
 	)
 }
 
-type UserSessionDeleteParams struct {
+type SessionDeleteParams struct {
 	SessionId uuid.UUID
 }
 
-func (r *Repository) UserSessionDelete(
+func (r *Repository) SessionDelete(
 	ctx context.Context,
-	dto UserSessionDeleteParams,
+	dto SessionDeleteParams,
 ) error {
 	sql := `
 	DELETE FROM user_sessions

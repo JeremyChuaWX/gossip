@@ -3,17 +3,13 @@ package main
 import (
 	"context"
 	"gossip/internal/adapters/postgres"
-	"gossip/internal/api"
 	"gossip/internal/chat"
 	"gossip/internal/config"
 	"gossip/internal/repository"
+	"gossip/internal/router"
 	"log"
 	"log/slog"
 	"net/http"
-	"strings"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -28,8 +24,7 @@ func main() {
 
 	pgPool, err := postgres.Init(ctx, config.PostgresURL)
 	if err != nil {
-		slog.Error(err.Error())
-		return
+		log.Fatal(err.Error())
 	}
 	defer pgPool.Close()
 
@@ -39,44 +34,19 @@ func main() {
 
 	chatService, err := chat.NewService(repository)
 	if err != nil {
-		slog.Error(err.Error())
-		return
+		log.Fatal(err.Error())
 	}
 
-	api := &api.Api{
+	router, err := (&router.Router{
 		Repository:  repository,
 		ChatService: chatService,
-	}
-
-	// web := &web.Web{}
-
-	router := chi.NewMux()
-
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-
-	router.Mount("/api", api.InitRouter())
-	// router.Mount("/", web.InitRouter())
-
-	if err := chi.Walk(router, walkRoutes); err != nil {
-		slog.Error("error walking router")
-		return
+	}).Init()
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
 	slog.Info("server is running", "address", config.ServerAddress)
 	if err := http.ListenAndServe(config.ServerAddress, router); err != nil {
-		slog.Error(err.Error())
-		return
+		log.Fatal(err.Error())
 	}
-}
-
-func walkRoutes(
-	method string,
-	route string,
-	handler http.Handler,
-	middlewares ...func(http.Handler) http.Handler,
-) error {
-	route = strings.Replace(route, "/*/", "/", -1)
-	log.Printf("%s %s\n", method, route)
-	return nil
 }

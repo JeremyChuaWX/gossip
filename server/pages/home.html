@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="/static/css/output.css" rel="stylesheet" />
+        <script type="module" src="/static/js/home.js" defer></script>
+    </head>
+    <body class="bg-stone-900 text-stone-200">
+        <div class="flex flex-col gap-8 items-center p-2">
+            <!-- header -->
+            <div
+                class="flex justify-between items-center p-4 w-full rounded-lg bg-stone-800"
+            >
+                <div class="flex-1"></div>
+                <a class="text-3xl font-bold capitalize" href="/">Gossip</a>
+                <div class="flex flex-1 justify-end">
+                    <button
+                        class="py-2 px-3 font-bold rounded-lg hover:bg-red-800"
+                        id="logout-button"
+                    >
+                        Log Out
+                    </button>
+                </div>
+            </div>
+
+            <!-- rooms -->
+            <div class="flex flex-col gap-4 w-2/3">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold capitalize">Rooms</h1>
+                    <div class="flex gap-2 items-center">
+                        <a
+                            class="py-2 px-3 font-bold rounded-lg bg-stone-800"
+                            href="/rooms/create"
+                        >
+                            Create Room
+                        </a>
+                        <a
+                            class="py-2 px-3 font-bold rounded-lg bg-stone-800"
+                            href="/rooms/join"
+                        >
+                            Join Room
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    {{if eq (len .) 0}}
+                    <p class="italic text-center text-stone-600">No rooms</p>
+                    {{end}} {{range .}}
+                    <a href="/rooms/{{.RoomId}}">
+                        <div class="p-4 rounded-lg bg-stone-700">
+                            <h1 class="font-bold capitalize">{{.Name}}</h1>
+                        </div>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

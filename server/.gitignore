@@ -1,3 +1,5 @@
 .env
-/docker/pg_data/
-/docker/pg_admin/
+node_modules/
+docker/pg_data/
+docker/pg_admin/
+static/css/output.css

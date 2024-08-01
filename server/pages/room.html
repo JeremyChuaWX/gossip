@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link href="/static/css/output.css" rel="stylesheet" />
+        <script type="module" src="/static/js/room.js" defer></script>
+    </head>
+    <body class="flex flex-col h-screen bg-stone-900 text-stone-200">
+        <div
+            class="flex overflow-hidden flex-col flex-grow gap-8 items-center p-2 h-full"
+        >
+            <!-- header -->
+            <div
+                class="flex justify-between items-center p-4 w-full rounded-lg bg-stone-800"
+            >
+                <div class="flex-1"></div>
+                <a class="text-3xl font-bold capitalize" href="/">Gossip</a>
+                <div class="flex flex-1 justify-end">
+                    <button
+                        class="py-2 px-3 font-bold rounded-lg hover:bg-red-800"
+                        id="logout-button"
+                    >
+                        Log Out
+                    </button>
+                </div>
+            </div>
+
+            <!-- room -->
+            <div
+                class="flex overflow-hidden flex-col flex-grow gap-4 w-2/3 h-full"
+            >
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold capitalize">{{ .name }}</h1>
+                    <button
+                        class="p-2 font-bold rounded-lg bg-stone-800"
+                        id="leave-room-button"
+                    >
+                        Leave Room
+                    </button>
+                </div>
+
+                <div
+                    class="flex overflow-hidden flex-col flex-grow gap-4 p-4 rounded-lg border-2 border-stone-700"
+                >
+                    <!-- messages -->
+                    <div
+                        class="flex overflow-y-auto flex-col flex-1 gap-2"
+                        id="messages"
+                    >
+                        {{if ne (len .messages) 0}} {{range .messages}}
+                        <div
+                            class="flex flex-col gap-1 py-1 px-2 max-w-1/2 w-fit"
+                        >
+                            <p class="font-bold">{{.Username}}</p>
+                            <p class="break-words">{{.Body}}</p>
+                            <p class="text-stone-600">
+                                <script>
+                                    document.write(new Date({{.Timestamp}}).toLocaleString())
+                                </script>
+                            </p>
+                        </div>
+                        {{end}} {{end}}
+                    </div>
+
+                    <!-- input -->
+                    <form class="flex gap-2" id="message-box">
+                        <input
+                            class="flex-1 py-1 px-2 rounded-md bg-stone-100 text-stone-800"
+                            type="text"
+                            name="body"
+                        />
+                        <input
+                            class="py-1 px-2 font-bold rounded-lg bg-stone-800"
+                            type="submit"
+                            value="Send"
+                        />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+<template id="message-template">
+    <div
+        class="flex flex-col gap-1 py-1 px-2 max-w-1/2 w-fit"
+        id="message-template-message"
+    >
+        <p class="font-bold" id="message-template-username"></p>
+        <p class="break-words" id="message-template-body"></p>
+        <span class="text-stone-600" id="message-template-timestamp"></span>
+    </div>
+</template>

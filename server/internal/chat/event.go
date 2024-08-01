@@ -12,15 +12,17 @@ type messageEvent struct {
 	userId  uuid.UUID
 }
 
-func newMessageEvent(message *message) (messageEvent, error) {
+func newMessageEvent(
+	userId uuid.UUID,
+	username string,
+	message *message,
+) (messageEvent, error) {
 	roomId, err := uuid.FromString(message.RoomId)
 	if err != nil {
 		return messageEvent{}, err
 	}
-	userId, err := uuid.FromString(message.UserId)
-	if err != nil {
-		return messageEvent{}, err
-	}
+	message.UserId = userId.String()
+	message.Username = username
 	return messageEvent{
 		payload: message,
 		roomId:  roomId,
