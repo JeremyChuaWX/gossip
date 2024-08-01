@@ -44,7 +44,7 @@ func (router *Router) sessionMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (router *Router) webAuthMiddleware(next http.Handler) http.Handler {
+func (router *Router) pagesAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, err := sessionFromContext(r.Context())
 		if err != nil {

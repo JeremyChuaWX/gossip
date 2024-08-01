@@ -10,14 +10,14 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-func (router *Router) webRouter() *chi.Mux {
+func (router *Router) pagesRouter() *chi.Mux {
 	web := chi.NewMux()
-	web.Group(router.webRouteGroup)
-	web.Group(router.webAuthedRouteGroup)
+	web.Group(router.pagesRouteGroup)
+	web.Group(router.pagesAuthedRouteGroup)
 	return web
 }
 
-func (router *Router) webRouteGroup(mux chi.Router) {
+func (router *Router) pagesRouteGroup(mux chi.Router) {
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, err := sessionFromContext(r.Context())
 		if err != nil {
@@ -56,8 +56,8 @@ func (router *Router) webRouteGroup(mux chi.Router) {
 	})
 }
 
-func (router *Router) webAuthedRouteGroup(mux chi.Router) {
-	mux.Use(router.webAuthMiddleware)
+func (router *Router) pagesAuthedRouteGroup(mux chi.Router) {
+	mux.Use(router.pagesAuthMiddleware)
 
 	mux.Get("/home", func(w http.ResponseWriter, r *http.Request) {
 		session := sessionFromContextSafe(r.Context())

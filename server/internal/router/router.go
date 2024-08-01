@@ -21,7 +21,7 @@ func (router *Router) Init() (*chi.Mux, error) {
 	mux.Use(middleware.Recoverer)
 	mux.Use(router.sessionMiddleware)
 
-	mux.Mount("/", router.webRouter())
+	mux.Mount("/", router.pagesRouter())
 	mux.Mount("/api", router.apiRouter())
 
 	if err := chi.Walk(mux, walkRoutes); err != nil {
