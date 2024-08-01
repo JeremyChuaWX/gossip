@@ -34,7 +34,7 @@ const messages = document.getElementById("messages");
 
 const messageTemplate = document.getElementById("message-template");
 
-const ws = new WebSocket("/api/connect");
+const ws = new WebSocket(wsURL());
 ws.onopen = (event) => {
     console.log("onopen", event);
 };
@@ -95,4 +95,12 @@ function sendMessage(body) {
         timestamp: new Date().toISOString(),
     };
     ws.send(JSON.stringify(message));
+}
+
+function wsURL() {
+    let scheme = "ws";
+    if (document.location.protocol === "https:") {
+        scheme += "s";
+    }
+    return `${scheme}://${document.location.hostname}:${document.location.port}/api/connect`;
 }
