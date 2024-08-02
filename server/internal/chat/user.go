@@ -60,7 +60,6 @@ func (user *user) heartBeat() {
 			if err := user.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
-			slog.Info("writePump ping message")
 		}
 	}
 }
