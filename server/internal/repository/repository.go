@@ -39,7 +39,11 @@ func (r *Repository) UserCreate(
 		id
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
+	rows, err := r.PgPool.Query(ctx, sql, dto.Username, dto.PasswordHash)
+	defer rows.Close()
+	if err != nil {
+		return UserCreateResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[UserCreateResult],
@@ -68,7 +72,11 @@ func (r *Repository) UserFindOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId)
+	defer rows.Close()
+	if err != nil {
+		return UserFindOneResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[UserFindOneResult],
@@ -97,7 +105,11 @@ func (r *Repository) UserFindOneByUsername(
 		username = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Username)
+	rows, err := r.PgPool.Query(ctx, sql, dto.Username)
+	defer rows.Close()
+	if err != nil {
+		return UserFindOneByUsernameResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[UserFindOneByUsernameResult],
@@ -127,7 +139,11 @@ func (r *Repository) UsersFindManyByRoomId(
 		room_users.room_id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
 	return pgx.CollectRows(
 		rows,
 		pgx.RowToStructByName[UsersFindManyByRoomIdResult],
@@ -153,13 +169,14 @@ func (r *Repository) UserUpdate(
 		id = $3
 	;
 	`
-	_, err := r.PgPool.Query(
+	rows, err := r.PgPool.Query(
 		ctx,
 		sql,
 		dto.Username,
 		dto.PasswordHash,
 		dto.UserId,
 	)
+	defer rows.Close()
 	return err
 }
 
@@ -177,7 +194,8 @@ func (r *Repository) UserDelete(
 		id = $1
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.UserId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId)
+	defer rows.Close()
 	return err
 }
 
@@ -204,7 +222,11 @@ func (r *Repository) UserCheckRoomMembership(
 		AND room_id = $2
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	defer rows.Close()
+	if err != nil {
+		return false, err
+	}
 	result, err := pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[UserCheckRoomMembershipResult],
@@ -232,7 +254,8 @@ func (r *Repository) UserJoinRoom(
 	)
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	defer rows.Close()
 	return err
 }
 
@@ -253,7 +276,8 @@ func (r *Repository) UserLeaveRoom(
 		AND room_id = $2
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId)
+	defer rows.Close()
 	return err
 }
 
@@ -285,7 +309,11 @@ func (r *Repository) SessionCreate(
 	;
 	`
 	expiresOn := time.Now().Add(SESSION_DURATION)
-	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId, expiresOn)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId, expiresOn)
+	defer rows.Close()
+	if err != nil {
+		return SessionCreateResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[SessionCreateResult],
@@ -319,7 +347,11 @@ func (r *Repository) SessionFindOne(
 		user_sessions.id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.SessionId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.SessionId)
+	defer rows.Close()
+	if err != nil {
+		return SessionFindOneResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[SessionFindOneResult],
@@ -340,7 +372,8 @@ func (r *Repository) SessionDelete(
 		id = $1
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.SessionId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.SessionId)
+	defer rows.Close()
 	return err
 }
 
@@ -367,7 +400,11 @@ func (r *Repository) RoomCreate(
 		id
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.Name)
+	rows, err := r.PgPool.Query(ctx, sql, dto.Name)
+	defer rows.Close()
+	if err != nil {
+		return RoomCreateResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[RoomCreateResult],
@@ -394,7 +431,11 @@ func (r *Repository) RoomFindOne(
 		id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	defer rows.Close()
+	if err != nil {
+		return RoomFindOneResult{}, err
+	}
 	return pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[RoomFindOneResult],
@@ -416,7 +457,11 @@ func (r *Repository) RoomFindMany(
 	FROM rooms
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql)
+	rows, err := r.PgPool.Query(ctx, sql)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
 	return pgx.CollectRows(rows, pgx.RowToStructByName[RoomFindManyResult])
 }
 
@@ -443,7 +488,11 @@ func (r *Repository) RoomFindManyByUserId(
 		room_users.user_id = $1
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.UserId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
 	return pgx.CollectRows(
 		rows,
 		pgx.RowToStructByName[RoomFindManyByUserIdResult],
@@ -467,7 +516,8 @@ func (r *Repository) RoomUpdate(
 		id = $2
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.Name, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.Name, dto.RoomId)
+	defer rows.Close()
 	return err
 }
 
@@ -485,7 +535,8 @@ func (r *Repository) RoomDelete(
 		id = $1
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	defer rows.Close()
 	return err
 }
 
@@ -512,7 +563,8 @@ func (r *Repository) MessageSave(
 	)
 	;
 	`
-	_, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId, dto.Body)
+	rows, err := r.PgPool.Query(ctx, sql, dto.UserId, dto.RoomId, dto.Body)
+	defer rows.Close()
 	return err
 }
 
@@ -549,7 +601,11 @@ func (r *Repository) MessagesFindManyByRoomId(
 		messages.timestamp ASC
 	;
 	`
-	rows, _ := r.PgPool.Query(ctx, sql, dto.RoomId)
+	rows, err := r.PgPool.Query(ctx, sql, dto.RoomId)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
 	return pgx.CollectRows(
 		rows,
 		pgx.RowToStructByName[MessagesFindManyByRoomIdResult],
