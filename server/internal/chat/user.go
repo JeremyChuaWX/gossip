@@ -37,31 +37,9 @@ func newUser(
 	}
 	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
 	go user.receiveEvents()
-	// go user.heartBeat()
 	go user.readPump()
 	go user.writePump()
 	return user, nil
-}
-
-func (user *user) heartBeat() {
-	user.conn.SetPongHandler(func(string) error {
-		user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-		return nil
-	})
-	user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-	ticker := time.NewTicker(PING_PERIOD)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-user.alive:
-			return
-		case <-ticker.C:
-			user.conn.SetWriteDeadline(time.Now().Add(WRITE_WAIT))
-			if err := user.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return
-			}
-		}
-	}
 }
 
 func (user *user) readPump() {
