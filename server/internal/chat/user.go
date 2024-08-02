@@ -2,7 +2,6 @@ package chat
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -37,31 +36,9 @@ func newUser(
 	}
 	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
 	go user.receiveEvents()
-	// go user.heartBeat()
 	go user.readPump()
 	go user.writePump()
 	return user, nil
-}
-
-func (user *user) heartBeat() {
-	user.conn.SetPongHandler(func(string) error {
-		user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-		return nil
-	})
-	user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
-	ticker := time.NewTicker(PING_PERIOD)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-user.alive:
-			return
-		case <-ticker.C:
-			user.conn.SetWriteDeadline(time.Now().Add(WRITE_WAIT))
-			if err := user.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return
-			}
-		}
-	}
 }
 
 func (user *user) readPump() {
@@ -98,11 +75,11 @@ func (user *user) readPump() {
 }
 
 func (user *user) writePump() {
+	defer user.conn.Close()
 	for {
 		message, ok := <-user.send
 		if !ok {
 			slog.Error("user send channel closed")
-			user.alive <- false
 			return
 		}
 		slog.Info("writePump message", "message", message)
@@ -114,7 +91,6 @@ func (user *user) writePump() {
 				"message",
 				message,
 			)
-			user.alive <- false
 			return
 		}
 	}
@@ -138,8 +114,8 @@ func (user *user) receiveEvents() {
 }
 
 func (user *user) disconnect() {
-	user.conn.Close()
 	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
+	user.conn.Close()
 	close(user.ingress)
 	close(user.alive)
 	close(user.send)

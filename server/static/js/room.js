@@ -31,6 +31,7 @@ messageBox.onsubmit = (event) => {
 };
 
 const messages = document.getElementById("messages");
+messages.scrollTop = messages.scrollHeight;
 
 const messageTemplate = document.getElementById("message-template");
 
@@ -50,7 +51,10 @@ ws.onmessage = (event) => {
     messageElement.querySelector("#message-template-timestamp").textContent = new Date(message.timestamp).toLocaleString();
     }
     messages.appendChild(messageElement);
-    messages.scrollTop = messages.scrollHeight;
+    messages.lastElementChild.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+    });
 };
 ws.onerror = (event) => {
     console.log("onerror", event);
