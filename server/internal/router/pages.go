@@ -79,8 +79,10 @@ func (router *Router) pagesAuthedRouteGroup(mux chi.Router) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		err = t.Execute(w, rooms)
-		if err != nil {
+		if err := t.Execute(w, map[string]any{
+			"username": session.Username,
+			"rooms":    rooms,
+		}); err != nil {
 			slog.Error("error executing home.html template", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -88,11 +90,45 @@ func (router *Router) pagesAuthedRouteGroup(mux chi.Router) {
 	})
 
 	mux.Get("/rooms/create", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/create-room.html")
+		session := sessionFromContextSafe(r.Context())
+		t, err := template.ParseFiles("pages/create-room.html")
+		if err != nil {
+			slog.Error("error parsing create-room.html", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err := t.Execute(w, map[string]any{
+			"username": session.Username,
+		}); err != nil {
+			slog.Error(
+				"error executing create-room.html template",
+				"error",
+				err,
+			)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	})
 
 	mux.Get("/rooms/join", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "pages/join-room.html")
+		session := sessionFromContextSafe(r.Context())
+		t, err := template.ParseFiles("pages/join-room.html")
+		if err != nil {
+			slog.Error("error parsing join-room.html", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err := t.Execute(w, map[string]any{
+			"username": session.Username,
+		}); err != nil {
+			slog.Error(
+				"error executing join-room.html template",
+				"error",
+				err,
+			)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	})
 
 	mux.Get("/rooms/{roomId}", func(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +185,8 @@ func (router *Router) pagesAuthedRouteGroup(mux chi.Router) {
 			return
 		}
 		err = t.Execute(w, map[string]any{
-			"name":     room.Name,
+			"username": session.Username,
+			"roomName": room.Name,
 			"messages": messages,
 		})
 		if err != nil {
