@@ -2,7 +2,6 @@ package chat
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -76,11 +75,11 @@ func (user *user) readPump() {
 }
 
 func (user *user) writePump() {
+	defer user.conn.Close()
 	for {
 		message, ok := <-user.send
 		if !ok {
 			slog.Error("user send channel closed")
-			user.alive <- false
 			return
 		}
 		slog.Info("writePump message", "message", message)
@@ -92,7 +91,6 @@ func (user *user) writePump() {
 				"message",
 				message,
 			)
-			user.alive <- false
 			return
 		}
 	}
@@ -116,8 +114,8 @@ func (user *user) receiveEvents() {
 }
 
 func (user *user) disconnect() {
-	user.conn.Close()
 	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
+	user.conn.Close()
 	close(user.ingress)
 	close(user.alive)
 	close(user.send)
