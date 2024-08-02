@@ -35,19 +35,37 @@ func newUser(
 		conn: conn,
 		send: make(chan *message),
 	}
+	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
 	go user.receiveEvents()
+	// go user.heartBeat()
 	go user.readPump()
 	go user.writePump()
 	return user, nil
 }
 
-func (user *user) readPump() {
-	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
-	user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
+func (user *user) heartBeat() {
 	user.conn.SetPongHandler(func(string) error {
 		user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
 		return nil
 	})
+	user.conn.SetReadDeadline(time.Now().Add(PONG_WAIT))
+	ticker := time.NewTicker(PING_PERIOD)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-user.alive:
+			return
+		case <-ticker.C:
+			user.conn.SetWriteDeadline(time.Now().Add(WRITE_WAIT))
+			if err := user.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+			slog.Info("writePump ping message")
+		}
+	}
+}
+
+func (user *user) readPump() {
 	for {
 		var message message
 		if err := user.conn.ReadJSON(&message); err != nil {
@@ -81,33 +99,24 @@ func (user *user) readPump() {
 }
 
 func (user *user) writePump() {
-	ticker := time.NewTicker(PING_PERIOD)
-	defer ticker.Stop()
 	for {
-		select {
-		case message, ok := <-user.send:
-			if !ok {
-				slog.Error("user send channel closed")
-				user.alive <- false
-				return
-			}
-			slog.Info("writePump message", "message", message)
-			if err := user.conn.WriteJSON(message); err != nil {
-				slog.Error(
-					"error writing JSON",
-					"error",
-					err.Error(),
-					"message",
-					message,
-				)
-				user.alive <- false
-				return
-			}
-		case <-ticker.C:
-			user.conn.SetWriteDeadline(time.Now().Add(WRITE_WAIT))
-			if err := user.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				return
-			}
+		message, ok := <-user.send
+		if !ok {
+			slog.Error("user send channel closed")
+			user.alive <- false
+			return
+		}
+		slog.Info("writePump message", "message", message)
+		if err := user.conn.WriteJSON(message); err != nil {
+			slog.Error(
+				"error writing JSON",
+				"error",
+				err.Error(),
+				"message",
+				message,
+			)
+			user.alive <- false
+			return
 		}
 	}
 }

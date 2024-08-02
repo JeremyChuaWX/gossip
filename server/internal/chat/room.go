@@ -47,6 +47,7 @@ func (room *room) receiveEvents() {
 			room.disconnect()
 			return
 		case event, ok := <-room.ingress:
+			slog.Info("room received event", "event", event)
 			if !ok {
 				return
 			}
@@ -90,6 +91,7 @@ func (room *room) messageEventHandler(event messageEvent) {
 			slog.Error("user not found", "userId", userId)
 			continue
 		}
+		slog.Info("user found", "userId", userId)
 		user.send <- event.payload
 	}
 }
