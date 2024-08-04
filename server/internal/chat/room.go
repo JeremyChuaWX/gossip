@@ -11,7 +11,6 @@ import (
 type room struct {
 	service *Service
 	ingress chan event
-
 	userIds map[uuid.UUID]bool
 }
 
@@ -19,7 +18,6 @@ func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	room := &room{
 		service: service,
 		ingress: make(chan event),
-
 		userIds: make(map[uuid.UUID]bool),
 	}
 	results, err := service.repository.UsersFindManyByRoomId(
