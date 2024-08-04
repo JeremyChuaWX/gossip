@@ -17,7 +17,6 @@ var upgrader = websocket.Upgrader{
 
 type Service struct {
 	ingress    chan event
-	alive      chan bool
 	repository *repository.Repository
 	users      map[uuid.UUID]*user
 	rooms      map[uuid.UUID]*room
@@ -26,7 +25,6 @@ type Service struct {
 func NewService(repository *repository.Repository) (*Service, error) {
 	service := &Service{
 		ingress:    make(chan event),
-		alive:      make(chan bool),
 		repository: repository,
 		users:      make(map[uuid.UUID]*user),
 		rooms:      make(map[uuid.UUID]*room),
@@ -79,24 +77,14 @@ func (service *Service) RoomCreate(roomId uuid.UUID) {
 	service.ingress <- roomCreatedEvent{roomId: roomId}
 }
 
-// actor methods
-
 func (service *Service) receiveEvents() {
 	for {
-		select {
-		case <-service.alive:
-			service.disconnect()
+		event, ok := <-service.ingress
+		if !ok {
 			return
-		case event, ok := <-service.ingress:
-			if !ok {
-				return
-			}
-			service.eventHandler(event)
 		}
+		service.eventHandler(event)
 	}
-}
-
-func (service *Service) disconnect() {
 }
 
 // event management

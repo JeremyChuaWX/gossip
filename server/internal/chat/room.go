@@ -11,7 +11,6 @@ import (
 type room struct {
 	service *Service
 	ingress chan event
-	alive   chan bool
 
 	userIds map[uuid.UUID]bool
 }
@@ -20,7 +19,6 @@ func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	room := &room{
 		service: service,
 		ingress: make(chan event),
-		alive:   make(chan bool),
 
 		userIds: make(map[uuid.UUID]bool),
 	}
@@ -38,25 +36,15 @@ func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	return room, nil
 }
 
-// actor methods
-
 func (room *room) receiveEvents() {
 	for {
-		select {
-		case <-room.alive:
-			room.disconnect()
+		event, ok := <-room.ingress
+		slog.Info("room received event", "event", event)
+		if !ok {
 			return
-		case event, ok := <-room.ingress:
-			slog.Info("room received event", "event", event)
-			if !ok {
-				return
-			}
-			room.eventHandler(event)
 		}
+		room.eventHandler(event)
 	}
-}
-
-func (room *room) disconnect() {
 }
 
 // event management
