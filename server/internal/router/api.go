@@ -169,6 +169,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			errorToJSON(w, http.StatusBadRequest, err)
 			return
 		}
+		// TODO: use SQL transaction
 		room, err := router.Repository.RoomCreate(
 			r.Context(),
 			repository.RoomCreateParams{Name: body.RoomName},
@@ -190,7 +191,12 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
-		router.ChatService.RoomCreate(room.RoomId)
+		err = router.ChatService.RoomCreate(room.RoomId)
+		if err != nil {
+			slog.Error("error registering room in chat service")
+			errorToJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,
 			Message: "room created",
