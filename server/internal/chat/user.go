@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/gofrs/uuid/v5"
@@ -12,10 +13,10 @@ type user struct {
 	username string
 	service  *Service
 	ingress  chan event
-	alive    chan bool
-
-	conn *websocket.Conn
-	send chan *message
+	ctx      context.Context
+	cancel   context.CancelFunc
+	conn     *websocket.Conn
+	send     chan *message
 }
 
 func newUser(
@@ -24,15 +25,16 @@ func newUser(
 	userId uuid.UUID,
 	username string,
 ) (*user, error) {
+	ctx, cancel := context.WithCancel(context.Background())
 	user := &user{
 		userId:   userId,
 		username: username,
 		service:  service,
 		ingress:  make(chan event),
-		alive:    make(chan bool),
-
-		conn: conn,
-		send: make(chan *message),
+		ctx:      ctx,
+		cancel:   cancel,
+		conn:     conn,
+		send:     make(chan *message),
 	}
 	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
 	go user.receiveEvents()
@@ -43,66 +45,74 @@ func newUser(
 
 func (user *user) readPump() {
 	for {
-		var message message
-		if err := user.conn.ReadJSON(&message); err != nil {
-			slog.Error(
-				"error reading JSON",
-				"error",
-				err.Error(),
-				"message",
-				message,
-			)
-			user.alive <- false
+		select {
+		case <-user.ctx.Done():
+			slog.Info("closing readPump")
 			return
+		default:
+			var message message
+			if err := user.conn.ReadJSON(&message); err != nil {
+				slog.Error(
+					"error reading JSON",
+					"error",
+					err.Error(),
+					"message",
+					message,
+				)
+				user.disconnect()
+				return
+			}
+			slog.Info("readPump message", "message", message)
+			messageEvent, err := newMessageEvent(
+				user.userId,
+				user.username,
+				&message,
+			)
+			if err != nil {
+				slog.Error("error creating message event", "message", message)
+				continue
+			}
+			room, ok := user.service.rooms[messageEvent.roomId]
+			if !ok {
+				slog.Error("room not found", "message", message)
+				continue
+			}
+			room.ingress <- messageEvent
 		}
-		slog.Info("readPump message", "message", message)
-		messageEvent, err := newMessageEvent(
-			user.userId,
-			user.username,
-			&message,
-		)
-		if err != nil {
-			slog.Error("error creating message event", "message", message)
-			continue
-		}
-		room, ok := user.service.rooms[messageEvent.roomId]
-		if !ok {
-			slog.Error("room not found", "message", message)
-			continue
-		}
-		room.ingress <- messageEvent
 	}
 }
 
 func (user *user) writePump() {
-	defer user.conn.Close()
 	for {
-		message, ok := <-user.send
-		if !ok {
-			slog.Error("user send channel closed")
+		select {
+		case <-user.ctx.Done():
+			slog.Info("closing writePump")
 			return
-		}
-		slog.Info("writePump message", "message", message)
-		if err := user.conn.WriteJSON(message); err != nil {
-			slog.Error(
-				"error writing JSON",
-				"error",
-				err.Error(),
-				"message",
-				message,
-			)
-			return
+		default:
+			message, ok := <-user.send
+			if !ok {
+				slog.Error("user send channel closed")
+				return
+			}
+			slog.Info("writePump message", "message", message)
+			if err := user.conn.WriteJSON(message); err != nil {
+				slog.Error(
+					"error writing JSON",
+					"error",
+					err.Error(),
+					"message",
+					message,
+				)
+				return
+			}
 		}
 	}
 }
 
-// actor methods
-
 func (user *user) receiveEvents() {
 	for {
 		select {
-		case <-user.alive:
-			user.disconnect()
+		case <-user.ctx.Done():
 			return
 		case event, ok := <-user.ingress:
 			if !ok {
@@ -115,9 +125,9 @@ func (user *user) receiveEvents() {
 
 func (user *user) disconnect() {
 	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
+	user.cancel()
 	user.conn.Close()
 	close(user.ingress)
-	close(user.alive)
 	close(user.send)
 }
 
