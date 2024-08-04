@@ -24,7 +24,7 @@ func newUser(
 	conn *websocket.Conn,
 	userId uuid.UUID,
 	username string,
-) (*user, error) {
+) *user {
 	ctx, cancel := context.WithCancel(context.Background())
 	user := &user{
 		userId:   userId,
@@ -40,7 +40,7 @@ func newUser(
 	go user.receiveEvents()
 	go user.readPump()
 	go user.writePump()
-	return user, nil
+	return user
 }
 
 func (user *user) readPump() {

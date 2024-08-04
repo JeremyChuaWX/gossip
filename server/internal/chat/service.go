@@ -65,10 +65,7 @@ func (service *Service) UserConnect(
 	if err != nil {
 		return err
 	}
-	user, err := newUser(service, conn, userId, username)
-	if err != nil {
-		return err
-	}
+	user := newUser(service, conn, userId, username)
 	service.ingress <- userConnectedEvent{user: user}
 	return nil
 }
