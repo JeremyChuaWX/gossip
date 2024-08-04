@@ -108,6 +108,11 @@ func (service *Service) roomCreatedEventHandler(event roomCreatedEvent) {
 }
 
 func (service *Service) userConnectedEventHandler(event userConnectedEvent) {
+	if user, ok := service.users[event.user.userId]; ok {
+		user.disconnect()
+		delete(service.users, event.user.userId)
+		slog.Info("user connection replaced")
+	}
 	service.users[event.user.userId] = event.user
 }
 

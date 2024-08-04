@@ -44,41 +44,39 @@ func newUser(
 }
 
 func (user *user) readPump() {
+	defer func() {
+		slog.Info("closing readPump")
+		user.disconnect()
+		user.service.ingress <- userDisconnectedEvent{userId: user.userId}
+	}()
 	for {
-		select {
-		case <-user.ctx.Done():
-			slog.Info("closing readPump")
-			return
-		default:
-			var message message
-			if err := user.conn.ReadJSON(&message); err != nil {
-				slog.Error(
-					"error reading JSON",
-					"error",
-					err.Error(),
-					"message",
-					message,
-				)
-				user.disconnect()
-				return
-			}
-			slog.Info("readPump message", "message", message)
-			messageEvent, err := newMessageEvent(
-				user.userId,
-				user.username,
-				&message,
+		var message message
+		if err := user.conn.ReadJSON(&message); err != nil {
+			slog.Error(
+				"error reading JSON",
+				"error",
+				err.Error(),
+				"message",
+				message,
 			)
-			if err != nil {
-				slog.Error("error creating message event", "message", message)
-				continue
-			}
-			room, ok := user.service.rooms[messageEvent.roomId]
-			if !ok {
-				slog.Error("room not found", "message", message)
-				continue
-			}
-			room.ingress <- messageEvent
+			return
 		}
+		slog.Info("readPump message", "message", message)
+		messageEvent, err := newMessageEvent(
+			user.userId,
+			user.username,
+			&message,
+		)
+		if err != nil {
+			slog.Error("error creating message event", "message", message)
+			continue
+		}
+		room, ok := user.service.rooms[messageEvent.roomId]
+		if !ok {
+			slog.Error("room not found", "message", message)
+			continue
+		}
+		room.ingress <- messageEvent
 	}
 }
 
@@ -88,8 +86,7 @@ func (user *user) writePump() {
 		case <-user.ctx.Done():
 			slog.Info("closing writePump")
 			return
-		default:
-			message, ok := <-user.send
+		case message, ok := <-user.send:
 			if !ok {
 				slog.Error("user send channel closed")
 				return
@@ -124,11 +121,8 @@ func (user *user) receiveEvents() {
 }
 
 func (user *user) disconnect() {
-	user.service.ingress <- userDisconnectedEvent{userId: user.userId}
 	user.cancel()
 	user.conn.Close()
-	close(user.ingress)
-	close(user.send)
 }
 
 // event management
