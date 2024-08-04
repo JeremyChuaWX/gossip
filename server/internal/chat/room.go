@@ -9,6 +9,7 @@ import (
 )
 
 type room struct {
+	roomId  uuid.UUID
 	service *Service
 	ingress chan event
 	userIds map[uuid.UUID]bool
@@ -16,6 +17,7 @@ type room struct {
 
 func newRoom(service *Service, roomId uuid.UUID) (*room, error) {
 	room := &room{
+		roomId:  roomId,
 		service: service,
 		ingress: make(chan event),
 		userIds: make(map[uuid.UUID]bool),

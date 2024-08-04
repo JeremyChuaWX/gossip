@@ -70,8 +70,13 @@ func (service *Service) UserConnect(
 	return nil
 }
 
-func (service *Service) RoomCreate(roomId uuid.UUID) {
-	service.ingress <- roomCreatedEvent{roomId: roomId}
+func (service *Service) RoomCreate(roomId uuid.UUID) error {
+	room, err := newRoom(service, roomId)
+	if err != nil {
+		return err
+	}
+	service.ingress <- roomCreatedEvent{room: room}
+	return nil
 }
 
 func (service *Service) receiveEvents() {
@@ -100,11 +105,7 @@ func (s *Service) eventHandler(event event) {
 }
 
 func (service *Service) roomCreatedEventHandler(event roomCreatedEvent) {
-	room, err := newRoom(service, event.roomId)
-	if err != nil {
-		slog.Error("error creating room", "roomId", event.roomId)
-	}
-	service.rooms[event.roomId] = room
+	service.rooms[event.room.roomId] = event.room
 }
 
 func (service *Service) userConnectedEventHandler(event userConnectedEvent) {

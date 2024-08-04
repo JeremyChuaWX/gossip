@@ -31,7 +31,7 @@ func newMessageEvent(
 }
 
 type roomCreatedEvent struct {
-	roomId uuid.UUID
+	room *room
 }
 
 type userConnectedEvent struct {
