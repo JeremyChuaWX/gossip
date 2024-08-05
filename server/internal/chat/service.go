@@ -35,27 +35,6 @@ func NewService(repository *repository.Repository) (*Service, error) {
 	return service, nil
 }
 
-func (service *Service) initRooms() {
-	results, err := service.repository.RoomFindMany(context.Background())
-	if err != nil {
-		slog.Error("error finding rooms", "error", err.Error())
-	}
-	if len(results) < 1 {
-		slog.Error("no rooms found")
-		return
-	}
-	for _, result := range results {
-		room, err := newRoom(service, result.RoomId)
-		if err != nil {
-			slog.Error("error initing room", "roomId", result.RoomId)
-		}
-		service.rooms[result.RoomId] = room
-		slog.Info("inited room", "roomId", result.RoomId)
-	}
-}
-
-// API methods
-
 func (service *Service) UserConnect(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -78,6 +57,43 @@ func (service *Service) RoomCreate(roomId uuid.UUID) error {
 	}
 	service.ingress <- roomCreatedEvent{room: room}
 	return nil
+}
+
+func (service *Service) UserJoinRoom(userId uuid.UUID, roomId uuid.UUID) {
+	room, ok := service.rooms[roomId]
+	if !ok {
+		slog.Error("room not found", "roomId", roomId)
+		return
+	}
+	room.ingress <- userJoinedRoomEvent{userId: userId}
+}
+
+func (service *Service) UserLeaveRoom(userId uuid.UUID, roomId uuid.UUID) {
+	room, ok := service.rooms[roomId]
+	if !ok {
+		slog.Error("room not found", "roomId", roomId)
+		return
+	}
+	room.ingress <- userLeftRoomEvent{userId: userId}
+}
+
+func (service *Service) initRooms() {
+	results, err := service.repository.RoomFindMany(context.Background())
+	if err != nil {
+		slog.Error("error finding rooms", "error", err.Error())
+	}
+	if len(results) < 1 {
+		slog.Error("no rooms found")
+		return
+	}
+	for _, result := range results {
+		room, err := newRoom(service, result.RoomId)
+		if err != nil {
+			slog.Error("error initing room", "roomId", result.RoomId)
+		}
+		service.rooms[result.RoomId] = room
+		slog.Info("inited room", "roomId", result.RoomId)
+	}
 }
 
 func (service *Service) receiveEvents() {

@@ -231,6 +231,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+		router.ChatService.UserJoinRoom(session.UserId, roomId)
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,
 			Message: "room joined",
@@ -265,6 +266,7 @@ func (router *Router) apiAuthedRouteGroup(mux chi.Router) {
 			errorToJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+		router.ChatService.UserLeaveRoom(session.UserId, roomId)
 		writeJSON(w, http.StatusOK, baseResponse{
 			Success: true,
 			Message: "room left",

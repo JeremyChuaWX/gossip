@@ -43,11 +43,9 @@ type userDisconnectedEvent struct {
 }
 
 type userJoinedRoomEvent struct {
-	roomId uuid.UUID
 	userId uuid.UUID
 }
 
 type userLeftRoomEvent struct {
-	roomId uuid.UUID
 	userId uuid.UUID
 }
