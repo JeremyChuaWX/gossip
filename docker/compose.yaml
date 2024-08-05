@@ -16,12 +16,11 @@ services:
       - ./pg_data:/var/lib/postgresql/data
 
   postgres.migrate:
-    command: ["up"]
     container_name: migrate
     depends_on:
       postgres:
         condition: service_healthy
-    entrypoint: ["migrate", "-database", "$POSTGRES_URL", "-path", "/migrations"]
+    entrypoint: migrate -database $POSTGRES_URL -path /migrations up
     image: migrate/migrate
     profiles: [development]
     volumes:
