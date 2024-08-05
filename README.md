@@ -2,4 +2,8 @@
 
 A chat room application.
 
-- Event based websocket communication using actor model
+## Demo
+
+## Architecture
+
+## How to build
