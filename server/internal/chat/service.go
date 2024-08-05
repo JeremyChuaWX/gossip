@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"gossip/internal/repository"
 	"log/slog"
 	"net/http"
@@ -110,11 +111,25 @@ func (service *Service) roomCreatedEventHandler(event roomCreatedEvent) {
 
 func (service *Service) userConnectedEventHandler(event userConnectedEvent) {
 	if user, ok := service.users[event.user.userId]; ok {
+		slog.Info(
+			"existing user connection found",
+			"userId", user.userId,
+			"address", fmt.Sprintf("%p", user),
+		)
 		user.disconnect()
-		delete(service.users, event.user.userId)
-		slog.Info("user connection replaced")
 	}
 	service.users[event.user.userId] = event.user
+	slog.Info(
+		"connecting user",
+		"userId", event.user.userId,
+		"address", fmt.Sprintf("%p", event.user),
+	)
+	if user, ok := service.users[event.user.userId]; ok {
+		slog.Info("user connected",
+			"userId", user.userId,
+			"address", fmt.Sprintf("%p", user),
+		)
+	}
 }
 
 func (service *Service) userDisconnectedEventHandler(

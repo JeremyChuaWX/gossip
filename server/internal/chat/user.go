@@ -17,6 +17,7 @@ type user struct {
 	cancel   context.CancelFunc
 	conn     *websocket.Conn
 	send     chan *message
+	alive    bool
 }
 
 func newUser(
@@ -35,6 +36,7 @@ func newUser(
 		cancel:   cancel,
 		conn:     conn,
 		send:     make(chan *message),
+		alive:    true,
 	}
 	user.conn.SetReadLimit(MAX_MESSAGE_SIZE)
 	go user.receiveEvents()
@@ -45,46 +47,54 @@ func newUser(
 
 func (user *user) readPump() {
 	defer func() {
+		user.alive = false
+		user.cancel()
+		user.conn.Close()
 		slog.Info("closing readPump")
-		user.disconnect()
-		user.service.ingress <- userDisconnectedEvent{userId: user.userId}
 	}()
 	for {
-		var message message
-		if err := user.conn.ReadJSON(&message); err != nil {
-			slog.Error(
-				"error reading JSON",
-				"error",
-				err.Error(),
-				"message",
-				message,
-			)
+		select {
+		case <-user.ctx.Done():
 			return
+		default:
+			var message message
+			if err := user.conn.ReadJSON(&message); err != nil {
+				slog.Error(
+					"error reading JSON",
+					"error",
+					err.Error(),
+					"message",
+					message,
+				)
+				return
+			}
+			slog.Info("readPump message", "message", message)
+			messageEvent, err := newMessageEvent(
+				user.userId,
+				user.username,
+				&message,
+			)
+			if err != nil {
+				slog.Error("error creating message event", "message", message)
+				continue
+			}
+			room, ok := user.service.rooms[messageEvent.roomId]
+			if !ok {
+				slog.Error("room not found", "message", message)
+				continue
+			}
+			room.ingress <- messageEvent
 		}
-		slog.Info("readPump message", "message", message)
-		messageEvent, err := newMessageEvent(
-			user.userId,
-			user.username,
-			&message,
-		)
-		if err != nil {
-			slog.Error("error creating message event", "message", message)
-			continue
-		}
-		room, ok := user.service.rooms[messageEvent.roomId]
-		if !ok {
-			slog.Error("room not found", "message", message)
-			continue
-		}
-		room.ingress <- messageEvent
 	}
 }
 
 func (user *user) writePump() {
+	defer func() {
+		slog.Info("closing writePump")
+	}()
 	for {
 		select {
 		case <-user.ctx.Done():
-			slog.Info("closing writePump")
 			return
 		case message, ok := <-user.send:
 			if !ok {
@@ -107,6 +117,9 @@ func (user *user) writePump() {
 }
 
 func (user *user) receiveEvents() {
+	defer func() {
+		slog.Info("closing receiveEvents")
+	}()
 	for {
 		select {
 		case <-user.ctx.Done():
@@ -121,8 +134,8 @@ func (user *user) receiveEvents() {
 }
 
 func (user *user) disconnect() {
-	user.cancel()
-	user.conn.Close()
+	user.conn.WriteMessage(websocket.CloseMessage, nil)
+	slog.Info("close message written", "user", user)
 }
 
 // event management

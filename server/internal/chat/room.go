@@ -79,6 +79,10 @@ func (room *room) messageEventHandler(event messageEvent) {
 			slog.Error("user not found", "userId", userId)
 			continue
 		}
+		if !user.alive {
+			slog.Info("user not alive", "userId", userId)
+			continue
+		}
 		slog.Info("user found", "userId", userId)
 		user.send <- event.payload
 	}
