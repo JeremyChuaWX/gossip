@@ -35,6 +35,8 @@ messages.scrollTop = messages.scrollHeight;
 
 const messageTemplate = document.getElementById("message-template");
 
+const closeModalTemplate = document.getElementById("ws-closed-modal");
+
 const ws = new WebSocket(wsURL());
 ws.onopen = (event) => {
     console.log("onopen", event);
@@ -61,6 +63,9 @@ ws.onerror = (event) => {
 };
 ws.onclose = (event) => {
     console.log("onclose", event);
+    const htmlElement = document.getElementsByTagName("body");
+    const closeModal = closeModalTemplate.content.cloneNode(true);
+    htmlElement.item(0).appendChild(closeModal);
 };
 
 async function leaveRoom() {
