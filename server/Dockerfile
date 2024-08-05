@@ -16,15 +16,20 @@ WORKDIR /app
 
 COPY ./cmd ./cmd
 COPY ./internal ./internal
-COPY ./static ./static
-COPY ./pages ./pages
 COPY ./go.mod ./go.sum ./
-
-COPY --from=tailwind /app/static/css/output.css ./static/css/
 
 RUN go mod download
 
-RUN GOOS=linux go build -o ./server ./cmd/server/main.go
+RUN go build -o ./server ./cmd/server/main.go
+
+FROM gcr.io/distroless/base-debian12 AS runner
+
+WORKDIR /app
+
+COPY --from=tailwind /app/static/css/output.css ./static/css/
+COPY --from=builder /app/server ./
+COPY ./static ./static
+COPY ./pages ./pages
 
 EXPOSE 3000
 
