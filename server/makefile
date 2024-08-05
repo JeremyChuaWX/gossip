@@ -1,6 +1,3 @@
-include ./.env.dev
-export
-
 .PHONY: start
 start:
 	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile development --profile server up --build -d
@@ -11,6 +8,8 @@ dev:
 
 .PHONY: server
 server:
+	export POSTGRES_URL=postgresql://admin:password123@127.0.0.1:5432/my_db?sslmode=disable; \
+	export SERVER_ADDRESS=127.0.0.1:3000; \
 	go run ./cmd/server/main.go
 
 .PHONY: stop

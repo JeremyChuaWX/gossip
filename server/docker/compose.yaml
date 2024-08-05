@@ -22,7 +22,6 @@ services:
       postgres:
         condition: service_healthy
     entrypoint: ["migrate", "-database", "$POSTGRES_URL", "-path", "/migrations"]
-    env_file: ./docker.env
     image: migrate/migrate
     profiles: [development]
     volumes:
