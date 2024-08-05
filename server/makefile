@@ -20,3 +20,8 @@ stop:
 .PHONY: clean
 clean:
 	rm -rf ./docker/pg_data/ ./docker/pg_admin/
+
+.PHONY: migrate
+migrate:
+	export $$POSTGRES_URL; \
+	docker compose --file ./docker/compose.yaml up --no-deps postgres.migrate
