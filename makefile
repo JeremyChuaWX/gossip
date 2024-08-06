@@ -1,6 +1,6 @@
 .PHONY: start
 start:
-	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile "*" up --build -d
+	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile "*" up --build
 
 .PHONY: dev
 dev:
