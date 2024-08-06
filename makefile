@@ -1,6 +1,6 @@
 .PHONY: start
 start:
-	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile development --profile server up --build -d
+	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile "*" up --build -d
 
 .PHONY: dev
 dev:
@@ -14,7 +14,7 @@ server:
 
 .PHONY: stop
 stop:
-	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile development --profile server down --remove-orphans --volumes
+	docker compose --file ./docker/compose.yaml --env-file ./docker/docker.env --profile "*" down --remove-orphans --volumes
 	docker image prune --force
 
 .PHONY: clean
